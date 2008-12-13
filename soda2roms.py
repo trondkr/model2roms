@@ -6,6 +6,7 @@ import interp2D
 from datetime import datetime, timedelta
 from netCDF4 import num2date, date2num
 import printObject
+import vertInterp
 
 """ Get self made modules"""
 dir='/Users/trond/Projects/PyLIB'
@@ -163,9 +164,10 @@ def convertSODA2ROMS(years,IDS):
                 
                 if firstRun is True:
                     firstRun = False
+                    indexTMP  = (temp.shape[1],grdROMS.depth.shape[0],grdROMS.depth.shape[1])
                     indexSODA = (len(IDS),temp.shape[1],temp.shape[2],temp.shape[3])
                     indexROMS = (len(IDS),temp.shape[1],grdROMS.depth.shape[0],grdROMS.depth.shape[1])
-                    print indexROMS
+                    outINDEX  =(int(grdROMS.Nlevels),grdROMS.depth.shape[0],grdROMS.depth.shape[1])
                     
                     grdSODA.t=np.zeros((indexSODA),float)
                     grdSODA.s=np.zeros((indexSODA),float)
@@ -177,15 +179,38 @@ def convertSODA2ROMS(years,IDS):
                     grdROMS.u=np.zeros((indexROMS),float)
                     grdROMS.v=np.zeros((indexROMS),float)
                     
+                    grdROMS.t2=np.zeros((indexROMS),float)
+                    grdROMS.s2=np.zeros((indexROMS),float)
+                    grdROMS.u2=np.zeros((indexROMS),float)
+                    grdROMS.v2=np.zeros((indexROMS),float)
+                    
+                    data=np.zeros((indexTMP),float)
+                    
                 grdSODA.t[time,:,:,:]=temp
                 grdSODA.s[time,:,:,:]=salt
                 grdSODA.u[time,:,:,:]=uvel
                 grdSODA.v[time,:,:,:]=vvel
-                time+=1
-                
-        interp2D.doInterpolation(grdROMS,grdSODA.t,grdSODA.lon,grdSODA.lat,grdROMS.Lp,grdROMS.Mp,map,time,len(grdSODA.depth))
-        ID=1
+              
+        print 'Start horizontal interpolation'
+        interp2D.doHorInterpolation(grdROMS,grdSODA.t,grdSODA.lon,grdSODA.lat,grdROMS.Lp,grdROMS.Mp,map,time+1,len(grdSODA.depth))
+        print 'Start vertical interpolation'
+        
+        data=np.asarray(grdROMS.t[time,:,:,:])
+        outdata=np.zeros((outINDEX),float)
+        
+        outdata = vertInterp.interpolation.dovertinter(np.asarray(data),
+                                                np.asarray(outdata),
+                                                np.asarray(grdROMS.z_r),
+                                                np.asarray(grdSODA.z_r),
+                                                int(grdROMS.Nlevels),
+                                                int(grdSODA.Nlevels),
+                                                int(grdROMS.Lp),
+                                                int(grdROMS.Mp))
    
+        print 'data',outdata
+        time+=1
+        ID=1
+    
 
 def main():
     
@@ -203,15 +228,15 @@ def main():
              
 
 if __name__ == "__main__":
-    import profile
-    
-    try:
-        import psyco
-        psyco.log()
-        psyco.profile(0.2)
-
-    except ImportError:
-        pass
+    #import profile
+    #
+    #try:
+    #    import psyco
+    #    psyco.log()
+    #    psyco.profile(0.2)
+    #
+    #except ImportError:
+    #    pass
     #profile.run('main()')
     
     main()

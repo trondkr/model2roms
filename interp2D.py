@@ -13,21 +13,23 @@ __modified__ = datetime.datetime(2008, 12, 4)
 __version__  = "1.0"
 __status__   = "Development"
 
-def doInterpolation(grdROMS,data,lon_in,lat_in,Lpo,Mpo,map,time,Nlevels):
-    
+                        
+                      
+def doHorInterpolation(grdROMS,data,lon_in,lat_in,Lpo,Mpo,map,time,Nlevels):
     
     tx, ty = map.ll2grid(np.asarray(lon_in), np.asarray(lat_in))
     
     tx = np.asarray(tx)
     ty = np.asarray(ty)
     
-   
     mask=np.where(data==-9.99e+33, 0, 1)
     data=data*mask
     
+    Xg, Yg = np.meshgrid(np.arange(Lpo), np.arange(Mpo))
+    
     for t in xrange(time):
-        for k in xrange(Nlevels):
-            
+        for k in xrange(4) : #Nlevels):
+        
             xlist = []
             ylist = []
             zlist = []
@@ -36,8 +38,6 @@ def doInterpolation(grdROMS,data,lon_in,lat_in,Lpo,Mpo,map,time,Nlevels):
                 for j in xrange(len(lat_in[:,1])):
                     x = tx[j,i]
                     y = ty[j,i]
-                    lat = lat_in[j,i]
-                    lon = lon_in[j,i]
                     
                     """
                     Find positions in or near the grid
@@ -49,9 +49,7 @@ def doInterpolation(grdROMS,data,lon_in,lat_in,Lpo,Mpo,map,time,Nlevels):
                         zlist.append(data[t,k,j,i])
                         
             print 'number of data points in grid %s for time %s for depth %s'%(len(zlist),t,k)
-        
-            
-            Xg, Yg = np.meshgrid(np.arange(Lpo), np.arange(Mpo))
+         
             Zg = griddata(np.array(xlist), np.array(ylist), np.array(zlist), Xg, Yg, masked=False)
         
             grdROMS.t[t,k,:,:]=Zg

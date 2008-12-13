@@ -17,7 +17,7 @@ def get_z_levels(self):
     Get a list of all the variables contained in netCDF file "filename"
     """
     if self.type=='SODA':
-            self.z_r=self.depth
+            self.z_r=-self.depth
     if len(self.z_r)==0:
         print "No depth matrix found in file %s"%(self.selffilename)
 
@@ -119,7 +119,7 @@ def calculate_z_r(self):
     for k in range(len(sc_r)):
         z_r[k,:,:] = np.multiply(zeta,(1+sc_r[k]))+hc*(sc_r[k])+(np.subtract(h,hc))*Cs_r[k]
       
-    self.z_r = z_r
+    self.z_r = np.flipud(z_r)
     self.Cs_r=Cs_r
     self.sc_r=sc_r
     self.hc=hc

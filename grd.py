@@ -68,7 +68,8 @@ class grdClass:
             self.lon = self.cdf.variables["LON"][:]
             self.lat = self.cdf.variables["LAT"][:]
             self.depth = self.cdf.variables["DEPTH"][:]
-           
+            self.Nlevels = len(self.depth)
+            
             if np.rank(self.lon)==1:
                     self.lon, self.lat = np.meshgrid(self.lon,self.lat)
            
@@ -96,8 +97,10 @@ class grdClass:
             self.el  = self.cdf.variables["el"][:]
             self.angle  = self.cdf.variables["angle"][:,:]
             
-            self.pm  = self.cdf.variables["pn"][:,:]
-            self.pn  = self.cdf.variables["pm"][:,:]
+            self.pm  = self.cdf.variables["pm"][:,:]
+            self.invpm  = 1.0/np.asarray(self.cdf.variables["pm"][:,:])
+            self.pn  = self.cdf.variables["pn"][:,:]
+            self.invpn  = 1.0/np.asarray(self.cdf.variables["pn"][:,:])
             
             if np.rank(self.lon_rho)==1:
                     self.lon_rho, self.lat_rho = np.meshgrid(self.lon_rho,self.lat_rho)
@@ -116,3 +119,8 @@ class grdClass:
         self.M =self.Mp-1
         self.L =self.Lp-1
         
+    #def rotateUV(self):
+    #    angle = self.angle;
+    #    
+    #    self.u =  u*cos(angle) + v*sin(angle);
+    #    vout = -u.*sin(angle) + v*cos(angle);
