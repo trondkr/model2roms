@@ -28,7 +28,7 @@ def doHorInterpolation(grdROMS,data,lon_in,lat_in,Lpo,Mpo,map,time,Nlevels):
     Xg, Yg = np.meshgrid(np.arange(Lpo), np.arange(Mpo))
     
     for t in xrange(time):
-        for k in xrange(4) : #Nlevels):
+        for k in xrange(2) : #Nlevels):
         
             xlist = []
             ylist = []
