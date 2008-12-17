@@ -43,8 +43,10 @@ class grdClass:
             self.theta_s=5.0
             self.theta_b=0.4
             self.Tcline=50.0
+            self.ocean_time=1
             # Number of tracers
             self.NT=2
+            self.tracer=self.NT
     
   
     def openNetCDF(self):
@@ -101,6 +103,16 @@ class grdClass:
             self.invpm  = 1.0/np.asarray(self.cdf.variables["pm"][:,:])
             self.pn  = self.cdf.variables["pn"][:,:]
             self.invpn  = 1.0/np.asarray(self.cdf.variables["pn"][:,:])
+            
+            self.Lp=len(self.lat_rho[1,:])
+            self.Mp=len(self.lat_rho[:,1])
+            
+            self.eta_rho = self.Mp
+            self.eta_u   = self.Mp
+            self.eta_v   = self.Mp-1
+            self.xi_rho  = self.Lp
+            self.xi_u    = self.Lp-1
+            self.xi_v    = self.Lp
             
             if np.rank(self.lon_rho)==1:
                     self.lon_rho, self.lat_rho = np.meshgrid(self.lon_rho,self.lat_rho)
