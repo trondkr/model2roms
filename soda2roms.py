@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from netCDF4 import num2date, date2num
 import printObject
 import vertInterp
+import IOwrite
 
 """ Get self made modules"""
 dir='/Users/trond/Projects/PyLIB'
@@ -165,24 +166,25 @@ def convertSODA2ROMS(years,IDS):
                 if firstRun is True:
                     firstRun = False
                     indexTMP  = (temp.shape[1],grdROMS.depth.shape[0],grdROMS.depth.shape[1])
-                    indexSODA = (len(IDS),temp.shape[1],temp.shape[2],temp.shape[3])
-                    indexROMS = (len(IDS),temp.shape[1],grdROMS.depth.shape[0],grdROMS.depth.shape[1])
+                    indexSODA_Z = (len(IDS),temp.shape[1],temp.shape[2],temp.shape[3])
+                    indexROMS_Z = (len(IDS),temp.shape[1],grdROMS.depth.shape[0],grdROMS.depth.shape[1])
+                    indexROMS_S = (len(IDS),int(grdROMS.Nlevels),grdROMS.depth.shape[0],grdROMS.depth.shape[1])
                     outINDEX  =(int(grdROMS.Nlevels),grdROMS.depth.shape[0],grdROMS.depth.shape[1])
                     
-                    grdSODA.t=np.zeros((indexSODA),float)
-                    grdSODA.s=np.zeros((indexSODA),float)
-                    grdSODA.u=np.zeros((indexSODA),float)
-                    grdSODA.v=np.zeros((indexSODA),float)
+                    grdSODA.t=np.zeros((indexSODA_Z),float)
+                    grdSODA.s=np.zeros((indexSODA_Z),float)
+                    grdSODA.u=np.zeros((indexSODA_Z),float)
+                    grdSODA.v=np.zeros((indexSODA_Z),float)
                     
-                    grdROMS.t=np.zeros((indexROMS),float)
-                    grdROMS.s=np.zeros((indexROMS),float)
-                    grdROMS.u=np.zeros((indexROMS),float)
-                    grdROMS.v=np.zeros((indexROMS),float)
+                    grdROMS.t=np.zeros((indexROMS_Z),float)
+                    grdROMS.s=np.zeros((indexROMS_Z),float)
+                    grdROMS.u=np.zeros((indexROMS_Z),float)
+                    grdROMS.v=np.zeros((indexROMS_Z),float)
                     
-                    grdROMS.t2=np.zeros((indexROMS),float)
-                    grdROMS.s2=np.zeros((indexROMS),float)
-                    grdROMS.u2=np.zeros((indexROMS),float)
-                    grdROMS.v2=np.zeros((indexROMS),float)
+                    grdROMS.t2=np.zeros((indexROMS_S),float)
+                    grdROMS.s2=np.zeros((indexROMS_S),float)
+                    grdROMS.u2=np.zeros((indexROMS_S),float)
+                    grdROMS.v2=np.zeros((indexROMS_S),float)
                     
                     data=np.zeros((indexTMP),float)
                     
@@ -195,8 +197,8 @@ def convertSODA2ROMS(years,IDS):
         interp2D.doHorInterpolation(grdROMS,grdSODA.t,grdSODA.lon,grdSODA.lat,grdROMS.Lp,grdROMS.Mp,map,time+1,len(grdSODA.depth))
         print 'Start vertical interpolation'
         
-        data=np.asarray(grdROMS.t[time,:,:,:])
-        outdata=np.zeros((outINDEX),float)
+        data=np.asarray(grdROMS.t[time,:,:,:],dtype=np.float)
+        outdata=np.zeros((outINDEX),dtype=np.float)
         
         outdata = vertInterp.interpolation.dovertinter(np.asarray(data),
                                                 np.asarray(outdata),
@@ -207,7 +209,10 @@ def convertSODA2ROMS(years,IDS):
                                                 int(grdROMS.Lp),
                                                 int(grdROMS.Mp))
    
-        print 'data',outdata
+    #    print 'data',outdata[:,299,299]
+        print grdROMS.t2.shape
+        grdROMS.t2[0,:,:,:]=np.asarray(outdata)
+        IOwrite.open_output(grdROMS,1)
         time+=1
         ID=1
     
