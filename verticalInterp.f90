@@ -13,9 +13,9 @@ Module interpolation
             double precision, dimension(Nroms,JJ,II) :: zr, outdat
             double precision, dimension(Nsoda) ::  zs
        
-!cf2py intent(in) dat, zr, zs, Nroms, Nsoda
-!cf2py intent(out) outdat
-!cf2py intent(hide) ic,jc,kc,kT,rz1,rz2,JJ,II
+!f2py intent(in) dat, zr, zs, Nroms, Nsoda, JJ, II
+!f2py intent(in,out) outdat
+!f2py intent(hide) ic,jc,kc,kT,rz1,rz2
            
             do jc=1,JJ
               do ic=1,II
@@ -56,8 +56,8 @@ Module interpolation
               end do
             end do
         
-        print*,outdat(:,200,200)
-        print*,shape(outdat)
+!        print*,outdat(:,300,300)
+!        print*,shape(outdat)
         
       end subroutine doVertInter
     end module interpolation
