@@ -74,7 +74,7 @@ def calculate_z_w(self):
       
     self.z_w = z_w
     self.Cs_w=Cs_w
-    self.sc_w=sc_w
+    self.s_w=sc_w
     
 
 def calculate_z_r(self):
@@ -99,7 +99,10 @@ def calculate_z_r(self):
     cff=1.0/self.Nlevels
     
     sc_r=np.zeros((self.Nlevels),float)
+    
+            
     Cs_r=np.zeros((self.Nlevels),float)
+    
     for k in xrange(self.Nlevels):
         sc_r[k]=cff*(float(k-self.Nlevels)-0.5)
         if self.theta_s != 0.0:
@@ -120,8 +123,7 @@ def calculate_z_r(self):
         z_r[k,:,:] = np.multiply(zeta,(1+sc_r[k]))+hc*(sc_r[k])+(np.subtract(h,hc))*Cs_r[k]
       
     self.z_r = np.flipud(z_r)
-    self.Cs_r=Cs_r
-    self.sc_r=sc_r
+    self.Cs_rho=Cs_r
     self.hc=hc
-
+    self.s_rho=sc_r
     
