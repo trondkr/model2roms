@@ -71,6 +71,7 @@ class grdClass:
             self.lat = self.cdf.variables["LAT"][:]
             self.depth = self.cdf.variables["DEPTH"][:]
             self.Nlevels = len(self.depth)
+            self.fill_value=-9.99e+33
             
             if np.rank(self.lon)==1:
                     self.lon, self.lat = np.meshgrid(self.lon,self.lat)
@@ -107,12 +108,16 @@ class grdClass:
             self.Lp=len(self.lat_rho[1,:])
             self.Mp=len(self.lat_rho[:,1])
             
+            self.fill_value=-9.99e+33
+            
             self.eta_rho = self.Mp
             self.eta_u   = self.Mp
             self.eta_v   = self.Mp-1
+            self.eta_psi   = self.Mp-1
             self.xi_rho  = self.Lp
             self.xi_u    = self.Lp-1
             self.xi_v    = self.Lp
+            self.xi_psi    = self.Lp-1
             
             if np.rank(self.lon_rho)==1:
                     self.lon_rho, self.lat_rho = np.meshgrid(self.lon_rho,self.lat_rho)

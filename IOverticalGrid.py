@@ -126,4 +126,3 @@ def calculate_z_r(self):
     self.Cs_rho=Cs_r
     self.hc=hc
     self.s_rho=sc_r
-    

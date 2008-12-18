@@ -106,15 +106,13 @@ def convertSODA2ROMS(years,IDS):
     """Now we want to subset the data to avoid storing more information than we need.
     We do this by finding the indices of maximum and minimum latitude and longitude in the matrixes"""
     find_subset_indices(grdSODA,min_lat=30, max_lat=90, min_lon=0, max_lon=360)
-    
-    
+
     
     grdSODA.lat=grdSODA.lat[grdSODA.minJ:grdSODA.maxJ,grdSODA.minI:grdSODA.maxI]
     grdSODA.lon=grdSODA.lon[grdSODA.minJ:grdSODA.maxJ,grdSODA.minI:grdSODA.maxI]
     """Convert values larger than 180 into negative values (West)"""
     grdSODA.lon[:,:]=np.where(grdSODA.lon>180,grdSODA.lon[:,:]-360.,grdSODA.lon[:,:])
 
-    
     
     if grdSODA.log is True:
         print "\nSelected area in output file spans from (longitude=%3.2f,latitude=%3.2f) to (longitude=%3.2f,latitude=%3.2f)"%(grdROMS.lon_rho.min(),grdROMS.lat_rho.min(),grdROMS.lon_rho.max(),grdROMS.lat_rho.max())
@@ -149,7 +147,7 @@ def convertSODA2ROMS(years,IDS):
         for ID in IDS:
             file="SODA_2.0.2_"+str(year)+"_"+str(ID)+".cdf"
             filename=sodapath+file
-         
+           
             if file not in missing:
              
                 cdf = Dataset(filename)
@@ -165,12 +163,11 @@ def convertSODA2ROMS(years,IDS):
                 
                 if firstRun is True:
                     firstRun = False
-                    indexTMP  = (temp.shape[1],grdROMS.depth.shape[0],grdROMS.depth.shape[1])
-                    indexSODA_Z = (len(IDS),temp.shape[1],temp.shape[2],temp.shape[3])
-                    indexROMS_Z = (len(IDS),temp.shape[1],grdROMS.depth.shape[0],grdROMS.depth.shape[1])
-                    indexROMS_S = (len(IDS),int(grdROMS.Nlevels),grdROMS.depth.shape[0],grdROMS.depth.shape[1])
-                    outINDEX  =(int(grdROMS.Nlevels),grdROMS.depth.shape[0],grdROMS.depth.shape[1])
-                    
+                    indexTMP    = (grdSODA.Nlevels,grdROMS.eta_rho,grdROMS.xi_rho)
+                    indexSODA_Z = (len(IDS),grdSODA.Nlevels,temp.shape[2],temp.shape[3])
+                    indexROMS_Z = (len(IDS),grdSODA.Nlevels,grdROMS.eta_rho,grdROMS.xi_rho)
+                    indexROMS_S = (len(IDS),grdROMS.Nlevels,grdROMS.eta_rho,grdROMS.xi_rho)
+                    outINDEX    = (grdROMS.Nlevels,grdROMS.eta_rho,grdROMS.xi_rho)
                     grdSODA.t=np.zeros((indexSODA_Z),float)
                     grdSODA.s=np.zeros((indexSODA_Z),float)
                     grdSODA.u=np.zeros((indexSODA_Z),float)
@@ -192,30 +189,43 @@ def convertSODA2ROMS(years,IDS):
                 grdSODA.s[time,:,:,:]=salt
                 grdSODA.u[time,:,:,:]=uvel
                 grdSODA.v[time,:,:,:]=vvel
-              
-        print 'Start horizontal interpolation'
-        interp2D.doHorInterpolation(grdROMS,grdSODA.t,grdSODA.lon,grdSODA.lat,grdROMS.Lp,grdROMS.Mp,map,time+1,len(grdSODA.depth))
-        print 'Start vertical interpolation'
+            time+=1
+            
         
-        data=np.asarray(grdROMS.t[time,:,:,:],dtype=np.float)
-        outdata=np.zeros((outINDEX),dtype=np.float)
+       
+        vars=['t','s']
         
-        outdata = vertInterp.interpolation.dovertinter(np.asarray(data),
-                                                np.asarray(outdata),
-                                                np.asarray(grdROMS.z_r),
-                                                np.asarray(grdSODA.z_r),
-                                                int(grdROMS.Nlevels),
-                                                int(grdSODA.Nlevels),
-                                                int(grdROMS.Lp),
-                                                int(grdROMS.Mp))
-   
-    #    print 'data',outdata[:,299,299]
-        print grdROMS.t2.shape
-        grdROMS.t2[0,:,:,:]=np.asarray(outdata)
-        IOwrite.open_output(grdROMS,1)
-        time+=1
+        for var in vars:
+        
+            if var=='t':
+                
+                print 'Start horizontal interpolation for Temperature'
+                interp2D.doHorInterpolation('t',grdROMS,grdSODA,grdSODA.t,map,time)
+                
+                print 'Start vertical interpolation for temperature'
+                for t in xrange(time):
+                    
+                    print 'Interpolating for time %i'%(time)
+                    
+                    data=np.asarray(grdROMS.t[t,:,:,:],dtype=np.float)
+                    outdata=np.zeros((outINDEX),dtype=np.float)
+                    
+                    outdata = vertInterp.interpolation.dovertinter(np.asarray(data),
+                                                            np.asarray(outdata),
+                                                            np.asarray(grdROMS.z_r),
+                                                            np.asarray(grdSODA.z_r),
+                                                            int(grdROMS.Nlevels),
+                                                            int(grdSODA.Nlevels),
+                                                            int(grdROMS.Lp),
+                                                            int(grdROMS.Mp))
+               
+            
+                    #Mask the array with land/sea
+                    grdROMS.t2[t,:,:,:]=np.asarray(outdata)*grdROMS.mask_rho
+                    
+                IOwrite.open_output(grdROMS,time)
         ID=1
-    
+        
 
 def main():
     
@@ -227,7 +237,7 @@ def main():
     years=[(int(start_year)+kk) for kk in range(int(end_year)-int(start_year))]
     
    # IDS=[(math.ceil(start_day_in_start_year/5.0)+i) for i in range(73)]
-    IDS=[(i+1) for i in range(1)]
+    IDS=[(i+1) for i in range(5)]
     
     convertSODA2ROMS(years,IDS)
              

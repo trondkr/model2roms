@@ -47,6 +47,7 @@ Module interpolation
                       ! If deepest depth in new grid is deeper than
                       ! any depth in the old grid, use the values found
                       ! at the deepest depth in the old grid in the new grid.
+                    
                       IF (zr(kc,jc,ic) .LT. zs(Nsoda)) THEN
                           outdat(kc,jc,ic)=dat(Nsoda,jc,ic)
                           !print*,zr(kc,jc,ic),zs(Nsoda),'deepest'
@@ -57,18 +58,17 @@ Module interpolation
                           !print*,zr(kc,jc,ic),zs(1),'shallowest'
                       ! If none of the above, do linear interpolation
                       ELSE
-                          DO kT=1,Nsoda+1
-                             
+                          DO kT=1,Nsoda
+                              
                               IF ( (zr(kc,jc,ic) .LT. zs(kT)) .AND.            &
                               (zr(kc,jc,ic) .GE. zs(kT+1)) ) THEN
+                                 rz2 = abs((zr(kc,jc,ic)-zs(kT+1))/            &
+                                 (abs(zs(kT+1))-abs(zs(kT))))
                                  
-                                  rz1 = abs(zr(kc,jc,ic)-zs(kT))/                 &
-                                   abs(zs(kT+1)-zs(kT))
-                                  
-                                  rz2 = 1.0-rz1 
+                                 rz1 = 1.0-rz2
         
-                                  outdat(kc,jc,ic) = rz1*dat(kT,jc,ic)            &
-                                   + rz2*dat(kT+1,jc,ic)
+                                 outdat(kc,jc,ic) = rz1*dat(kT+1,jc,ic)        &
+                                 + rz2*dat(kT,jc,ic)
                                   
                                   EXIT
                               end if

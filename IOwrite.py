@@ -14,8 +14,10 @@ def open_output(grdROMS,ntimes):
      f1.createDimension('eta_u',   grdROMS.eta_u)
      f1.createDimension('xi_v',    grdROMS.xi_v)
      f1.createDimension('eta_v',   grdROMS.eta_v)
+     f1.createDimension('xi_psi',    grdROMS.xi_psi)
+     f1.createDimension('eta_psi',   grdROMS.eta_psi)
      
-     f1.createDimension('ocean_time', 1)
+     f1.createDimension('ocean_time', ntimes)
      f1.createDimension('s_rho', len(grdROMS.s_rho))
      f1.createDimension('s_w', len(grdROMS.s_w))
      
@@ -30,6 +32,12 @@ def open_output(grdROMS,ntimes):
      v.long_name = 'Latitude at RHO points'
      v.units = 'degrees north'
      v[:,:] = grdROMS.lat_rho
+     
+     v = f1.createVariable('h', 'd', ('eta_rho','xi_rho',))
+     v.long_name = 'Final bathymetry at RHO points'
+     v.units = 'meter'
+     v.field = "bath, scalar"
+     v[:,:] = grdROMS.depth
      
      v = f1.createVariable('ocean_time', 'd', ('ocean_time',))
      v.long_name = 'ocean_time'
@@ -64,12 +72,6 @@ def open_output(grdROMS,ntimes):
      v.units = "meter"
      v[:]=grdROMS.Tcline
      
-     v = f1.createVariable('h', 'd', ('eta_rho','xi_rho',))
-     v.long_name = "bathymetry at RHO-points" 
-     v.units = "meter"
-     v.field = "bath, scalar" 
-     v[:,:]=grdROMS.depth
-     
      v=f1.createVariable('theta_s','d')
      v.long_name = "S-coordinate surface control parameter"
      v[:]=grdROMS.theta_s
@@ -78,25 +80,36 @@ def open_output(grdROMS,ntimes):
      v.long_name = "S-coordinate bottom control parameter"
      v[:]=grdROMS.theta_b
      
+     v=f1.createVariable('angle','d',('eta_rho','xi_rho'))
+     v.long_name = "angle between xi axis and east"
+     v.units = "radian" 
+
+     v=f1.createVariable('mask_rho','d',('eta_rho', 'xi_rho'))
+     v.long_name = "mask on RHO-points"
+     v.option_0 = "land" 
+     v.option_1 = "water"
+     v.FillValue = 1.0
+     v[:,:]=grdROMS.mask_rho
      
-     varTZYX=['temp']
+     v=f1.createVariable('mask_u','d',('eta_u', 'xi_u'))
+     v.long_name = "mask on U-points"
+     v.option_0 = "land" 
+     v.option_1 = "water"
+     v.FillValue = 1.0
+     v[:,:]=grdROMS.mask_u
      
-  
+     v=f1.createVariable('mask_v','d',('eta_v', 'xi_v'))
+     v.long_name = "mask on V-points"
+     v.option_0 = "land" 
+     v.option_1 = "water"
+     v.FillValue = 1.0
+     v[:,:]=grdROMS.mask_v
      
-     for var in varTZYX:
-         print var
-         v0 = grdROMS.t2
-         print v0.shape
-         v1 = f1.createVariable(var, 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho'))
-         try:
-             v1.long_name = 'Temperature test at RHO points'
-             v1.units = 'degrees Celsius'
-         except:
-             pass
-         v1._FillValue = -9.99E-33
-         
-         for l in xrange(ntimes):
-            v1[l,:,:,:] = v0
+     v=f1.createVariable('temp', 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho'))
+     v.long_name = "Ocean temperature"
+     v.units = "degrees Celsius"
+     v.FillValue = grdROMS.fill_value
+     v[:,:,:,:]=grdROMS.t2
      
      f1.close()
 

@@ -2,40 +2,51 @@
 import numpy as np
 import os, sys, string, datetime
 from griddata import griddata
-import pylab as p
 from netCDF4 import Dataset
 import plotData
 
 __author__   = 'Trond Kristiansen and Bjorn Aadlandsvik'
 __email__    = 'trond.kristiansen@imr.no'
 __created__  = datetime.datetime(2008, 12, 4)
-__modified__ = datetime.datetime(2008, 12, 4)
-__version__  = "1.0"
+__modified__ = datetime.datetime(2008, 12, 18)
+__version__  = "1.1"
 __status__   = "Development"
 
                         
                       
-def doHorInterpolation(grdROMS,data,lon_in,lat_in,Lpo,Mpo,map,time,Nlevels):
+def doHorInterpolation(var,grdROMS,grdSODA,data,map,time):
     
-    tx, ty = map.ll2grid(np.asarray(lon_in), np.asarray(lat_in))
+    if var=='t' or var=='s':
+        Lp=grdROMS.xi_rho
+        Mp=grdROMS.eta_rho
+    elif var=='u':
+        Lp=grdROMS.xi_u
+        Mp=grdROMS.eta_u
+    elif var=='v':
+        Lp=grdROMS.xi_v
+        Mp=grdROMS.eta_v
+        
+    print 'Interpolating horsiontall for %s with dimensions %s x %s'%(var,Lp,Mp)
+    
+    tx, ty = map.ll2grid(np.asarray(grdSODA.lon), np.asarray(grdSODA.lat))
     
     tx = np.asarray(tx)
     ty = np.asarray(ty)
+
     
-    mask=np.where(data==-9.99e+33, 0, 1)
-    data=data*mask
-    
-    Xg, Yg = np.meshgrid(np.arange(Lpo), np.arange(Mpo))
+    #data[:,:,:,:]=np.where(abs(data[:,:,:,:])>1E33, 0, data[:,:,:,:])
+      
+    Xg, Yg = np.meshgrid(np.arange(Lp), np.arange(Mp))
     
     for t in xrange(time):
-        for k in xrange(2) : #Nlevels):
+        for k in xrange(grdSODA.Nlevels):
         
             xlist = []
             ylist = []
             zlist = []
     
-            for i in xrange(len(lon_in[1,:])):
-                for j in xrange(len(lat_in[:,1])):
+            for i in xrange(len(grdSODA.lon[1,:])):
+                for j in xrange(len(grdSODA.lat[:,1])):
                     x = tx[j,i]
                     y = ty[j,i]
                     
@@ -43,16 +54,33 @@ def doHorInterpolation(grdROMS,data,lon_in,lat_in,Lpo,Mpo,map,time,Nlevels):
                     Find positions in or near the grid
                     """
                     
-                    if ( -1 < x < Lpo+2 ) and (-1 < y < Mpo+2 ):
-                        xlist.append(x)
-                        ylist.append(y)
-                        zlist.append(data[t,k,j,i])
+                    if ( -1 < x < Lp+1 ) and (-1 < y < Mp+1 ):
                         
-            print 'number of data points in grid %s for time %s for depth %s'%(len(zlist),t,k)
+                        if data[t,k,j,i]>=-1.99E33:
+                            xlist.append(x)
+                            ylist.append(y)
+                            zlist.append(data[t,k,j,i])
+                       #else:
+                       #     print 'skipping value %s at %s,%s'%(data[t,k,j,i],y,x)
+            print 'number of data points in grid %s for time %s for depth %s'%(len(zlist),t,int(grdSODA.Nlevels)-1-k)
          
             Zg = griddata(np.array(xlist), np.array(ylist), np.array(zlist), Xg, Yg, masked=False)
-        
-            grdROMS.t[t,k,:,:]=Zg
-      
-   # plotData.contourMap(grd,grd.depth)
+           
+            """
+            Since the order of the depth index is reversed in ROMS compared to in SODA, we
+            flip the index order to get the highest k value for ROMS surface. The new index is kk
+            """
+            
+            kk=int(grdSODA.Nlevels)-1-k
+            
+            if var=='t':    
+                grdROMS.t[t,kk,:,:]=Zg
+            elif var=='s':
+                grdROMS.s[t,kk,:,:]=Zg
+            elif var=='u':
+                grdROMS.u[t,kk,:,:]=Zg
+            elif var=='v':
+                grdROMS.v[t,kk,:,:]=Zg
+                
+           # plotData.contourMap(grdROMS,Zg,kk,var)
    
