@@ -16,7 +16,7 @@ __status__   = "Development"
                       
 def doHorInterpolation(var,grdROMS,grdSODA,data,map,time):
     
-    if var=='t' or var=='s':
+    if var=='temperature' or var=='salinity':
         Lp=grdROMS.xi_rho
         Mp=grdROMS.eta_rho
     elif var=='u':
@@ -26,7 +26,6 @@ def doHorInterpolation(var,grdROMS,grdSODA,data,map,time):
         Lp=grdROMS.xi_v
         Mp=grdROMS.eta_v
         
-    print 'Interpolating horziontally for %s with dimensions %s x %s'%(var,Lp,Mp)
     
     tx, ty = map.ll2grid(np.asarray(grdSODA.lon), np.asarray(grdSODA.lat))
     
@@ -36,6 +35,7 @@ def doHorInterpolation(var,grdROMS,grdSODA,data,map,time):
     Xg, Yg = np.meshgrid(np.arange(Lp), np.arange(Mp))
     
     for t in xrange(time):
+        print ' --> Interpolating horziontally for time %s'%(t)
         for k in xrange(grdSODA.Nlevels):
         
             xlist = []
@@ -61,26 +61,19 @@ def doHorInterpolation(var,grdROMS,grdSODA,data,map,time):
                             #print i,j, data[t,k,j,i]
            #else:
                        #     print 'skipping value %s at %s,%s'%(data[t,k,j,i],y,x)
-            print max(xlist),min(xlist),max(ylist),min(ylist)
-            print 'number of data points in grid %s for time %s for depth %s'%(len(zlist),t,int(grdSODA.Nlevels)-1-k)
+            #print max(xlist),min(xlist),max(ylist),min(ylist)
+            #print 'number of data points in grid %s for time %s for depth %s'%(len(zlist),t,int(grdSODA.Nlevels)-1-k)
             
-            Zg = griddata(np.array(xlist), np.array(ylist), np.array(zlist), Xg, Yg, masked=False,fill_value=10)
-           
-            """
-            Since the order of the depth index is reversed in ROMS compared to in SODA, we
-            flip the index order to get the highest k value for ROMS surface. The new index is kk
-            """
+            Zg = griddata(np.array(xlist), np.array(ylist), np.array(zlist), Xg, Yg, masked=False,fill_value=0)
             
-            kk=int(grdSODA.Nlevels)-1-k
-            
-            if var=='t':    
+            if var=='temperature':    
                 grdROMS.t[t,k,:,:]=Zg
-            elif var=='s':
-                grdROMS.s[t,kk,:,:]=Zg
+            elif var=='salinity':
+                grdROMS.s[t,k,:,:]=Zg
             elif var=='u':
-                grdROMS.u[t,kk,:,:]=Zg
+                grdROMS.u[t,k,:,:]=Zg
             elif var=='v':
-                grdROMS.v[t,kk,:,:]=Zg
+                grdROMS.v[t,k,:,:]=Zg
                 
-            #plotData.contourMap(grdROMS,grdSODA,Zg,kk,var)
+            #plotData.contourMap(grdROMS,grdSODA,Zg,k,var)
    

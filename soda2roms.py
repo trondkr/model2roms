@@ -23,10 +23,48 @@ __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
 __created__  = datetime(2008, 8, 15)
 __modified__ = datetime(2008, 8, 19)
-__modified__ = datetime(2008, 10, 22)
+__modified__ = datetime(2009, 1, 9)
 __version__  = "1.1"
 __status__   = "Development"
 
+def getTime(grdROMS,grdSODA,year,ID):
+    """
+    Find the day and month that the SODA file respresents based on the year and ID number.
+    Each SODA file represents a 5 day average, therefore we let the date we find be the first day
+    of those 5 days. Thats the reason we subtract 4 below for day of month.
+    """
+    """
+    Create a date object to keep track of Julian dates etc.
+    Also create a reference date starting at 1948/01/01.
+    """
+    ref_date = date.Date()
+    ref_date.day=1
+    ref_date.month=1
+    ref_date.year=1948
+    jdref=ref_date.ToJDNumber()
+    
+    days=0.0; month=1;loop=True
+    
+    while loop is True:
+        
+        d=date.NumberDaysMonth(month,year)
+        if days+d<int(ID)*5:
+            days=days+d
+            month+=1
+        else:
+            day=int(int(ID)*5-days)
+            loop=False
+            
+    soda_date = date.Date()
+    soda_date.day=day-4
+    soda_date.month=month
+    soda_date.year=year
+    jdsoda=soda_date.ToJDNumber()
+    
+    grdROMS.time.append(jdsoda-jdref)
+    if grdSODA.log is True:
+        print 'Current time of SODA file : %s/%s/%s'%(soda_date.year,soda_date.month,soda_date.day)
+    
 def find_subset_indices(grdSODA,min_lat,max_lat,min_lon,max_lon):
     """
     Get the indices that covers the new grid, and enables us to only store a subset of
@@ -88,7 +126,7 @@ def convertSODA2ROMS(years,IDS):
     missing=["SODA_2.0.2_1958_8.cdf", "SODA_2.0.2_1958_9.cdf", "SODA_2.0.2_1959_8.cdf", "SODA_2.0.2_1959_9.cdf", "SODA_2.0.2_1981_44.cdf","SODA_2.0.2_1958_53.cdf","SODA_2.0.2_1958_63.cdf"]
     
     fileNameIn=sodapath+'SODA_2.0.2_'+str(years[0])+'_'+str(IDS[0])+'.cdf'
-
+    
     """First time in loop, get the essential old grid information"""
     """SODA data already at Z-levels. No need to interpolate to fixed depths, but we use the one we have"""
     
@@ -119,38 +157,25 @@ def convertSODA2ROMS(years,IDS):
         print "\nSelected area in output file spans from (longitude=%3.2f,latitude=%3.2f) to (longitude=%3.2f,latitude=%3.2f)"%(grdROMS.lon_rho.min(),grdROMS.lat_rho.min(),grdROMS.lon_rho.max(),grdROMS.lat_rho.max())
         print "Selected area in input file spans from  (longitude=%3.2f,latitude=%3.2f) to (longitude=%3.2f,latitude=%3.2f)\n"%(grdSODA.lon.min(),grdSODA.lat.min(),grdSODA.lon.max(),grdSODA.lat.max())
     
-    """
-    Create a date object to keep track of Julian dates etc.
-    Also create a reference date starting at 1948/01/01.
-    """
-    date_obj = date.Date()
-    ref_date = date.Date()
-    ref_date.day=1
-    ref_date.month=1
-    ref_date.year=1948
-    jdref=ref_date.ToJDNumber()
-    
-       
+  
     """
     Project the input grid onto the output grid to enable a straight-forward bilinear interpolation
     """
     map=geoProjection.stereographic_wedge(-65.0,52.0,-71.0,47.2,0.15)
          
    
-    if grdSODA.log is True:
-        print "Reference date is set to: (%s,%s,%s) => julian day: %s"%(ref_date.year,ref_date.month,ref_date.day,jdref)
     for year in years:
-        print "Working on year %s"%(year)
         
-        firstRun = True
-        time=0
+        firstRun = True ; time=0
         
         for ID in IDS:
             file="SODA_2.0.2_"+str(year)+"_"+str(ID)+".cdf"
             filename=sodapath+file
-            print 'Working on file %s'%(file)
+            print '\nWorking on file %s'%(file)
             if file not in missing:
-             
+                
+                getTime(grdROMS,grdSODA,year,ID)
+                
                 cdf = Dataset(filename)
 
                 """Each SODA file consist only of one time step. Get the subset data selected, and
@@ -191,45 +216,49 @@ def convertSODA2ROMS(years,IDS):
                 grdSODA.s[time,:,:,:]=salt
                 grdSODA.u[time,:,:,:]=uvel
                 grdSODA.v[time,:,:,:]=vvel
+                
             time+=1
             
-        
-       
-        vars=['t','s']
+        """
+        All variables for all time are now stored in arrays. Now, start the interpolation to the
+        new grid for all variables and then finally write results to file.
+        """
+        vars=['temperature','salinity']
         
         for var in vars:
-        
-            if var=='t':
-                
-                print 'Start horizontal interpolation for Temperature'
-                interp2D.doHorInterpolation('t',grdROMS,grdSODA,grdSODA.t,map,time)
-                
-                print 'Start vertical interpolation for temperature'
-                for t in xrange(time):
-                    
-                    #print 'Interpolating for time %i'%(time)
-                    
-                    data=grdROMS.t[t,:,:,:]
-                 
-                    outdata=np.zeros((outINDEX),dtype=np.float)
-                    
-                    outdata = vertInterp.interpolation.dovertinter(data,
-                                                                   grdROMS.depth,
-                                                                   np.asarray(outdata),
-                                                                   np.asarray(grdROMS.z_r),
-                                                                   np.asarray(grdSODA.z_r),
-                                                                   int(grdROMS.Nlevels),
-                                                                   int(grdSODA.Nlevels),
-                                                                   int(grdROMS.Lp),
-                                                                   int(grdROMS.Mp))
-               
+
+            print 'Start horizontal interpolation for %s'%(var)
+            if var=='temperature':
+                interp2D.doHorInterpolation(var,grdROMS,grdSODA,grdSODA.t,map,time)
+            if var=='salinity':
+                interp2D.doHorInterpolation(var,grdROMS,grdSODA,grdSODA.s,map,time)
             
-                    #Mask the array with land/sea
+            for t in xrange(time):
+                
+                print 'Interpolating vertically for %s with dimensions %s x %s at time %s'%(var,grdROMS.Lp,grdROMS.Mp,t)
+                if var=='temperature':
+                    data=grdROMS.t[t,:,:,:]
+                if var=='salinity':
+                    data=grdROMS.s[t,:,:,:]
                     
+                outdata=np.zeros((outINDEX),dtype=np.float)
+                
+                outdata = vertInterp.interpolation.dovertinter(data,
+                                                               grdROMS.depth,
+                                                               np.asarray(outdata),
+                                                               np.asarray(grdROMS.z_r),
+                                                               np.asarray(grdSODA.z_r),
+                                                               int(grdROMS.Nlevels),
+                                                               int(grdSODA.Nlevels),
+                                                               int(grdROMS.Lp),
+                                                               int(grdROMS.Mp))
+                if var=='temperature':
                     grdROMS.t2[t,:,:,:]=outdata*grdROMS.mask_rho
-                    #plotData.contourMap(grdROMS,grdSODA,grdROMS.t2[t,29,:,:],29,var)
-                    
-                IOwrite.open_output(grdROMS,time)
+                if var=='salinity':
+                    grdROMS.s2[t,:,:,:]=outdata*grdROMS.mask_rho
+                
+        IOwrite.open_output(grdROMS,time)
+        
         ID=1
         
 
@@ -243,7 +272,7 @@ def main():
     years=[(int(start_year)+kk) for kk in range(int(end_year)-int(start_year))]
     
    # IDS=[(math.ceil(start_day_in_start_year/5.0)+i) for i in range(73)]
-    IDS=[(1+i+1) for i in range(1)]
+    IDS=[(0+i+1) for i in range(72)]
     
     convertSODA2ROMS(years,IDS)
              

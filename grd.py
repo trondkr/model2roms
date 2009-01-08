@@ -79,6 +79,7 @@ class grdClass:
            
             
         if self.type=='ROMS':
+            self.time=[]
             self.lon_rho  = self.cdf.variables["lon_rho"][:]
             self.lat_rho  = self.cdf.variables["lat_rho"][:]
             self.depth    = self.cdf.variables["h"][:,:]

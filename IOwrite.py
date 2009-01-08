@@ -1,12 +1,17 @@
 
 from netCDF4 import Dataset
 import numpy as np
+import time
 
 def open_output(grdROMS,ntimes):
         
      outfile='test.nc'
      f1 = Dataset(outfile, mode='w', format='NETCDF3_CLASSIC')
-     
+     f1.description="This is a climatology file for ROMS"
+     f1.history = 'Created ' + time.ctime(time.time())
+     f1.source = 'Trond Kristiansen (trond.kristiansen@imr.no)'
+     f1.type='NetCDF3 classic created using SODA2ROMS' 
+        
      # Define dimensions
      f1.createDimension('xi_rho',  grdROMS.xi_rho)
      f1.createDimension('eta_rho', grdROMS.eta_rho)
@@ -16,12 +21,16 @@ def open_output(grdROMS,ntimes):
      f1.createDimension('eta_v',   grdROMS.eta_v)
      f1.createDimension('xi_psi',    grdROMS.xi_psi)
      f1.createDimension('eta_psi',   grdROMS.eta_psi)
-     
-     f1.createDimension('ocean_time', ntimes)
+     f1.createDimension('time', ntimes)
      f1.createDimension('s_rho', len(grdROMS.s_rho))
      f1.createDimension('s_w', len(grdROMS.s_w))
      
-     # Define coordinate variables
+     v = f1.createVariable('clim_time', 'd', ('time',))
+     v.long_name = 'Time since 1948/01/01/00:00'
+     v.units = 'days'
+     v.field = '"time, scalar, series"'
+     v[:] = grdROMS.time
+     
      v = f1.createVariable('lon_rho', 'd', ('eta_rho','xi_rho',))
      v.long_name = 'Longitude at RHO points'
      v.units = 'degrees east'
@@ -38,11 +47,6 @@ def open_output(grdROMS,ntimes):
      v.units = 'meter'
      v.field = "bath, scalar"
      v[:,:] = grdROMS.depth
-     
-     v = f1.createVariable('ocean_time', 'd', ('ocean_time',))
-     v.long_name = 'ocean_time'
-     #v.units = v0.units
-     v = grdROMS.ocean_time
      
      v = f1.createVariable('s_rho', 'd', ('s_rho',))
      v0 = grdROMS.s_rho
@@ -67,6 +71,11 @@ def open_output(grdROMS,ntimes):
      v.units = "meter"
      v[:]=grdROMS.hc
      
+     v=f1.createVariable('z_r','d',('s_rho','eta_rho','xi_rho',))
+     v.long_name = "Sigma layer to depth matrix" ;
+     v.units = "meter"
+     v[:,:,:]=grdROMS.z_r
+    
      v=f1.createVariable('Tcline','d')
      v.long_name = "S-coordinate surface/bottom layer width" ;
      v.units = "meter"
@@ -105,11 +114,17 @@ def open_output(grdROMS,ntimes):
      v.FillValue = 1.0
      v[:,:]=grdROMS.mask_v
      
-     v=f1.createVariable('temp', 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho'))
+     v=f1.createVariable('temp', 'f', ('time', 's_rho', 'eta_rho', 'xi_rho'))
      v.long_name = "Ocean temperature"
      v.units = "degrees Celsius"
      v.FillValue = grdROMS.fill_value
      v[:,:,:,:]=grdROMS.t2
+     
+     v=f1.createVariable('salt', 'f', ('time', 's_rho', 'eta_rho', 'xi_rho'))
+     v.long_name = "Ocean salinity"
+     v.units = "psu"
+     v.FillValue = grdROMS.fill_value
+     v[:,:,:,:]=grdROMS.s2
      
      f1.close()
 
