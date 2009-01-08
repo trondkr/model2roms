@@ -41,8 +41,9 @@ class grdClass:
         if self.type=="ROMS":
             self.Nlevels=30
             self.theta_s=5.0
-            self.theta_b=0.4
+            self.theta_b=0.9
             self.Tcline=50.0
+            self.hc=10.0
             self.ocean_time=1
             # Number of tracers
             self.NT=2
@@ -82,7 +83,7 @@ class grdClass:
             self.lat_rho  = self.cdf.variables["lat_rho"][:]
             self.depth    = self.cdf.variables["h"][:,:]
             self.mask_rho = self.cdf.variables["mask_rho"][:,:]
-            
+          
             self.lon_u  = self.cdf.variables["lon_u"][:]
             self.lat_u  = self.cdf.variables["lat_u"][:]
             self.mask_u = self.cdf.variables["mask_u"][:,:]
