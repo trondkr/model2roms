@@ -8,12 +8,13 @@ from netCDF4 import num2date, date2num
 import printObject
 import vertInterp
 import IOwrite
+import plotData
 
-""" Get self made modules"""
-dir='/Users/trond/Projects/PyLIB'
+#""" Get self made modules"""
+#dir='/Users/trond/Projects/PyLIB'
 
-if os.path.isdir(dir):
-    sys.path.append(dir)
+#if os.path.isdir(dir):
+#    sys.path.append(dir)
 import date
 import geoProjection
 import grd
@@ -83,11 +84,11 @@ def convertSODA2ROMS(years,IDS):
     fileNameOut="/Users/trond/ROMS/GoM/grid/gom_grd.nc"
     #fileNameOut="/Users/trond/Projects/arcwarm/nordic/AA_10km_grid.nc"
     sodapath="/Volumes/HankRaid/SODA/"
-    sodapath="/Users/trond/Projects/arcwarm/SODA/DATA/"
+    #sodapath="/Users/trond/Projects/arcwarm/SODA/DATA/"
     missing=["SODA_2.0.2_1958_8.cdf", "SODA_2.0.2_1958_9.cdf", "SODA_2.0.2_1959_8.cdf", "SODA_2.0.2_1959_9.cdf", "SODA_2.0.2_1981_44.cdf","SODA_2.0.2_1958_53.cdf","SODA_2.0.2_1958_63.cdf"]
-    fileNameIn=sodapath+"SODA_2.0.2_1963_1.cdf"
     
-    
+    fileNameIn=sodapath+'SODA_2.0.2_'+str(years[0])+'_'+str(IDS[0])+'.cdf'
+
     """First time in loop, get the essential old grid information"""
     """SODA data already at Z-levels. No need to interpolate to fixed depths, but we use the one we have"""
     
@@ -105,7 +106,7 @@ def convertSODA2ROMS(years,IDS):
 
     """Now we want to subset the data to avoid storing more information than we need.
     We do this by finding the indices of maximum and minimum latitude and longitude in the matrixes"""
-    find_subset_indices(grdSODA,min_lat=30, max_lat=90, min_lon=0, max_lon=360)
+    find_subset_indices(grdSODA,min_lat=30, max_lat=60, min_lon=0, max_lon=360)
 
     
     grdSODA.lat=grdSODA.lat[grdSODA.minJ:grdSODA.maxJ,grdSODA.minI:grdSODA.maxI]
@@ -147,7 +148,7 @@ def convertSODA2ROMS(years,IDS):
         for ID in IDS:
             file="SODA_2.0.2_"+str(year)+"_"+str(ID)+".cdf"
             filename=sodapath+file
-           
+            print 'Working on file %s'%(file)
             if file not in missing:
              
                 cdf = Dataset(filename)
@@ -186,6 +187,7 @@ def convertSODA2ROMS(years,IDS):
                     data=np.zeros((indexTMP),float)
                     
                 grdSODA.t[time,:,:,:]=temp
+                
                 grdSODA.s[time,:,:,:]=salt
                 grdSODA.u[time,:,:,:]=uvel
                 grdSODA.v[time,:,:,:]=vvel
@@ -205,23 +207,27 @@ def convertSODA2ROMS(years,IDS):
                 print 'Start vertical interpolation for temperature'
                 for t in xrange(time):
                     
-                    print 'Interpolating for time %i'%(time)
+                    #print 'Interpolating for time %i'%(time)
                     
-                    data=np.asarray(grdROMS.t[t,:,:,:],dtype=np.float)
+                    data=grdROMS.t[t,:,:,:]
+                 
                     outdata=np.zeros((outINDEX),dtype=np.float)
                     
-                    outdata = vertInterp.interpolation.dovertinter(np.asarray(data),
-                                                            np.asarray(outdata),
-                                                            np.asarray(grdROMS.z_r),
-                                                            np.asarray(grdSODA.z_r),
-                                                            int(grdROMS.Nlevels),
-                                                            int(grdSODA.Nlevels),
-                                                            int(grdROMS.Lp),
-                                                            int(grdROMS.Mp))
+                    outdata = vertInterp.interpolation.dovertinter(data,
+                                                                   grdROMS.depth,
+                                                                   np.asarray(outdata),
+                                                                   np.asarray(grdROMS.z_r),
+                                                                   np.asarray(grdSODA.z_r),
+                                                                   int(grdROMS.Nlevels),
+                                                                   int(grdSODA.Nlevels),
+                                                                   int(grdROMS.Lp),
+                                                                   int(grdROMS.Mp))
                
             
                     #Mask the array with land/sea
-                    grdROMS.t2[t,:,:,:]=np.asarray(outdata)*grdROMS.mask_rho
+                    
+                    grdROMS.t2[t,:,:,:]=outdata*grdROMS.mask_rho
+                    #plotData.contourMap(grdROMS,grdSODA,grdROMS.t2[t,29,:,:],29,var)
                     
                 IOwrite.open_output(grdROMS,time)
         ID=1
@@ -229,15 +235,15 @@ def convertSODA2ROMS(years,IDS):
 
 def main():
     
-    start_year=1960
-    end_year=1961
+    start_year=1990
+    end_year=1991
     start_day_in_start_year=10
     end_day_in_end_year=65
     
     years=[(int(start_year)+kk) for kk in range(int(end_year)-int(start_year))]
     
    # IDS=[(math.ceil(start_day_in_start_year/5.0)+i) for i in range(73)]
-    IDS=[(i+1) for i in range(5)]
+    IDS=[(1+i+1) for i in range(1)]
     
     convertSODA2ROMS(years,IDS)
              
