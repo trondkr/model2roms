@@ -26,16 +26,13 @@ def doHorInterpolation(var,grdROMS,grdSODA,data,map,time):
         Lp=grdROMS.xi_v
         Mp=grdROMS.eta_v
         
-    print 'Interpolating horsiontall for %s with dimensions %s x %s'%(var,Lp,Mp)
+    print 'Interpolating horziontally for %s with dimensions %s x %s'%(var,Lp,Mp)
     
     tx, ty = map.ll2grid(np.asarray(grdSODA.lon), np.asarray(grdSODA.lat))
     
     tx = np.asarray(tx)
     ty = np.asarray(ty)
 
-    
-    #data[:,:,:,:]=np.where(abs(data[:,:,:,:])>1E33, 0, data[:,:,:,:])
-      
     Xg, Yg = np.meshgrid(np.arange(Lp), np.arange(Mp))
     
     for t in xrange(time):
@@ -54,17 +51,20 @@ def doHorInterpolation(var,grdROMS,grdSODA,data,map,time):
                     Find positions in or near the grid
                     """
                     
-                    if ( -1 < x < Lp+1 ) and (-1 < y < Mp+1 ):
+                    if ( -20 < x < Lp+10 ) and (-20 < y < Mp+10 ):
                         
-                        if data[t,k,j,i]>=-1.99E33:
+                        if data[t,k,j,i]>-9.98e+33:
+                            
                             xlist.append(x)
                             ylist.append(y)
                             zlist.append(data[t,k,j,i])
-                       #else:
+                            #print i,j, data[t,k,j,i]
+           #else:
                        #     print 'skipping value %s at %s,%s'%(data[t,k,j,i],y,x)
+            print max(xlist),min(xlist),max(ylist),min(ylist)
             print 'number of data points in grid %s for time %s for depth %s'%(len(zlist),t,int(grdSODA.Nlevels)-1-k)
-         
-            Zg = griddata(np.array(xlist), np.array(ylist), np.array(zlist), Xg, Yg, masked=False)
+            
+            Zg = griddata(np.array(xlist), np.array(ylist), np.array(zlist), Xg, Yg, masked=False,fill_value=10)
            
             """
             Since the order of the depth index is reversed in ROMS compared to in SODA, we
@@ -74,7 +74,7 @@ def doHorInterpolation(var,grdROMS,grdSODA,data,map,time):
             kk=int(grdSODA.Nlevels)-1-k
             
             if var=='t':    
-                grdROMS.t[t,kk,:,:]=Zg
+                grdROMS.t[t,k,:,:]=Zg
             elif var=='s':
                 grdROMS.s[t,kk,:,:]=Zg
             elif var=='u':
@@ -82,5 +82,5 @@ def doHorInterpolation(var,grdROMS,grdSODA,data,map,time):
             elif var=='v':
                 grdROMS.v[t,kk,:,:]=Zg
                 
-           # plotData.contourMap(grdROMS,Zg,kk,var)
+            #plotData.contourMap(grdROMS,grdSODA,Zg,kk,var)
    
