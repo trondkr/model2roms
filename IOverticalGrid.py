@@ -13,7 +13,9 @@ __status__   = "Development"
 
 
 def get_z_levels(self):
-
+    """
+    Get a list of all the variables contained in netCDF file "filename"
+    """
     if self.type=='SODA':
             self.z_r=-self.depth
     if len(self.z_r)==0:
@@ -36,8 +38,9 @@ def calculate_z_w(self):
     """
     
     h =self.depth
-    hc=self.hc
-
+    
+    hc=np.min(h,self.Tcline)
+    
     if self.theta_s != 0.0:
         cff1=1.0/np.sinh(self.theta_s)
         cff2=0.5/np.tanh(0.5*self.theta_s)
@@ -86,8 +89,9 @@ def calculate_z_r(self):
     """
     
     h =self.depth
-    hc=self.hc
-
+    
+    hc=np.min(h,self.Tcline)
+    
     if self.theta_s != 0.0:
         cff1=1.0/np.sinh(self.theta_s)
         cff2=0.5/np.tanh(0.5*self.theta_s)
@@ -120,4 +124,5 @@ def calculate_z_r(self):
       
     self.z_r = np.flipud(z_r)
     self.Cs_rho=Cs_r
+    self.hc=hc
     self.s_rho=sc_r

@@ -28,7 +28,7 @@ Module interpolation
             !
             ! USAGE: Compile this routine using Intel Fortran compiler and create
             ! a python module using the command:
-            ! f2py --verbose --fcompiler=intel -c -m vertInterp verticalInterp.f90
+            ! f2py --verbose --fcompiler=intel -c -m interpolation interpolation.f90
             !
             ! The resulting module is imported to python using:
             ! import vertInterp as interp2D
@@ -105,5 +105,31 @@ Module interpolation
         
         
       end subroutine doVertInter
+      
+      subroutine rho2u(rhodata,udata,II,JJ)
+       
+
+            integer II, JJ, ic, jc
+            double precision, dimension(JJ,II) :: rhodata
+            double precision, dimension(JJ,II-1) :: udata
+       
+!f2py intent(in) rhodata, JJ, II
+!f2py intent(in,out) udata
+!f2py intent(hide) ic,jc
+    
+            do jc=1,JJ
+                do ic=1,II-1
+                    if (jc .EQ. 1) then
+                        udata(jc,ic)=rhodata(jc,ic)
+                    else if (jc .EQ. JJ) then
+                        udata(jc,ic)=rhodata(jc,ic)
+                    else
+                        udata(jc,ic)=(rhodata(jc-1,ic)+rhodata(jc+1,ic))*0.5
+                    end if
+                    print*,jc,ic,udata(jc,ic),rhodata(jc-1,ic),rhodata(jc+1,ic)
+                end do
+            end do
+        end subroutine rho2u
+            
     end module interpolation
     

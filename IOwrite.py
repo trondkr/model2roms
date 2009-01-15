@@ -6,6 +6,7 @@ import time
 def open_output(grdROMS,ntimes):
         
      outfile='test.nc'
+     print 'Writing results to file %s'%(outfile)
      f1 = Dataset(outfile, mode='w', format='NETCDF3_CLASSIC')
      f1.description="This is a climatology file for ROMS"
      f1.history = 'Created ' + time.ctime(time.time())
@@ -36,11 +37,30 @@ def open_output(grdROMS,ntimes):
      v.units = 'degrees east'
      v[:,:] = grdROMS.lon_rho
      
-     
      v = f1.createVariable('lat_rho', 'd', ('eta_rho','xi_rho',))
      v.long_name = 'Latitude at RHO points'
      v.units = 'degrees north'
      v[:,:] = grdROMS.lat_rho
+     
+     v = f1.createVariable('lon_u', 'd', ('eta_u','xi_u',))
+     v.long_name = 'Longitude at U points'
+     v.units = 'degrees east'
+     v[:,:] = grdROMS.lon_u
+     
+     v = f1.createVariable('lat_u', 'd', ('eta_u','xi_u',))
+     v.long_name = 'Latitude at U points'
+     v.units = 'degrees north'
+     v[:,:] = grdROMS.lat_u
+     
+     v = f1.createVariable('lon_v', 'd', ('eta_v','xi_v',))
+     v.long_name = 'Longitude at V points'
+     v.units = 'degrees east'
+     v[:,:] = grdROMS.lon_v
+     
+     v = f1.createVariable('lat_v', 'd', ('eta_v','xi_v',))
+     v.long_name = 'Latitude at V points'
+     v.units = 'degrees north'
+     v[:,:] = grdROMS.lat_v
      
      v = f1.createVariable('h', 'd', ('eta_rho','xi_rho',))
      v.long_name = 'Final bathymetry at RHO points'
@@ -125,6 +145,24 @@ def open_output(grdROMS,ntimes):
      v.units = "psu"
      v.FillValue = grdROMS.fill_value
      v[:,:,:,:]=grdROMS.s2
+     
+     v=f1.createVariable('ssh','d',('time','eta_rho', 'xi_rho'))
+     v.long_name = "Sea surface height (SSH) at RHO-points"
+     v.units = "m"
+     v.FillValue = grdROMS.fill_value
+     v[:,:,:]=grdROMS.ssh
+     
+     v=f1.createVariable('u', 'f', ('time', 's_rho', 'eta_u', 'xi_u'))
+     v.long_name = "U-velocity, scalar, series"
+     v.units = "m/s"
+     v.FillValue = grdROMS.fill_value
+     v[:,:,:,:]=grdROMS.u3
+     
+     v=f1.createVariable('v', 'f', ('time', 's_rho', 'eta_v', 'xi_v'))
+     v.long_name = "V-velocity, scalar, series"
+     v.units = "m/s"
+     v.FillValue = grdROMS.fill_value
+     v[:,:,:,:]=grdROMS.v3
      
      f1.close()
 

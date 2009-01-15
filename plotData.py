@@ -6,9 +6,16 @@ from mpl_toolkits.basemap import Basemap, NetCDFFile
 
 def contourMap(grdROMS,grdSODA,data,depthlevel,var):
     
- 
-    tlat      = np.array(grdROMS.lat_rho)
-    tlon      = np.array(grdROMS.lon_rho)
+    if var=='vvel':
+        tlat      = np.array(grdROMS.lat_v)
+        tlon      = np.array(grdROMS.lon_v)
+    if var=='uvel':
+        tlat      = np.array(grdROMS.lat_u)
+        tlon      = np.array(grdROMS.lon_u)
+    if var in ['temperature','salinity','ssh']:
+        tlat      = np.array(grdROMS.lat_rho)
+        tlon      = np.array(grdROMS.lon_rho)
+        
     temp      = data
     
     
