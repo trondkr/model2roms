@@ -109,7 +109,17 @@ Module interpolation
       
       subroutine rho2u(rhodata,udata,II,JJ,KK)
        
-
+            ! ----------------------------------
+            ! Program : rho2u
+            !
+            ! This routine interpolates RHO points to U points using simple linear interpolation
+            ! The input matrix (rhodata) is a matrix of size (JJ,II). The output matrix is the
+            ! interpolated RHO values at U points with dimensions (JJ,II-1).
+            ! Trond Kristiansen, January 2009
+            ! Rutgers University, NJ.
+            ! -------------------------------------------------------------------------------------------------------
+          
+           
             integer KK, II, JJ, kc, ic, jc
             double precision, dimension(KK,JJ,II) :: rhodata
             double precision, dimension(KK,JJ,II-1) :: udata
@@ -117,7 +127,7 @@ Module interpolation
 !f2py intent(in) rhodata, KK, JJ, II
 !f2py intent(in,out) udata
 !f2py intent(hide) ic,jc,kc
-            print*,'Started horisontal rho2u interpolation'
+            print*,'---> Started horisontal rho2u interpolation'
             do kc=1,KK
                 do jc=1,JJ
                     do ic=1,II-1
@@ -136,15 +146,24 @@ Module interpolation
             
       subroutine rho2v(rhodata,vdata,II,JJ,KK)
        
-
+            ! ----------------------------------
+            ! Program : rho2v
+            !
+            ! This routine interpolates RHO points to V points using simple linear interpolation
+            ! The input matrix (rhodata) is a matrix of size (JJ,II). The output matrix is the
+            ! interpolated RHO values at U points with dimensions (JJ-1,II).
+            ! Trond Kristiansen, January 2009
+            ! Rutgers University, NJ.
+            ! -------------------------------------------------------------------------------------------------------
+          
            integer KK, II, JJ, kc, ic, jc
            double precision, dimension(KK,JJ,II) :: rhodata
            double precision, dimension(KK,JJ-1,II) :: vdata
        
 !f2py intent(in) rhodata, KK, JJ, II
-!f2py intent(in,out) udata
+!f2py intent(in,out) vdata
 !f2py intent(hide) ic,jc,kc
-            print*,'Started horisontal rho2v interpolation'
+            print*,'---> Started horisontal rho2v interpolation'
             do kc=1,KK
                 do jc=1,JJ-1
                     do ic=1,II
