@@ -60,7 +60,6 @@ def getStationTime(grdSODA,year,ID):
 
 def getStationData(years,IDS,outfilename,sodapath,latlist,lonlist):
      
-    log=True
     missing=["SODA_2.0.2_1958_8.cdf", "SODA_2.0.2_1958_9.cdf", "SODA_2.0.2_1959_8.cdf", "SODA_2.0.2_1959_9.cdf", "SODA_2.0.2_1981_44.cdf","SODA_2.0.2_1958_53.cdf","SODA_2.0.2_1958_63.cdf"]
     
     fileNameIn=sodapath+'SODA_2.0.2_'+str(years[0])+'_'+str(IDS[0])+'.cdf'
@@ -68,7 +67,7 @@ def getStationData(years,IDS,outfilename,sodapath,latlist,lonlist):
     """First time in loop, get the essential old grid information"""
     """SODA data already at Z-levels. No need to interpolate to fixed depths, but we use the one we have"""
     
-    grdSODA = grd.grdClass(fileNameIn,"SODA",log)
+    grdSODA = grd.grdClass(fileNameIn,"SODA")
     IOverticalGrid.get_z_levels(grdSODA)
     
     station=0

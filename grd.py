@@ -16,27 +16,26 @@ import printObject
 __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
 __created__  = datetime(2008, 12, 9)
-__modified__ = datetime(2008, 12, 9)
+__modified__ = datetime(2009, 1, 20)
 __version__  = "1.1"
 __status__   = "Development"
 
 
 class grdClass:
 
-    def __init__(self,grdfilename,type,log):
+    def __init__(self,grdfilename,type):
         """
         The object is initialised and created through the __init__ method
         """
         self.grdfilename= grdfilename
       
-        self.log=log
         self.type=type
         
         self.openNetCDF()
         self.createObject()
         self._getDims()
         
-        print 'Generating GRD object for grid type %s'%(self.type)
+        print '\n---> Generating GRD object for grid type %s'%(self.type)
         
         if self.type=="ROMS":
             self.Nlevels=30
@@ -58,9 +57,9 @@ class grdClass:
             self.cdf = Dataset(self.grdfilename,"r")
         except IOError:
             print 'Could not open file %s'%(self.grdfilename)
-            print 'Exception caught in: openNetCDF(grdfilename, log)'
-        if self.log is True:  
-            print '\n---> Opened input file %s'%(self.grdfilename)
+            print 'Exception caught in: openNetCDF(grdfilename)'
+      
+        print '\n---> Opened input file %s'%(self.grdfilename)
         
   
     def createObject(self):
@@ -79,7 +78,8 @@ class grdClass:
            
             
         if self.type=='ROMS':
-            self.time=[]
+            self.time     = 0
+            self.reftime  = 0
             self.lon_rho  = self.cdf.variables["lon_rho"][:]
             self.lat_rho  = self.cdf.variables["lat_rho"][:]
             self.depth    = self.cdf.variables["h"][:,:]
@@ -138,8 +138,3 @@ class grdClass:
         self.M =self.Mp-1
         self.L =self.Lp-1
         
-    #def rotateUV(self):
-    #    angle = self.angle;
-    #    
-    #    self.u =  u*cos(angle) + v*sin(angle);
-    #    vout = -u.*sin(angle) + v*cos(angle);

@@ -6,13 +6,13 @@ from mpl_toolkits.basemap import Basemap, NetCDFFile
 
 def contourMap(grdROMS,grdSODA,data,depthlevel,var):
     
-    if var=='vvel':
-        tlat      = np.array(grdROMS.lat_v)
-        tlon      = np.array(grdROMS.lon_v)
-    if var=='uvel':
-        tlat      = np.array(grdROMS.lat_u)
-        tlon      = np.array(grdROMS.lon_u)
-    if var in ['temperature','salinity','ssh']:
+    #if var=='vvel':
+    #    tlat      = np.array(grdROMS.lat_v)
+    #    tlon      = np.array(grdROMS.lon_v)
+    #if var=='uvel':
+    #    tlat      = np.array(grdROMS.lat_u)
+    #    tlon      = np.array(grdROMS.lon_u)
+    if var in ['temperature','salinity','ssh','uvel','vvel']:
         tlat      = np.array(grdROMS.lat_rho)
         tlon      = np.array(grdROMS.lon_rho)
         
@@ -55,7 +55,7 @@ def contourMap(grdROMS,grdSODA,data,depthlevel,var):
     #CS2 = map.contour(x,y,temp,15,colors='black',linewidths=0.5)
     plt.title('Variabel %s at depth %s'%(var,depthlevel))
     
-    map.plot(x2,y2,'bo')
+    #map.scatter(x2,y2,20,grdSODA.t)
      
     plt.show()
     #plotfile='figures/soda_depthK_'+str(depthlevel)+'.png'

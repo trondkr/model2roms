@@ -180,5 +180,40 @@ Module interpolation
             end do
         end subroutine rho2v
             
-    end module interpolation
+   
+        subroutine rotate(urot,vrot,u_rho,v_rho,angle,II,JJ,KK)
+            ! ----------------------------------
+            ! Program : rotate
+            !
+            ! This routine rotates u and v velocities in the North-South grid to an
+            ! the output North-South grid with angle "angle"
+            ! Trond Kristiansen, January 2009
+            ! Rutgers University, NJ.
+            ! -------------------------------------------------------------------------------------------------------
+            
+           double precision, dimension(KK,JJ,II) :: urot, vrot
+           double precision, dimension(KK,JJ,II) :: u_rho, v_rho
+           double precision, dimension(JJ,II)  :: angle
+           integer KK, II, JJ, kc, ic, jc
+          
+!f2py intent(in) u_rho, v_rho, angle, KK, JJ, II
+!f2py intent(in,out) urot, vrot
+!f2py intent(hide) ic,jc,kc
     
+           print*,'---> Started rotation of velocities'
+           do kc=1,KK
+             do jc=1,JJ
+                do ic=1,II
+                    
+                    urot(kc,jc,ic)=u_rho(kc,jc,ic)*COS(angle(jc,ic)) + v_rho(kc,jc,ic)*SIN(angle(jc,ic))
+                    vrot(kc,jc,ic)=-u_rho(kc,jc,ic)*SIN(angle(jc,ic)) + v_rho(kc,jc,ic)*COS(angle(jc,ic))
+                    
+                    !print*, vrot(kc,jc,ic), urot(kc,jc,ic), kc,jc,ic !, sin(angle(jc,ic)), cos(angle(jc,ic))
+                  !  print*, v_rho(kc,jc,ic), u_rho(kc,jc,ic), ic,jc
+                end do
+             end do
+            end do
+            print*,'---> Ended rotation of velocities'
+        end subroutine rotate
+    
+     end module interpolation
