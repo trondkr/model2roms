@@ -9,6 +9,7 @@ from netCDF4 import Dataset
 from netCDF4 import num2date
 import time
 import os
+import plotStation
 
 __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
@@ -52,16 +53,14 @@ def getStationTime(grdSODA,year,ID):
     soda_date.month=month
     soda_date.year=year
     jdsoda=soda_date.ToJDNumber()
+    yyyymmdd = '%s/%s/%s'%(soda_date.year,soda_date.month,soda_date.day)
     
-   
     print 'Current time of SODA file : %s/%s/%s'%(soda_date.year,soda_date.month,soda_date.day)
     
-    return jdsoda-jdref
+    return jdsoda-jdref, yyyymmdd
 
 def getStationData(years,IDS,outfilename,sodapath,latlist,lonlist):
-     
-    missing=["SODA_2.0.2_1958_8.cdf", "SODA_2.0.2_1958_9.cdf", "SODA_2.0.2_1959_8.cdf", "SODA_2.0.2_1959_9.cdf", "SODA_2.0.2_1981_44.cdf","SODA_2.0.2_1958_53.cdf","SODA_2.0.2_1958_63.cdf"]
-    
+      
     fileNameIn=sodapath+'SODA_2.0.2_'+str(years[0])+'_'+str(IDS[0])+'.cdf'
     
     """First time in loop, get the essential old grid information"""
@@ -88,34 +87,34 @@ def getStationData(years,IDS,outfilename,sodapath,latlist,lonlist):
         stUvel=np.zeros((index),np.float64)
         stVvel=np.zeros((index),np.float64)
         stTime=[]
-        
+        stDate=[]
         time=0
      
         for year in years:
             for ID in IDS:
                 file="SODA_2.0.2_"+str(year)+"_"+str(ID)+".cdf"
                 filename=sodapath+file
-              
-                if file not in missing:
-                    
-                    jdsoda = getStationTime(grdSODA,year,ID)
-                    stTime.append(jdsoda)
-                    
-                    cdf = Dataset(filename)
-    
-                    """Each SODA file consist only of one time step. Get the subset data selected, and
-                    store that time step in a new array:"""
-                    stTemp[time,:] = np.array(cdf.variables["TEMP"][0,:,latindex,lonindex])
-                    stSalt[time,:] = np.array(cdf.variables["SALT"][0,:,latindex,lonindex])
-                    stSSH[time]    = np.array(cdf.variables["SSH"][0,latindex,lonindex])
-                    stUvel[time,:] = np.array(cdf.variables["U"][0,:,latindex,lonindex])
-                    stVvel[time,:] = np.array(cdf.variables["V"][0,:,latindex,lonindex])
-                    
-                    cdf.close()
+  
+                jdsoda, yyyymmdd = getStationTime(grdSODA,year,ID)
+                stTime.append(jdsoda)
+                stDate.append(yyyymmdd)
+                
+                cdf = Dataset(filename)
+
+                """Each SODA file consist only of one time step. Get the subset data selected, and
+                store that time step in a new array:"""
+                stTemp[time,:] = np.array(cdf.variables["TEMP"][0,:,latindex,lonindex])
+                stSalt[time,:] = np.array(cdf.variables["SALT"][0,:,latindex,lonindex])
+                stSSH[time]    = np.array(cdf.variables["SSH"][0,latindex,lonindex])
+                stUvel[time,:] = np.array(cdf.variables["U"][0,:,latindex,lonindex])
+                stVvel[time,:] = np.array(cdf.variables["V"][0,:,latindex,lonindex])
+                
+                cdf.close()
                     
                 time+=1
          
         print 'Total time steps saved to file %s for station %s'%(time,station)
+        plotStation.contourData(stTemp,stTime,stDate,grdSODA.depth)
         
         outfilename='Station_st%i_%s_to_%s.nc'%(station+1,years[0],years[-1])
         print 'Results saved to file %s'%(outfilename)
@@ -182,7 +181,7 @@ def writeStation(t,s,uvel,vvel,ssh,ntime,depth,lat,lon,outfilename):
     print 'Writing first results to file %s'%(outfilename)
     
     f1 = Dataset(outfilename, mode='w', format='NETCDF3_CLASSIC')
-    #f1 = Dataset(outfilename, mode='w', format='NETCDF4')
+    f1 = Dataset(outfilename, mode='w', format='NETCDF4')
     f1.description="This is a station (lat=%3.2f,lon=%3.2f) file from SODA data"%(lat,lon)
     f1.history = 'Created ' + time.ctime(time.time())
     f1.source = 'Trond Kristiansen (trond.kristiansen@imr.no)'
@@ -192,49 +191,49 @@ def writeStation(t,s,uvel,vvel,ssh,ntime,depth,lat,lon,outfilename):
     f1.createDimension('time', len(ntime))
     f1.createDimension('z', len(depth))
      
-    v=f1.createVariable('lon','d')
+    v=f1.createVariable('lon','d',zlib=True)
     v.long_name = "Longitude position of station" ;
     v.units = "Longitude"
     v[:]=lon
     
-    v=f1.createVariable('lat','d')
+    v=f1.createVariable('lat','d', zlib=True)
     v.long_name = "Latitude position of station" ;
     v.units = "Latitude"
     v[:]=lat
     
-    v=f1.createVariable('depth','d',('z',))
+    v=f1.createVariable('depth','d',('z',), zlib=True)
     v.long_name = "Z-depth matrix" ;
     v.units = "meter"
     v[:]=depth
      
-    v_time = f1.createVariable('time', 'd', ('time',))
+    v_time = f1.createVariable('time', 'd', ('time',), zlib=True)
     v_time.long_name = 'Days since 1948-01-01 00:00:00'
     v_time.units = 'days'
     v_time.field = 'time, scalar, series'
     v_time.calendar='standard'
     v_time[:] = ntime
     
-    v_temp=f1.createVariable('temp', 'f', ('time','z'))
+    v_temp=f1.createVariable('temp', 'f', ('time','z'), zlib=True)
     v_temp.long_name = "Ocean temperature"
     v_temp.units = "degrees Celsius"
     v_temp[:,:] = t
     
-    v_salt=f1.createVariable('salt', 'f', ('time','z'))
+    v_salt=f1.createVariable('salt', 'f', ('time','z'), zlib=True)
     v_salt.long_name = "Ocean salinity"
     v_salt.units = "psu"
     v_salt[:,:]=s
     
-    v_ssh=f1.createVariable('zeta','d',('time',))
+    v_ssh=f1.createVariable('zeta','d',('time',), zlib=True)
     v_ssh.long_name = "Sea surface height (SSH)"
     v_ssh.units = "m"
     v_ssh[:] = ssh
     
-    v_u=f1.createVariable('u', 'f', ('time','z'))
+    v_u=f1.createVariable('u', 'f', ('time','z'), zlib=True)
     v_u.long_name = "U-velocity, scalar, series"
     v_u.units = "m/s"
     v_u[:,:] = uvel
     
-    v_v=f1.createVariable('v', 'f', ('time','z'))
+    v_v=f1.createVariable('v', 'f', ('time','z'), zlib=True)
     v_v.long_name = "V-velocity, scalar, series"
     v_v.units = "m/s"
     v_v[:,:] = vvel
