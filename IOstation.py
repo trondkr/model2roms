@@ -118,7 +118,7 @@ def getStationData(years,IDS,outfilename,sodapath,latlist,lonlist):
         
         outfilename='Station_st%i_%s_to_%s.nc'%(station+1,years[0],years[-1])
         print 'Results saved to file %s'%(outfilename)
-        writeStation(stTemp,stSalt,stUvel,stVvel,stSSH,stTime,grdSODA.depth,lat,lon,outfilename)
+        writeStationNETCDF3(stTemp,stSalt,stUvel,stVvel,stSSH,stTime,grdSODA.depth,lat,lon,outfilename)
         station+=1
     
 def getStationIndices(grdSODA,st_lon,st_lat):
@@ -174,24 +174,22 @@ def getStationIndices(grdSODA,st_lon,st_lat):
 
 
 
-def writeStation(t,s,uvel,vvel,ssh,ntime,depth,lat,lon,outfilename):
+def writeStationNETCDF4(t,s,uvel,vvel,ssh,ntime,depth,lat,lon,outfilename):
        
     if os.path.exists(outfilename):
         os.remove(outfilename)
     print 'Writing first results to file %s'%(outfilename)
     
-    f1 = Dataset(outfilename, mode='w', format='NETCDF3_CLASSIC')
     f1 = Dataset(outfilename, mode='w', format='NETCDF4')
     f1.description="This is a station (lat=%3.2f,lon=%3.2f) file from SODA data"%(lat,lon)
     f1.history = 'Created ' + time.ctime(time.time())
     f1.source = 'Trond Kristiansen (trond.kristiansen@imr.no)'
     f1.type='NetCDF4 time-depth file created using SODA2ROMS' 
        
-    # Define dimensions
     f1.createDimension('time', len(ntime))
     f1.createDimension('z', len(depth))
      
-    v=f1.createVariable('lon','d',zlib=True)
+    v=f1.createVariable('lon','d')
     v.long_name = "Longitude position of station" ;
     v.units = "Longitude"
     v[:]=lon
@@ -242,4 +240,69 @@ def writeStation(t,s,uvel,vvel,ssh,ntime,depth,lat,lon,outfilename):
     f1.close()
 
 
+def writeStationNETCDF3(t,s,uvel,vvel,ssh,ntime,depth,lat,lon,outfilename):
+       
+    if os.path.exists(outfilename):
+        os.remove(outfilename)
+    print 'Writing first results to file %s'%(outfilename)
+    
+    f1 = Dataset(outfilename, mode='w', format='NETCDF3_CLASSIC')
+    f1.description="This is a station (lat=%3.2f,lon=%3.2f) file from SODA data"%(lat,lon)
+    f1.history = 'Created ' + time.ctime(time.time())
+    f1.source = 'Trond Kristiansen (trond.kristiansen@imr.no)'
+    f1.type='NetCDF3 time-depth file created using SODA2ROMS' 
+       
+    # Define dimensions
+    f1.createDimension('time', len(ntime))
+    f1.createDimension('z', len(depth))
+     
+    v=f1.createVariable('lon','d')
+    v.long_name = "Longitude position of station" ;
+    v.units = "Longitude"
+    v[:]=lon
+    
+    v=f1.createVariable('lat','d')
+    v.long_name = "Latitude position of station" ;
+    v.units = "Latitude"
+    v[:]=lat
+    
+    v=f1.createVariable('depth','d',('z',))
+    v.long_name = "Z-depth matrix" ;
+    v.units = "meter"
+    v[:]=depth
+     
+    v_time = f1.createVariable('time', 'd', ('time',))
+    v_time.long_name = 'Days since 1948-01-01 00:00:00'
+    v_time.units = 'days'
+    v_time.field = 'time, scalar, series'
+    v_time.calendar='standard'
+    v_time[:] = ntime
+    
+    v_temp=f1.createVariable('temp', 'f', ('time','z'))
+    v_temp.long_name = "Ocean temperature"
+    v_temp.units = "degrees Celsius"
+    v_temp[:,:] = t
+    
+    v_salt=f1.createVariable('salt', 'f', ('time','z'))
+    v_salt.long_name = "Ocean salinity"
+    v_salt.units = "psu"
+    v_salt[:,:]=s
+    
+    v_ssh=f1.createVariable('zeta','d',('time',))
+    v_ssh.long_name = "Sea surface height (SSH)"
+    v_ssh.units = "m"
+    v_ssh[:] = ssh
+    
+    v_u=f1.createVariable('u', 'f', ('time','z'))
+    v_u.long_name = "U-velocity, scalar, series"
+    v_u.units = "m/s"
+    v_u[:,:] = uvel
+    
+    v_v=f1.createVariable('v', 'f', ('time','z'))
+    v_v.long_name = "V-velocity, scalar, series"
+    v_v.units = "m/s"
+    v_v[:,:] = vvel
+ 
+    
+    f1.close()
 
