@@ -19,6 +19,31 @@ __modified__ = datetime.datetime(2009, 1, 22)
 __version__  = "1.0"
 __status__   = "Development"
 
+def getAverage(latindex,lonindex,index):
+    """The input file for this routine is created by making an average of all the SODA files from 1961-1990.
+    This is done using the script soda2average/average_soda.py"""
+    
+    averageFile='../soda2average/average_SODA_1961-1990.nc'
+    if os.path.exists(averageFile):
+        print 'Average file %s exists so anomaly values of salt, '%(averageFile)
+        print 'temp, u, and v will be written to file'
+        ave = Dataset(averageFile,'r')
+        average=True
+        aveTemp=np.zeros((index),np.float64)
+        aveSalt=np.zeros((index),np.float64)
+        aveUvel=np.zeros((index),np.float64)
+        aveVvel=np.zeros((index),np.float64)
+       
+        aveTemp[:] = np.array(ave.variables["temp"][:,latindex,lonindex])
+        aveSalt[:] = np.array(ave.variables["salt"][:,latindex,lonindex])
+        aveUvel[:] = np.array(ave.variables["uvel"][:,latindex,lonindex])
+        aveVvel[:] = np.array(ave.variables["vvel"][:,latindex,lonindex])
+        ave.close()
+    else:
+        average=False
+        aveTemp=None; aveSalt=None; aveUvel=None; aveVvel=None
+        
+    return aveTemp,aveSalt,aveUvel,aveVvel, average
 
 def getStationTime(grdSODA,year,ID):
     """
@@ -114,11 +139,13 @@ def getStationData(years,IDS,outfilename,sodapath,latlist,lonlist):
                 time+=1
          
         print 'Total time steps saved to file %s for station %s'%(time,station)
-        plotStation.contourData(stTemp,stTime,stDate,grdSODA.depth)
+        #plotStation.contourData(stTemp,stTime,stDate,grdSODA.depth)
+        
+        aveTemp,aveSalt,aveUvel,aveVvel,average = getAverage(lonindex,latindex,len(grdSODA.depth))
         
         outfilename='Station_st%i_%s_to_%s.nc'%(station+1,years[0],years[-1])
         print 'Results saved to file %s'%(outfilename)
-        writeStationNETCDF3(stTemp,stSalt,stUvel,stVvel,stSSH,stTime,grdSODA.depth,lat,lon,outfilename)
+        writeStationNETCDF4(stTemp,stSalt,stUvel,stVvel,stSSH,stTime,grdSODA.depth,lat,lon,outfilename,average,aveTemp,aveSalt,aveUvel,aveVvel)
         station+=1
     
 def getStationIndices(grdSODA,st_lon,st_lat):
@@ -174,7 +201,7 @@ def getStationIndices(grdSODA,st_lon,st_lat):
 
 
 
-def writeStationNETCDF4(t,s,uvel,vvel,ssh,ntime,depth,lat,lon,outfilename):
+def writeStationNETCDF4(t,s,uvel,vvel,ssh,ntime,depth,lat,lon,outfilename,average,aveTemp,aveSalt,aveUvel,aveVvel):
        
     if os.path.exists(outfilename):
         os.remove(outfilename)
@@ -236,7 +263,35 @@ def writeStationNETCDF4(t,s,uvel,vvel,ssh,ntime,depth,lat,lon,outfilename):
     v_v.units = "m/s"
     v_v[:,:] = vvel
  
+    if average==True:
+        v_anom=f1.createVariable('tempAnomaly', 'f', ('time','z'), zlib=True)
+        v_anom.long_name = "Ocean temperature anomaly"
+        v_anom.units = "degrees Celsius"
+
+        for k in range(len(t[:,1])):
+             v_anom[k,:] = t[k,:] - aveTemp[:]
+       
+        v_anom=f1.createVariable('saltAnomaly', 'f', ('time','z'), zlib=True)
+        v_anom.long_name = "Ocean salinity anomaly"
+        v_anom.units = "psu"
+
+        for k in range(len(s[:,1])):
+             v_anom[k,:] = s[k,:] - aveSalt[:]
     
+        v_anom=f1.createVariable('uAnomaly', 'f', ('time','z'), zlib=True)
+        v_anom.long_name = "Ocean u anomaly"
+        v_anom.units = "m/s"
+
+        for k in range(len(s[:,1])):
+             v_anom[k,:] = uvel- aveUvel[:]
+    
+        v_anom=f1.createVariable('vAnomaly', 'f', ('time','z'), zlib=True)
+        v_anom.long_name = "Ocean v anomaly"
+        v_anom.units = "m/s"
+
+        for k in range(len(s[:,1])):
+             v_anom[k,:] = vvel- aveVvel[:]
+             
     f1.close()
 
 
