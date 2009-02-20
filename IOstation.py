@@ -10,6 +10,7 @@ from netCDF4 import num2date
 import time
 import os
 import plotStation
+import Nio
 
 __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
@@ -28,16 +29,17 @@ def getAverage(latindex,lonindex,index):
         print 'Average file %s exists so anomaly values of salt, '%(averageFile)
         print 'temp, u, and v will be written to file'
         ave = Dataset(averageFile,'r')
+        
         average=True
         aveTemp=np.zeros((index),np.float64)
         aveSalt=np.zeros((index),np.float64)
         aveUvel=np.zeros((index),np.float64)
         aveVvel=np.zeros((index),np.float64)
-       
-        aveTemp[:] = np.array(ave.variables["temp"][:,latindex,lonindex])
-        aveSalt[:] = np.array(ave.variables["salt"][:,latindex,lonindex])
-        aveUvel[:] = np.array(ave.variables["uvel"][:,latindex,lonindex])
-        aveVvel[:] = np.array(ave.variables["vvel"][:,latindex,lonindex])
+    
+        aveTemp[:] = ave.variables["temp"][:,latindex,lonindex]
+        aveSalt[:] = ave.variables["salt"][:,latindex,lonindex]
+        aveUvel[:] = ave.variables["uvel"][:,latindex,lonindex]
+        aveVvel[:] = ave.variables["vvel"][:,latindex,lonindex]
         ave.close()
     else:
         average=False
@@ -124,15 +126,15 @@ def getStationData(years,IDS,outfilename,sodapath,latlist,lonlist):
                 stTime.append(jdsoda)
                 stDate.append(yyyymmdd)
                 
-                cdf = Dataset(filename)
+                cdf = Dataset(filename,'r',format='NETCDF3')
 
                 """Each SODA file consist only of one time step. Get the subset data selected, and
                 store that time step in a new array:"""
-                stTemp[time,:] = np.array(cdf.variables["TEMP"][0,:,latindex,lonindex])
-                stSalt[time,:] = np.array(cdf.variables["SALT"][0,:,latindex,lonindex])
-                stSSH[time]    = np.array(cdf.variables["SSH"][0,latindex,lonindex])
-                stUvel[time,:] = np.array(cdf.variables["U"][0,:,latindex,lonindex])
-                stVvel[time,:] = np.array(cdf.variables["V"][0,:,latindex,lonindex])
+                stTemp[time,:] = cdf.variables["TEMP"][0,:,latindex:latindex:1,lonindex:lonindex:1]
+                stSalt[time,:] = cdf.variables["SALT"][0,:,latindex,lonindex]
+                stSSH[time]    = cdf.variables["SSH"][0,latindex,lonindex]
+                stUvel[time,:] = cdf.variables["U"][0,:,latindex,lonindex]
+                stVvel[time,:] = cdf.variables["V"][0,:,latindex,lonindex]
                 
                 cdf.close()
                     
@@ -141,7 +143,7 @@ def getStationData(years,IDS,outfilename,sodapath,latlist,lonlist):
         print 'Total time steps saved to file %s for station %s'%(time,station)
         #plotStation.contourData(stTemp,stTime,stDate,grdSODA.depth)
         
-        aveTemp,aveSalt,aveUvel,aveVvel,average = getAverage(lonindex,latindex,len(grdSODA.depth))
+        aveTemp,aveSalt,aveUvel,aveVvel,average = getAverage(latindex,lonindex,len(grdSODA.depth))
         
         outfilename='Station_st%i_%s_to_%s.nc'%(station+1,years[0],years[-1])
         print 'Results saved to file %s'%(outfilename)
@@ -283,14 +285,15 @@ def writeStationNETCDF4(t,s,uvel,vvel,ssh,ntime,depth,lat,lon,outfilename,averag
         v_anom.units = "m/s"
 
         for k in range(len(s[:,1])):
-             v_anom[k,:] = uvel- aveUvel[:]
-    
+             v_anom[k,:] = uvel[k,:]- aveUvel[:]
+     
+     
         v_anom=f1.createVariable('vAnomaly', 'f', ('time','z'), zlib=True)
         v_anom.long_name = "Ocean v anomaly"
         v_anom.units = "m/s"
 
         for k in range(len(s[:,1])):
-             v_anom[k,:] = vvel- aveVvel[:]
+             v_anom[k,:] = vvel[k,:]- aveVvel[:]
              
     f1.close()
 
