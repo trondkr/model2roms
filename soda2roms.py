@@ -19,12 +19,13 @@ import time
 import date
 import geoProjection
 import grd
+import clim2bry
 
 __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
 __created__  = datetime(2008, 8, 15)
 __modified__ = datetime(2008, 8, 19)
-__modified__ = datetime(2009, 1, 20)
+__modified__ = datetime(2009, 3, 4)
 __version__  = "1.2"
 __status__   = "Development"
 
@@ -226,7 +227,7 @@ def convertSODA2ROMS(years,IDS,outfilename,sodapath,romsgridpath):
             new grid for all variables and then finally write results to file.
             """
             vars=['temperature','salinity','ssh','velocity']
-            vars=['velocity'] 
+            #vars=['velocity'] 
             for var in vars:
                 grdSODA.t=vvel
                 print 'Start horizontal interpolation for %s'%(var)
@@ -255,9 +256,6 @@ def convertSODA2ROMS(years,IDS,outfilename,sodapath,romsgridpath):
                                                             int(grdROMS.xi_rho),
                                                             int(grdROMS.eta_rho),
                                                             int(grdSODA.Nlevels))
-                    
-                    #grdROMS.u=  grdROMS.u*(np.cos(grdROMS.angle))-grdROMS.v*(np.sin(grdROMS.angle))
-                    #grdROMS.v=  grdROMS.u*(np.sin(grdROMS.angle))+grdROMS.v*(np.cos(grdROMS.angle))
                    
                     Zu=np.zeros((int(grdSODA.Nlevels),int(grdROMS.eta_u),int(grdROMS.xi_u)), np.float64)
                     Zv=np.zeros((int(grdSODA.Nlevels),int(grdROMS.eta_v),int(grdROMS.xi_v)), np.float64)
@@ -338,15 +336,16 @@ def convertSODA2ROMS(years,IDS,outfilename,sodapath,romsgridpath):
                                                                    int(grdROMS.xi_rho),
                                                                    int(grdROMS.eta_rho))
                 if var=='temperature':
-                    grdROMS.t2[:,:,:]=outdata*grdROMS.mask_rho
+                    grdROMS.t2[:,:,:]=outdata #*grdROMS.mask_rho
                 if var=='salinity':
-                    grdROMS.s2[:,:,:]=outdata*grdROMS.mask_rho
+                    grdROMS.s2[:,:,:]=outdata #*grdROMS.mask_rho
                 
                 if var=='velocity':
                     
-                    grdROMS.u3[:,:,:]= outdataU*grdROMS.mask_u
-                    grdROMS.v3[:,:,:]= outdataV*grdROMS.mask_v 
+                    grdROMS.u3[:,:,:]= outdataU #*grdROMS.mask_u
+                    grdROMS.v3[:,:,:]= outdataV #*grdROMS.mask_v 
             
             IOwrite.write_results(grdROMS,time,outfilename)
-            time+=1  
-        
+            time+=1
+            
+    

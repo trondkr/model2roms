@@ -164,6 +164,17 @@ def write_results(grdROMS,ntime,outfilename):
         v_v.long_name = "V-velocity, scalar, series"
         v_v.units = "m/s"
         v_v.FillValue = grdROMS.fill_value
+        
+        v_vbar=f1.createVariable('vbar', 'f', ('time', 'eta_v','xi_v'),zlib=True)
+        v_vbar.long_name = "Barotropic V-velocity, scalar, series"
+        v_vbar.units = "m/s"
+        v_vbar.FillValue = grdROMS.fill_value
+     
+        v_ubar=f1.createVariable('ubar', 'f', ('time', 'eta_u', 'xi_u'),zlib=True)
+        v_ubar.long_name = "Barotropic U-velocity, scalar, series"
+        v_ubar.units = "m/s"
+        v_ubar.FillValue = grdROMS.fill_value
+        
      else:
         f1 = Dataset(outfilename, mode='a', format='NETCDF4', zlib=True)
         
@@ -172,11 +183,13 @@ def write_results(grdROMS,ntime,outfilename):
      print 'Appending data to file %s for time %s'%(outfilename,d)
         
      f1.variables['clim_time'][ntime]  = grdROMS.time
-     f1.variables['temp'][ntime:,:,:]  = grdROMS.t2
+     f1.variables['temp'][ntime,:,:,:]  = grdROMS.t2
      f1.variables['salt'][ntime,:,:,:] = grdROMS.s2
      f1.variables['zeta'][ntime,:,:]    = grdROMS.ssh
      f1.variables['u'][ntime,:,:,:]    = grdROMS.u3
      f1.variables['v'][ntime,:,:,:]    = grdROMS.v3
+     f1.variables['ubar'][ntime,:,:]    = np.sum(grdROMS.u3, axis=0) 
+     f1.variables['vbar'][ntime,:,:]    = np.sum(grdROMS.v3, axis=0)
      
      f1.close()
 

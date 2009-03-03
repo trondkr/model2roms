@@ -1,8 +1,8 @@
-from netCDF4 import Dataset
-from netCDF4 import num2date
-import numpy as np
 import time
-import os
+from datetime import datetime, timedelta
+import os, sys, string
+from netCDF4 import Dataset
+import numpy as np
 
 __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
@@ -41,7 +41,7 @@ def createBryFile(grdROMS,outfilename):
      f1.createDimension('eta_v',   grdROMS.eta_v)
      f1.createDimension('xi_psi',    grdROMS.xi_psi)
      f1.createDimension('eta_psi',   grdROMS.eta_psi)
-     f1.createDimension('time', None)
+     f1.createDimension('bry_time', None)
      f1.createDimension('s_rho', len(grdROMS.s_rho))
      f1.createDimension('s_w', len(grdROMS.s_w))
 
@@ -146,7 +146,7 @@ def createBryFile(grdROMS,outfilename):
      vnc[:,:]=grdROMS.mask_v
      
      
-     v_time = f1.createVariable('bry_time', 'd', ('time',),zlib=True)
+     v_time = f1.createVariable('bry_time', 'd', ('bry_time',),zlib=True)
      v_time.long_name = 'Days since 1948-01-01 00:00:00'
      v_time.units = 'days'
      v_time.field = 'time, scalar, series'
@@ -156,7 +156,7 @@ def createBryFile(grdROMS,outfilename):
      v_temp_west.long_name = "Ocean temperature at Western boundary"
      v_temp_west.units = "degrees Celsius"
      v_temp_west.FillValue = grdROMS.fill_value
-     v_temp_east.time = "bry_time"
+     v_temp_west.time = "bry_time"
      
      v_temp_east=f1.createVariable('temp_east', 'f', ('bry_time', 's_rho', 'eta_rho'),zlib=True)
      v_temp_east.long_name = "Ocean temperature at Eastern boundary"
@@ -300,30 +300,29 @@ def createBryFile(grdROMS,outfilename):
      v_vbar_north.FillValue = grdROMS.fill_value
      v_vbar_north.time = "bry_time"
      
-     v_ubar_west=f1.createVariable('ubar_west', 'f', ('bry_time', 'eta_v'),zlib=True)
+     v_ubar_west=f1.createVariable('ubar_west', 'f', ('bry_time', 'eta_u'),zlib=True)
      v_ubar_west.long_name = "Barotropic U-velocity at Western boundary, scalar, series"
      v_ubar_west.units = "m/s"
      v_ubar_west.FillValue = grdROMS.fill_value
      v_ubar_west.time = "bry_time"
      
-     v_ubar_east=f1.createVariable('ubar_east', 'f', ('bry_time', 'eta_v'),zlib=True)
+     v_ubar_east=f1.createVariable('ubar_east', 'f', ('bry_time', 'eta_u'),zlib=True)
      v_ubar_east.long_name = "Barotropic U-velocity at Eastern boundary, scalar, series"
      v_ubar_east.units = "m/s"
      v_ubar_east.FillValue = grdROMS.fill_value
      v_ubar_east.time = "bry_time"
      
-     v_ubar_south=f1.createVariable('ubar_south', 'f', ('bry_time', 'xi_v'),zlib=True)
+     v_ubar_south=f1.createVariable('ubar_south', 'f', ('bry_time', 'xi_u'),zlib=True)
      v_ubar_south.long_name = "Barotropic U-velocity at Southern boundary, scalar, series"
      v_ubar_south.units = "m/s"
      v_ubar_south.FillValue = grdROMS.fill_value
      v_ubar_south.time = "bry_time"
      
-     v_ubar_north=f1.createVariable('ubar_north', 'f', ('bry_time', 'xi_v'),zlib=True)
+     v_ubar_north=f1.createVariable('ubar_north', 'f', ('bry_time', 'xi_u'),zlib=True)
      v_ubar_north.long_name = "Barotropic U-velocity at Northern boundary, scalar, series"
      v_ubar_north.units = "m/s"
      v_ubar_north.FillValue = grdROMS.fill_value
      v_ubar_north.time = "bry_time"
-     
      
      f1.close()
 
