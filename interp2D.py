@@ -26,7 +26,7 @@ def doHorInterpolation(var,grdROMS,grdSODA,data,map):
     Xg, Yg = np.meshgrid(np.arange(Lp), np.arange(Mp))
     
     for k in xrange(grdSODA.Nlevels):
-        print 'Interpolation level %s'%(k)
+       # print 'Interpolation level %s'%(k)
         xlist = []
         ylist = []
         zlist = []
