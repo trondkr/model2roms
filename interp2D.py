@@ -1,9 +1,9 @@
 
 import numpy as np
-import os, sys, string, datetime
+import datetime
 from griddata import griddata
-from netCDF4 import Dataset
 import plotData
+import mpl_toolkits.basemap as mp
 
 __author__   = 'Trond Kristiansen and Bjorn Aadlandsvik'
 __email__    = 'trond.kristiansen@imr.no'
@@ -12,9 +12,7 @@ __modified__ = datetime.datetime(2008, 12, 18)
 __version__  = "1.1"
 __status__   = "Development"
 
-                        
-                      
-def doHorInterpolation(var,grdROMS,grdSODA,data,map):
+def doHorInterpolationIrregularGrid(var,grdROMS,grdSODA,data,map):
     
     Lp=grdROMS.xi_rho
     Mp=grdROMS.eta_rho
@@ -63,9 +61,82 @@ def doHorInterpolation(var,grdROMS,grdSODA,data,map):
             grdROMS.v[k,:,:]=Zg
            
         #plotData.contourMap(grdROMS,grdSODA,Zg,k,var)
+                  
+                      
+def doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data,map):
+    
+    Lp=grdROMS.xi_rho
+    Mp=grdROMS.eta_rho
+
+    tx, ty = map.ll2grid(grdSODA.lon, grdSODA.lat)
+
+    Xg, Yg = np.meshgrid(np.arange(Lp), np.arange(Mp))
    
-                     
-def doHorInterpolationSSH(var,grdROMS,grdSODA,data,map):
+    xin=tx[:,0]
+    xin=np.flipud(xin)
+    yin=ty[0,:]
+    
+    map = mp.Basemap(llcrnrlon=-80,llcrnrlat=31.5,urcrnrlon=-55,urcrnrlat=45,
+            resolution='h',projection='tmerc',lon_0=-65,lat_0=40)
+    
+    xin, yin   = map(grdSODA.lon,grdSODA.lat)
+    xout, yout = map(grdROMS.lon_rho,grdROMS.lat_rho)
+    
+    xin=xin[0,:]
+    yin=yin[:,0]
+   
+    for k in xrange(grdSODA.Nlevels):
+        #print 'interpolating field %s at depth %s'%(var,k)
+        datain=np.squeeze(data[k,:,:]) 
+        #datain = np.ma.masked_values(datain,grdROMS.fill_value)
+        
+        Zg = mp.interp(datain, xin, yin, xout, yout, checkbounds=False, masked=False, order=1)
+      
+        if var=='temperature':    
+            grdROMS.t[k,:,:]=Zg
+        elif var=='salinity':
+            grdROMS.s[k,:,:]=Zg
+        elif var=='uvel':
+            grdROMS.u[k,:,:]=Zg
+        elif var=='vvel':
+            grdROMS.v[k,:,:]=Zg
+       
+        #plotData.contourMap(grdROMS,grdSODA,Zg,k,var)
+   
+
+def doHorInterpolationSSHRegularGrid(var,grdROMS,grdSODA,data,map):
+    
+    Lp=grdROMS.xi_rho
+    Mp=grdROMS.eta_rho
+
+    tx, ty = map.ll2grid(grdSODA.lon, grdSODA.lat)
+
+    Xg, Yg = np.meshgrid(np.arange(Lp), np.arange(Mp))
+   
+    xin=tx[:,0]
+    xin=np.flipud(xin)
+    yin=ty[0,:]
+    
+    map = mp.Basemap(llcrnrlon=-80,llcrnrlat=31.5,urcrnrlon=-55,urcrnrlat=45,
+            resolution='h',projection='tmerc',lon_0=-65,lat_0=40)
+    
+    xin, yin   = map(grdSODA.lon,grdSODA.lat)
+    xout, yout = map(grdROMS.lon_rho,grdROMS.lat_rho)
+    
+    xin=xin[0,:]
+    yin=yin[:,0]
+   
+    
+    print 'interpolating field %s at surface'%(var)
+    datain=data[:,:] 
+    datain = np.ma.masked_values(datain,grdROMS.fill_value)
+    
+    Zg = mp.interp(datain, xin, yin, xout, yout, checkbounds=False, masked=True, order=1)
+  
+    grdROMS.ssh[:,:]=Zg
+    #plotData.contourMap(grdROMS,grdSODA,Zg,k,var)
+        
+def doHorInterpolationSSHIrregularGrid(var,grdROMS,grdSODA,data,map):
     
     Lp=grdROMS.xi_rho
     Mp=grdROMS.eta_rho
