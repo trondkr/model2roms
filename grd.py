@@ -16,7 +16,7 @@ import printObject
 __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
 __created__  = datetime(2008, 12, 9)
-__modified__ = datetime(2009, 1, 20)
+__modified__ = datetime(2009, 3, 10)
 __version__  = "1.1"
 __status__   = "Development"
 
@@ -35,18 +35,7 @@ class grdClass:
         self.createObject()
         self._getDims()
         
-        print '\n---> Generating GRD object for grid type %s'%(self.type)
-        
-        if self.type=="ROMS":
-            self.Nlevels=30
-            self.theta_s=5.0
-            self.theta_b=0.9
-            self.Tcline=50.0
-            self.hc=10.0
-            self.ocean_time=1
-            # Number of tracers
-            self.NT=2
-            self.tracer=self.NT
+        print '\n---> Generated GRD object for grid type %s'%(self.type)
     
   
     def openNetCDF(self):
@@ -58,8 +47,6 @@ class grdClass:
         except IOError:
             print 'Could not open file %s'%(self.grdfilename)
             print 'Exception caught in: openNetCDF(grdfilename)'
-      
-        print '\n---> Opened input file %s'%(self.grdfilename)
         
   
     def createObject(self):
@@ -67,6 +54,8 @@ class grdClass:
         This method creates a new object by reading the grd input file
         """
         if self.type=='SODA':
+            self.grdType  = 'regular'
+            print '\n---> Assuming %s grid type for %s'%(self.grdType,self.type)
             self.lon = self.cdf.variables["LON"][:]
             self.lat = self.cdf.variables["LAT"][:]
             self.depth = self.cdf.variables["DEPTH"][:]
@@ -75,11 +64,23 @@ class grdClass:
             
             if np.rank(self.lon)==1:
                     self.lon, self.lat = np.meshgrid(self.lon,self.lat)
-           
+                    
+            IOverticalGrid.get_z_levels(self)
             
         if self.type=='ROMS':
+            
+            self.Nlevels=30
+            self.theta_s=5.0
+            self.theta_b=0.9
+            self.Tcline=50.0
+            self.hc=10.0
+            self.ocean_time=1
+            self.NT=2
+            self.tracer=self.NT
+            
             self.time     = 0
             self.reftime  = 0
+            self.grdType  = 'regular'
             self.lon_rho  = self.cdf.variables["lon_rho"][:]
             self.lat_rho  = self.cdf.variables["lat_rho"][:]
             self.depth    = self.cdf.variables["h"][:,:]
@@ -125,8 +126,11 @@ class grdClass:
                     self.lon_rho, self.lat_rho = np.meshgrid(self.lon_rho,self.lat_rho)
                     self.lon_u, self.lat_u = np.meshgrid(self.lon_u,self.lat_u)
                     self.lon_v, self.lat_v = np.meshgrid(self.lon_v,self.lat_v)
-    
- 
+                    
+            IOverticalGrid.calculate_z_r(self)
+            IOverticalGrid.calculate_z_w(self)
+        
+        
     def _getDims(self):
         if self.type=="ROMS":
             self.Lp=len(self.lat_rho[1,:])

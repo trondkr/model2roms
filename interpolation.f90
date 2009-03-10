@@ -4,7 +4,7 @@ Module interpolation
                 
         contains
   
-            subroutine doVertInter(dat,bathymetry,outdat,zr,zs,Nroms,Nsoda,II,JJ,xi_rho,eta_rho)
+            subroutine doVertInter(outdat,dat,bathymetry,zr,zs,Nroms,Nsoda,II,JJ,xi_rho,eta_rho)
             
             ! ----------------------------------
             ! Program : doVertInter
@@ -22,13 +22,15 @@ Module interpolation
             ! to accomodate that the output values are stored according to the ROMS structure. Highest index (N+1) equals surface,
             ! while lowest index equals bottom (index=1)(see how outdat(Nroms-kc+1,jc,ic) is used opposite of the loop over kc).
             !
-            ! Trond Kristiansen, December 2008, and January 2009
+            ! Trond Kristiansen, December 2008, January, and March 2009
             ! Rutgers University, NJ.
             ! -------------------------------------------------------------------------------------------------------
             !
             ! USAGE: Compile this routine using Intel Fortran compiler and create
             ! a python module using the command:
             ! f2py --verbose --fcompiler=intel -c -m interpolation interpolation.f90
+            ! or
+            ! f2py --verbose -DF2PY_REPORT_ON_ARRAY_COPY=1 --fcompiler=intel -c -m interpolation interpolation.f90
             !
             ! The resulting module is imported to python using:
             ! import vertInterp as interp2D
@@ -45,47 +47,84 @@ Module interpolation
             !        II is the total grid points in xi direction
             ! -------------------------------------------------------------------------------------------------------
             
-            double precision rz2, rz1
-            integer eta_rho, xi_rho, II, JJ, ic, jc, kc, kT, Nsoda, Nroms
+            double precision rz2, rz1, fill
+            integer eta_rho, xi_rho, II, JJ, ic, jc, kc, kT, kkT, Nsoda, Nroms, ff
             double precision, dimension(Nsoda,JJ,II) :: dat
             double precision, dimension(eta_rho,xi_rho) :: bathymetry
             double precision, dimension(Nroms,JJ,II) :: outdat
             double precision, dimension(Nsoda) ::  zs
             double precision, dimension(Nroms,eta_rho,xi_rho) :: zr
-       
-!f2py intent(in) dat, bathymetry, zr, zs, Nroms, Nsoda, JJ, II, xi_rho, eta_rho
-!f2py intent(in,out) outdat
-!f2py intent(hide) ic,jc,kc,kT,rz1,rz2
-            
+
+!f2py intent(in,out,overwrite) outdat       
+!f2py intent(in,overwrite) dat, bathymetry, zr, zs
+!f2py intent(in,overwrite) Nroms, Nsoda, JJ, II, xi_rho, eta_rho
+!f2py intent(hide) ic,jc,kc,kT,rz1,rz2, kkT, ff
+            fill=-10000
+           
             do jc=1,JJ
               do ic=1,II
                   do kc=1,Nroms
                       
-                      ! CASE 1: ROMS deeper than SODA
+                      ! CASE 1: ROMS deeper than SODA. This part searches for deepest good value if ROMS depth is deeper
+                      ! than SODA. This means that if no value, or only fill_value, is available from SODA where ROMS is
+                      ! deepest, the closest value from SODA is found by looping upward in the water column.
                       IF (zr(kc,jc,ic) .LT. zs(Nsoda)) THEN
                           outdat(Nroms-kc+1,jc,ic)=dat(Nsoda,jc,ic)
+                          if (MAXVAL(dat(:,jc,ic)) .GT. fill) then
+                            if (dat(Nsoda,jc,ic) .LT. fill) then
+                              !print*,'Inside dovert and finding deepest depth with good values. current',dat(Nsoda,jc,ic)
+                              DO kT=1,Nsoda
+                                if (dat(Nsoda-kT,jc,ic) .GT. fill) then
+                                    !print*,'working on depth',kT,'with value',dat(kT,jc,ic)
+                                    outdat(Nroms-kc+1,jc,ic)=dat(Nsoda-kT,jc,ic)
+                                    !print*,'Able to find good value at depth ', Nsoda-kT
+                                    exit
+                                end if
+                              end do
+                             end if
+                            end if
                           !print*,zr(kc,jc,ic),zs(Nsoda),dat(Nsoda,jc,ic),jc,ic,'case 1'
-                          
+                    
                       ! CASE 2: ROMS shallower than SODA
                       ELSE IF (zr(kc,jc,ic) .GT. zs(1)) THEN
                           outdat(Nroms-kc+1,jc,ic)=dat(1,jc,ic)
-                       
-                          !print*,zr(kc,jc,ic),zs(1),dat(1,jc,ic),jc,ic,'case 2'
                      
-                      ! Do linear interpolation
                       ELSE
+                          ! DO LOOP BETWEEN SURFACE AND BOTTOM
                           DO kT=1,Nsoda
                               ! CASE 3: ROMS deeper than SODA for one layer, but shallower than next SODA layer (bottom in between)
                               ! Deeper than some SODA depth layer, but shallower than next layer which is below bottom
                               IF (zr(kc,jc,ic) .LE. zs(kT) .AND.               &
                                 -(bathymetry(jc,ic)) .GT. zs(kT+1)) THEN
                                 outdat(Nroms-kc+1,jc,ic)=dat(kT,jc,ic)
-                                !print*,zr(kc,jc,ic),zs(kT),dat(kT,jc,ic),jc,ic,'case 3'
                                 
-                              ! CASE 4: ROMS layer in between two SODA layers
-                              ELSE IF ( (zr(kc,jc,ic) .LT. zs(kT)) .AND.       &
+                                ! We do not want to give the deepest depth a fill_value, so we find
+                                ! the closest value to deepest depth.
+                                if (MAXVAL(dat(:,jc,ic)) .GT. fill) then
+                               
+                                    if (dat(kT,jc,ic) .LE. fill) then
+                                       !print*,'case3:Need to find better value for depth ',kT,'which has value ',dat(kT,jc,ic)
+                                        DO kkT=1,Nsoda
+                                            if (dat(kT-kkT,jc,ic) .GT. fill) then
+                                                ! print*,'CASE 3: Found good value at depth',kT,'with value',dat(kT-kkT,jc,ic), 'at depth',kt-kkT
+                                                 outdat(Nroms-kc+1,jc,ic)=dat(kT-kkT,jc,ic)
+                            
+                                                exit
+                                            end if
+                                        end do
+                                    end if
+                                end if
+                                
+                                ! CASE 4: Special case where ROMS layers are much deeper than in SODA
+                                ELSE IF (zr(kc,jc,ic) .LE. zs(kT) .AND. dat(kT,jc,ic) .GT. fill .AND. dat(kT+1,jc,ic) .LE. fill) THEN
+                                outdat(Nroms-kc+1,jc,ic)=dat(kT,jc,ic)
+                              
+                              
+                              ! CASE 5: ROMS layer in between two SODA layers
+                              ! This is the typical case for most layers
+                              ELSE IF ( (zr(kc,jc,ic) .LE. zs(kT)) .AND.       &
                               (zr(kc,jc,ic) .GE. zs(kT+1)) .AND.               &
-                              (-bathymetry(jc,ic) .LT. zs(kT+1)) ) THEN
+                              (-bathymetry(jc,ic) .LE. zs(kT+1)) ) THEN
                               
                                  rz2 = abs((zr(kc,jc,ic)-zs(kT+1))/            &
                                  (abs(zs(kT+1))-abs(zs(kT))))
@@ -95,19 +134,39 @@ Module interpolation
                                  outdat(Nroms-kc+1,jc,ic) = (rz1*dat(kT+1,jc,ic) &
                                  + rz2*dat(kT,jc,ic))
                                 
-                                 exit 
-                              end if
-                          end do
-                      end if
-           
+                                if (MAXVAL(dat(:,jc,ic)) .GT. fill) then
+                               
+                                    if (dat(kT,jc,ic) .LE. fill .OR. dat(kT+1,jc,ic) .LE. fill) then
+                                       !print*,'case4:Need to find better value for depth ',kT,kT+1,'which has values ',dat(kT,jc,ic),dat(kT+1,jc,ic)
+                                        DO kkT=1,Nsoda
+                                            if (dat(kT-kkT,jc,ic) .GT. fill .and. dat(kT-kkT+1,jc,ic) .GT. fill  ) then
+                                                 !print*,'CASE 4: Found good value at depth',kT-kkT,kt-kkT+1
+                                                 !print*,'with values',dat(kT-kkT,jc,ic), dat(kt-kkT+1,jc,ic)
+                                                 outdat(Nroms-kc+1,jc,ic) = (rz1*dat(kT+1-kkT,jc,ic) &
+                                                 + rz2*dat(kT-kkT,jc,ic))
+                            
+                                                exit
+                                            end if
+                                        END DO
+                                    end if
+                                 end if
+                                
+                                 exit
+                                 
+                              END IF
+                          ! DO LOOP BETWEEN SURFACE AND BOTTOM: CASE 3,4,5
+                          END DO
+                      ! TEST ALL CASES IF LOOP: CASE 1,2,3,4,5
+                      END IF
+                     
                   end do
               end do
             end do
-        
+            
         
       end subroutine doVertInter
       
-      subroutine rho2u(rhodata,udata,II,JJ,KK)
+      subroutine rho2u(udata,rhodata,II,JJ,KK)
        
             ! ----------------------------------
             ! Program : rho2u
@@ -124,9 +183,10 @@ Module interpolation
             double precision, dimension(KK,JJ,II) :: rhodata
             double precision, dimension(KK,JJ,II-1) :: udata
        
-!f2py intent(in) rhodata, KK, JJ, II
 !f2py intent(in,out) udata
+!f2py intent(in) rhodata, KK, JJ, II
 !f2py intent(hide) ic,jc,kc
+
             print*,'---> Started horisontal rho2u interpolation'
             do kc=1,KK
                 do jc=1,JJ
@@ -142,9 +202,10 @@ Module interpolation
                     end do
                 end do
             end do
+            print*,'-----> Ended horisontal rho2u interpolation'
         end subroutine rho2u
             
-      subroutine rho2v(rhodata,vdata,II,JJ,KK)
+      subroutine rho2v(vdata,rhodata,II,JJ,KK)
        
             ! ----------------------------------
             ! Program : rho2v
@@ -163,6 +224,7 @@ Module interpolation
 !f2py intent(in) rhodata, KK, JJ, II
 !f2py intent(in,out) vdata
 !f2py intent(hide) ic,jc,kc
+
             print*,'---> Started horisontal rho2v interpolation'
             do kc=1,KK
                 do jc=1,JJ-1
@@ -178,6 +240,7 @@ Module interpolation
                     end do
                 end do
             end do
+            print*,'-----> Ended horisontal rho2v interpolation'
         end subroutine rho2v
             
    
@@ -196,8 +259,8 @@ Module interpolation
            double precision, dimension(JJ,II)  :: angle
            integer KK, II, JJ, kc, ic, jc
           
-!f2py intent(in) u_rho, v_rho, angle, KK, JJ, II
 !f2py intent(in,out) urot, vrot
+!f2py intent(in)  u_rho, v_rho, angle, KK, JJ, II
 !f2py intent(hide) ic,jc,kc
     
            print*,'---> Started rotation of velocities'
@@ -213,7 +276,7 @@ Module interpolation
                 end do
              end do
             end do
-            print*,'---> Ended rotation of velocities'
+            print*,'-----> Ended rotation of velocities'
         end subroutine rotate
     
      end module interpolation

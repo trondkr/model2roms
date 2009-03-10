@@ -4,18 +4,25 @@ import datetime
 from griddata import griddata
 import plotData
 import mpl_toolkits.basemap as mp
+import geoProjection
+import sys
 
 __author__   = 'Trond Kristiansen and Bjorn Aadlandsvik'
 __email__    = 'trond.kristiansen@imr.no'
 __created__  = datetime.datetime(2008, 12, 4)
 __modified__ = datetime.datetime(2008, 12, 18)
+__modified__ = datetime.datetime(2009, 3, 10)
 __version__  = "1.1"
 __status__   = "Development"
 
-def doHorInterpolationIrregularGrid(var,grdROMS,grdSODA,data,map):
-    
+     
+def doHorInterpolationIrregularGrid(var,grdROMS,grdSODA,data):
+
     Lp=grdROMS.xi_rho
     Mp=grdROMS.eta_rho
+
+    map=geoProjection.stereographic_wedge(-65.0,52.0,-71.0,47.2,0.15)
+         
 
     tx, ty = map.ll2grid(np.asarray(grdSODA.lon), np.asarray(grdSODA.lat))
     tx = np.asarray(tx)
@@ -25,6 +32,7 @@ def doHorInterpolationIrregularGrid(var,grdROMS,grdSODA,data,map):
     
     for k in xrange(grdSODA.Nlevels):
        # print 'Interpolation level %s'%(k)
+
         xlist = []
         ylist = []
         zlist = []
@@ -49,7 +57,7 @@ def doHorInterpolationIrregularGrid(var,grdROMS,grdSODA,data,map):
        #else:
                    #     print 'skipping value %s at %s,%s'%(data[t,k,j,i],y,x)
         
-        Zg = griddata(np.array(xlist), np.array(ylist), np.array(zlist), Xg, Yg, masked=False,fill_value=0)
+        Zg = griddata(np.array(xlist), np.array(ylist), np.array(zlist), Xg, Yg)
 
         if var=='temperature':    
             grdROMS.t[k,:,:]=Zg
@@ -63,19 +71,9 @@ def doHorInterpolationIrregularGrid(var,grdROMS,grdSODA,data,map):
         #plotData.contourMap(grdROMS,grdSODA,Zg,k,var)
                   
                       
-def doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data,map):
+def doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data):
     
-    Lp=grdROMS.xi_rho
-    Mp=grdROMS.eta_rho
-
-    tx, ty = map.ll2grid(grdSODA.lon, grdSODA.lat)
-
-    Xg, Yg = np.meshgrid(np.arange(Lp), np.arange(Mp))
    
-    xin=tx[:,0]
-    xin=np.flipud(xin)
-    yin=ty[0,:]
-    
     map = mp.Basemap(llcrnrlon=-80,llcrnrlat=31.5,urcrnrlon=-55,urcrnrlat=45,
             resolution='h',projection='tmerc',lon_0=-65,lat_0=40)
     
@@ -85,13 +83,15 @@ def doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data,map):
     xin=xin[0,:]
     yin=yin[:,0]
    
+    
     for k in xrange(grdSODA.Nlevels):
-        #print 'interpolating field %s at depth %s'%(var,k)
+
         datain=np.squeeze(data[k,:,:]) 
         #datain = np.ma.masked_values(datain,grdROMS.fill_value)
         
         Zg = mp.interp(datain, xin, yin, xout, yout, checkbounds=False, masked=False, order=1)
-      
+        
+        
         if var=='temperature':    
             grdROMS.t[k,:,:]=Zg
         elif var=='salinity':
@@ -104,19 +104,13 @@ def doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data,map):
         #plotData.contourMap(grdROMS,grdSODA,Zg,k,var)
    
 
-def doHorInterpolationSSHRegularGrid(var,grdROMS,grdSODA,data,map):
-    
-    Lp=grdROMS.xi_rho
-    Mp=grdROMS.eta_rho
+def doHorInterpolationSSHRegularGrid(var,grdROMS,grdSODA,data):
 
-    tx, ty = map.ll2grid(grdSODA.lon, grdSODA.lat)
-
-    Xg, Yg = np.meshgrid(np.arange(Lp), np.arange(Mp))
-   
-    xin=tx[:,0]
-    xin=np.flipud(xin)
-    yin=ty[0,:]
-    
+    """
+    Use basemap instances to project the latitude/longitude pairs from input grid and output
+    grid to a general mercator projection. This enables us to use bilinear/nearest neighbor interpolation
+    when the input grid is regular.
+    """
     map = mp.Basemap(llcrnrlon=-80,llcrnrlat=31.5,urcrnrlon=-55,urcrnrlat=45,
             resolution='h',projection='tmerc',lon_0=-65,lat_0=40)
     
@@ -136,7 +130,7 @@ def doHorInterpolationSSHRegularGrid(var,grdROMS,grdSODA,data,map):
     grdROMS.ssh[:,:]=Zg
     #plotData.contourMap(grdROMS,grdSODA,Zg,k,var)
         
-def doHorInterpolationSSHIrregularGrid(var,grdROMS,grdSODA,data,map):
+def doHorInterpolationSSHIrregularGrid(var,grdROMS,grdSODA,data):
     
     Lp=grdROMS.xi_rho
     Mp=grdROMS.eta_rho
@@ -165,7 +159,7 @@ def doHorInterpolationSSHIrregularGrid(var,grdROMS,grdSODA,data,map):
                     ylist.append(y)
                     zlist.append(data[j,i])
 
-    Zg = griddata(np.array(xlist), np.array(ylist), np.array(zlist), Xg, Yg, masked=False,fill_value=0)
+    Zg = griddata(np.array(xlist), np.array(ylist), np.array(zlist), Xg, Yg)
 
     grdROMS.ssh[:,:]=Zg
  

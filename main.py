@@ -25,10 +25,10 @@ def main():
     
     outfilename='test.nc'
     sodapath="/Volumes/HankRaid/SODA/"
-    #sodapath="../DATA/SODA/"
+    
     romsgridpath="/Users/trond/ROMS/GoM/grid/gom_grd.nc"
     start_year=1960
-    end_year=1963
+    end_year=1961
     start_day_in_start_year=10
     end_day_in_end_year=65
     

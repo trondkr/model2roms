@@ -41,8 +41,8 @@ Module velocity
             double precision, dimension(Nroms,eta_rho,xi_rho) ::    z_w
             double precision, dimension(Nroms,eta_rho,xi_rho-1) ::  z_wu
             double precision, dimension(Nroms,eta_rho-1,xi_rho) ::  z_wv
-!f2py intent(in) dat, bathymetry, z_w, Nroms, Nsoda, JJ, II, xi_rho, eta_rho
-!f2py intent(in,out) outdat
+!f2py intent(in,overwrite) dat, bathymetry, z_w, Nroms, Nsoda, JJ, II, xi_rho, eta_rho
+!f2py intent(in,out,overwrite) outdat
 !f2py intent(hide) ic,jc,kc,kT,rz1,rz2, z_wu, z_wv
 
             ! average z_w to Arakawa-C u,v-points (z_wu, z_wv)

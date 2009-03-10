@@ -3,6 +3,7 @@ import numpy.ma as ma
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap, NetCDFFile
+from pylab import *
 
 def contourMap(grdROMS,grdSODA,data,depthlevel,var):
     
@@ -49,8 +50,11 @@ def contourMap(grdROMS,grdSODA,data,depthlevel,var):
   
     map.drawcoastlines()
     map.fillcontinents(color='white')
-    
-    CS1 = map.contourf(x,y,temp,15)
+        
+
+    temp = np.ma.masked_values(temp,grdROMS.fill_value)
+    levels = np.arange(5.0, 25.0, 0.5)
+    CS1 = map.contourf(x,y,temp,levels,cmap=cm.get_cmap('jet', len(levels)-1))
     plt.colorbar(orientation='horizontal')
     #CS2 = map.contour(x,y,temp,15,colors='black',linewidths=0.5)
     plt.title('Variabel %s at depth %s'%(var,depthlevel))
