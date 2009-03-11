@@ -36,93 +36,92 @@ def calculate_z_w(self):
      
     Trond Kristiansen, 20.01.2008, 03.12.2008, 09.12.2008
     """
+    sc_w=np.zeros((self.Nlevels+1),np.float64)
+    Cs_w=np.zeros((self.Nlevels+1),np.float64)
+    z_w=np.zeros((len(sc_w),self.eta_rho,self.xi_rho),np.float64)
     
     h =self.depth
-    
     hc=np.min(h,self.Tcline)
+    cff=1.0/float(self.Nlevels+1)
     
-    if self.theta_s != 0.0:
-        cff1=1.0/np.sinh(self.theta_s)
-        cff2=0.5/np.tanh(0.5*self.theta_s)
-
-    cff=1.0/self.Nlevels
+    for k in xrange(self.Nlevels+1):
+        sc_w[k]=-1.0+(self.Nlevels-k)*cff
     
-    sc_w=np.zeros((self.Nlevels+1),float)
-    Cs_w=np.zeros((self.Nlevels+1),float)
+        Ptheta=np.sinh(self.theta_s*sc_w[k])/np.sinh(self.theta_s)
+        Rtheta=np.tanh(self.theta_s*(sc_w[k]+0.5))/(2.0*np.tanh(0.5*self.theta_s))-0.5
     
-    sc_w[0]=-1.0
-    Cs_w[0]=-1.0
-    
-    for k in xrange(self.Nlevels):
-        sc_w[k+1]=cff*(float(k-self.Nlevels))
         if self.theta_s != 0.0:
-            Cs_w[k+1]=(1.0-self.theta_b)*cff1*np.sinh(self.theta_s*sc_w[k+1])+self.theta_b*(cff2*np.tanh(self.theta_s*(sc_w[k+1]+0.5))- 0.5)
+            Cs_w[k]=(1-self.theta_b)*Ptheta+self.theta_b*Rtheta
         else:
-            Cs_w[k+1]=sc_w[k+1]
-    
+            Cs_w[k]=sc_w[k]
+            
+   
     """
     TODO: FIXME hardcode variables should be read from file
     """
-    zeta=0.0      
-    dim=get_dims(h)
-    eta_rho=dim[0]
-    xi_rho=dim[1]
-    z_w=np.zeros((len(sc_w),eta_rho,xi_rho),float)
-   
+    zeta=None
+    
     for k in xrange(len(sc_w)):
-        z_w[k,:,:] = np.multiply(zeta,(1+sc_w[k]))+hc*(sc_w[k])+(np.subtract(h,hc))*Cs_w[k]
-      
-    self.z_w = z_w
+        scmCshc=(np.subtract(sc_w[k],Cs_w[k]))*hc
+        z_w[k,:,:] = scmCshc + np.multiply(Cs_w[k],h)
+        
+        if zeta != None:
+            dd = np.divide(zeta,h)
+            z_w[k,:,:] = z_w[k,:,:] + scmCshc*dd
+            
+    self.z_w = np.flipud(z_w)
     self.Cs_w=Cs_w
+    self.hc=hc
     self.s_w=sc_w
     
-
+    #for l in xrange(10,400,20):
+    #    for ll in xrange(10,300,20):
+    #        print z_w[:,ll,l],self.depth[ll,l]
+  
 def calculate_z_r(self):
     
     """
     Function that estimates the matrix that converts sigma
     depth values to depth in meters. This matrix is time dependent
     (zeta varies), and also position dependent since the bottom matrix varies.
-    Results are stored in array z[eta_rho, xi_rho, s]
+    Results are stored in array z[s,eta_rho,xi_rho]
      
-    Trond Kristiansen, 20.01.2008, 03.12.2008, 09.12.2008
+    Trond Kristiansen, 20.01.2008, 03.12.2008, 09.12.2008, 11.03.2009
     """
+    sc_r=np.zeros((self.Nlevels),np.float64)
+    Cs_r=np.zeros((self.Nlevels),np.float64)
+    z_r=np.zeros((len(sc_r),self.eta_rho,self.xi_rho),np.float64)
     
     h =self.depth
-    
     hc=np.min(h,self.Tcline)
-    
-    if self.theta_s != 0.0:
-        cff1=1.0/np.sinh(self.theta_s)
-        cff2=0.5/np.tanh(0.5*self.theta_s)
-
-    cff=1.0/self.Nlevels
-    
-    sc_r=np.zeros((self.Nlevels),float)
-    
+    cff=1.0/float(self.Nlevels)
             
-    Cs_r=np.zeros((self.Nlevels),float)
-    
     for k in xrange(self.Nlevels):
-        sc_r[k]=cff*(float(k-self.Nlevels)-0.5)
+        sc_r[k]=-1.0+(self.Nlevels-k-0.5)*cff
+    
+        Ptheta=np.sinh(self.theta_s*sc_r[k])/np.sinh(self.theta_s)
+        Rtheta=np.tanh(self.theta_s*(sc_r[k]+0.5))/(2.0*np.tanh(0.5*self.theta_s))-0.5
+    
         if self.theta_s != 0.0:
-            Cs_r[k]=(1.0-self.theta_b)*cff1*np.sinh(self.theta_s*sc_r[k])+self.theta_b*(cff2*np.tanh(self.theta_s*(sc_r[k]+0.5))- 0.5)
+            Cs_r[k]=(1-self.theta_b)*Ptheta+self.theta_b*Rtheta
         else:
             Cs_r[k]=sc_r[k]
-    
+
     """
     TODO: FIXME hardcode variables should be read from file
     """
-    zeta=0.0      
-    dim=get_dims(h)
-    eta_rho=dim[0]
-    xi_rho=dim[1]
-    z_r=np.zeros((len(sc_r),eta_rho,xi_rho),float)
-   
-    for k in range(len(sc_r)):
-        z_r[k,:,:] = np.multiply(zeta,(1+sc_r[k]))+hc*(sc_r[k])+(np.subtract(h,hc))*Cs_r[k]
-      
+    zeta=None
+    
+    for k in xrange(len(sc_r)):
+        scmCshc=(np.subtract(sc_r[k],Cs_r[k]))*hc
+        z_r[k,:,:] = scmCshc + np.multiply(Cs_r[k],h)
+        
+        if zeta != None:
+            dd = np.divide(zeta,h)
+            z_r[k,:,:] = z_r[k,:,:] + scmCshc*dd
+  
     self.z_r = np.flipud(z_r)
     self.Cs_rho=Cs_r
     self.hc=hc
     self.s_rho=sc_r
+    
