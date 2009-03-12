@@ -179,14 +179,15 @@ Module interpolation
             ! -------------------------------------------------------------------------------------------------------
           
            
-            integer KK, II, JJ, kc, ic, jc
+            integer KK, II, JJ, kc, ic, jc, fill
             double precision, dimension(KK,JJ,II) :: rhodata
             double precision, dimension(KK,JJ,II-1) :: udata
        
 !f2py intent(in,out) udata
 !f2py intent(in) rhodata, KK, JJ, II
-!f2py intent(hide) ic,jc,kc
+!f2py intent(hide) ic,jc,kc, fill
 
+            fill=10000
             print*,'---> Started horisontal rho2u interpolation'
             do kc=1,KK
                 do jc=1,JJ
@@ -195,10 +196,21 @@ Module interpolation
                             udata(kc,jc,ic)=rhodata(kc,jc,ic)
                         else if (jc .EQ. JJ) then
                             udata(kc,jc,ic)=rhodata(kc,jc,ic)
-                        else
+                        ! Now make sure that if we have two stations where one has values
+                        ! and the other not, we only use the good value
+                        ! case 1: one value is good (jc+1) other bad (jc-1)
+                        else if (abs(rhodata(kc,jc-1,ic)) > fill .AND. abs(rhodata(kc,jc+1,ic)) < fill) then
+                            udata(kc,jc,ic)=(rhodata(kc,jc+1,ic))
+                        ! case 2: one value is good (jc-1) other bad (jc+1)
+                        else if (abs(rhodata(kc,jc-1,ic)) < fill .AND. abs(rhodata(kc,jc+1,ic)) > fill) then
+                            udata(kc,jc,ic)=(rhodata(kc,jc-1,ic))
+                        ! Both values are bad:
+                        else if (abs(rhodata(kc,jc-1,ic)) > fill .AND. abs(rhodata(kc,jc+1,ic)) > fill) then
+                            udata(kc,jc,ic)=0.0
+                        ! Both values are good and we do linear interpolation
+                        else 
                             udata(kc,jc,ic)=(rhodata(kc,jc-1,ic)+rhodata(kc,jc+1,ic))*0.5
                         end if
-                        !print*,jc,ic,udata(jc,ic),rhodata(jc-1,ic),rhodata(jc+1,ic)
                     end do
                 end do
             end do
@@ -213,18 +225,19 @@ Module interpolation
             ! This routine interpolates RHO points to V points using simple linear interpolation
             ! The input matrix (rhodata) is a matrix of size (JJ,II). The output matrix is the
             ! interpolated RHO values at U points with dimensions (JJ-1,II).
-            ! Trond Kristiansen, January 2009
+            ! Trond Kristiansen, January, February, and March2009
             ! Rutgers University, NJ.
             ! -------------------------------------------------------------------------------------------------------
           
-           integer KK, II, JJ, kc, ic, jc
+           integer KK, II, JJ, kc, ic, jc, fill
            double precision, dimension(KK,JJ,II) :: rhodata
            double precision, dimension(KK,JJ-1,II) :: vdata
        
-!f2py intent(in) rhodata, KK, JJ, II
-!f2py intent(in,out) vdata
-!f2py intent(hide) ic,jc,kc
-
+!f2py intent(in,overwrite) rhodata, KK, JJ, II
+!f2py intent(in,out,overwrite) vdata
+!f2py intent(hide) ic,jc,kc, fill
+            
+            fill=10000
             print*,'---> Started horisontal rho2v interpolation'
             do kc=1,KK
                 do jc=1,JJ-1
@@ -233,10 +246,16 @@ Module interpolation
                             vdata(kc,jc,ic)=rhodata(kc,jc,ic)
                         else if (ic .EQ. II) then
                             vdata(kc,jc,ic)=rhodata(kc,jc,ic)
+                            
+                        else if (abs(rhodata(kc,jc,ic-1)) > fill .AND. abs(rhodata(kc,jc,ic+1)) < fill) then
+                            vdata(kc,jc,ic)=(rhodata(kc,jc+1,ic))
+                        else if (abs(rhodata(kc,jc,ic-1)) < fill .AND. abs(rhodata(kc,jc,ic+1)) > fill) then
+                            vdata(kc,jc,ic)=(rhodata(kc,jc,ic-1))
+                        else if (abs(rhodata(kc,jc,ic-1)) > fill .AND. abs(rhodata(kc,jc,ic-1)) > fill) then
+                            vdata(kc,jc,ic)=0.0
                         else
                             vdata(kc,jc,ic)=(rhodata(kc,jc,ic-1)+rhodata(kc,jc,ic+1))*0.5
                         end if
-                        !print*,jc,ic,udata(jc,ic),rhodata(jc-1,ic),rhodata(jc+1,ic)
                     end do
                 end do
             end do
@@ -259,8 +278,8 @@ Module interpolation
            double precision, dimension(JJ,II)  :: angle
            integer KK, II, JJ, kc, ic, jc
           
-!f2py intent(in,out) urot, vrot
-!f2py intent(in)  u_rho, v_rho, angle, KK, JJ, II
+!f2py intent(in,out,overwrite) urot, vrot
+!f2py intent(in,overwrite)  u_rho, v_rho, angle, KK, JJ, II
 !f2py intent(hide) ic,jc,kc
     
            print*,'---> Started rotation of velocities'

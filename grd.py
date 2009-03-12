@@ -71,7 +71,7 @@ class grdClass:
             
             self.Nlevels=30
             self.theta_s=5.0
-            self.theta_b=0.9
+            self.theta_b=0.4
             self.Tcline=50.0
             self.hc=10.0
             self.ocean_time=1

@@ -13,7 +13,7 @@ def contourMap(grdROMS,grdSODA,data,depthlevel,var):
     #if var=='uvel':
     #    tlat      = np.array(grdROMS.lat_u)
     #    tlon      = np.array(grdROMS.lon_u)
-    if var in ['temperature','salinity','ssh','uvel','vvel']:
+    if var in ['temperature','salinity','ssh','velocity']:
         tlat      = np.array(grdROMS.lat_rho)
         tlon      = np.array(grdROMS.lon_rho)
         
@@ -54,6 +54,8 @@ def contourMap(grdROMS,grdSODA,data,depthlevel,var):
 
     temp = np.ma.masked_values(temp,grdROMS.fill_value)
     levels = np.arange(5.0, 25.0, 0.5)
+    if var=='velocity':
+        levels = np.arange(-1.5, 1.5, 0.1)
     CS1 = map.contourf(x,y,temp,levels,cmap=cm.get_cmap('jet', len(levels)-1))
     plt.colorbar(orientation='horizontal')
     #CS2 = map.contour(x,y,temp,15,colors='black',linewidths=0.5)

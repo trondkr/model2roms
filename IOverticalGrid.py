@@ -21,10 +21,6 @@ def get_z_levels(self):
     if len(self.z_r)==0:
         print "No depth matrix found in file %s"%(self.selffilename)
 
-    
-def get_dims(var):
-    dims=var.shape
-    return dims
 
 def calculate_z_w(self):
     
@@ -69,7 +65,7 @@ def calculate_z_w(self):
             dd = np.divide(zeta,h)
             z_w[k,:,:] = z_w[k,:,:] + scmCshc*dd
             
-    self.z_w = np.flipud(z_w)
+    self.z_w = z_w
     self.Cs_w=Cs_w
     self.hc=hc
     self.s_w=sc_w
@@ -120,7 +116,7 @@ def calculate_z_r(self):
             dd = np.divide(zeta,h)
             z_r[k,:,:] = z_r[k,:,:] + scmCshc*dd
   
-    self.z_r = np.flipud(z_r)
+    self.z_r = z_r
     self.Cs_rho=Cs_r
     self.hc=hc
     self.s_rho=sc_r
