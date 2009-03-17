@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 """
 Module with mathematically defined orthogonal grids
@@ -184,9 +183,6 @@ class square_stereographic:
         w = (xp + 1j*yp) - scale*exp(-1j*lambda0)*1j*pst(lon,lat)
         return w.real, w.imag
 
-
-
-    # Er denne riktig ??, skifte tegn på begge argument
     def angle(self, x, y):
         return arctan2(x-self.xp, y-self.yp)
 
