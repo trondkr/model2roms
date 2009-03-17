@@ -21,7 +21,7 @@ def help():
     created using soda2roms.
     """
     
-def writeBry(grdROMS,year,climname):
+def writeBry(grdROMS,year,bryName,climName):
     
     
     # Loop over all clim files in list 
@@ -34,13 +34,12 @@ def writeBry(grdROMS,year,climname):
     Mp=grdROMS.Mp-1
     
     #for file in filelist:
-    clim    = Dataset(climname,'r')
-    bryname = 'bry_'+str(climname)
+    clim    = Dataset(climName,'r')
     
     """Generate the BRY netcdf4 file that we will use to fill in data"""
-    IOBry.createBryFile(grdROMS,bryname)
+    IOBry.createBryFile(grdROMS,bryName)
     """Now open the file we created"""
-    f = Dataset(bryname, mode='a', format='NETCDF4', zlib=True)
+    f = Dataset(bryName, mode='a', format='NETCDF4', zlib=True)
      
     climtime = np.array(clim.variables["clim_time"][:])
     
@@ -91,7 +90,7 @@ def writeBry(grdROMS,year,climname):
     
         # ------- Write time to file -------------------------------
         d= num2date(climtime[itime],units=clim.variables['clim_time'].long_name,calendar=clim.variables['clim_time'].calendar)
-        print 'Appending data to file %s for time %s'%(bryname,d)
+        print 'Appending data to file %s for time %s'%(bryName,d)
             
         f.variables['bry_time'][itime]      = climtime[itime]
         
