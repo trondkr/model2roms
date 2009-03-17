@@ -4,7 +4,6 @@ from datetime import datetime
 import soda2roms, IOstation
 import clim2bry
 import grd
-import IOverticalGrid
 
 __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
@@ -23,9 +22,12 @@ def main():
     print '\n---> Initializing\n'
     print 'Started ' + time.ctime(time.time())
     
-    outfilename='test.nc'
-    sodapath="/Volumes/HankRaid/SODA/"
+    climName='test.nc'
+    initName='test_init.nc'
+    bryName='test_bry.nc'
     
+    sodapath="/Volumes/HankRaid/SODA/"
+    romsgridpath="/Users/trond/Projects/arcwarm/nordic/AA_10km_grid.nc"
     romsgridpath="/Users/trond/ROMS/GoM/grid/gom_grd.nc"
     start_year=1960
     end_year=1961
@@ -36,14 +38,12 @@ def main():
     
     IDS=[(0+i+1) for i in range(73)]
     
-    soda2roms.convertSODA2ROMS(years,IDS,outfilename,sodapath,romsgridpath)
+    soda2roms.convertSODA2ROMS(years,IDS,climName,initName,sodapath,romsgridpath)
     
     
     grdROMS = grd.grdClass(romsgridpath,"ROMS")
-    IOverticalGrid.calculate_z_r(grdROMS)
-    IOverticalGrid.calculate_z_w(grdROMS)
     
-    clim2bry.writeBry(grdROMS,'1960','test.nc')   
+    clim2bry.writeBry(grdROMS,'1960',bryName,climName)   
 
     # GB, NovaScotia, Grand Bank, Nuuk, Iceland, NS, Lofoten, BS
    
