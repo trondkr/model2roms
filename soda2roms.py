@@ -18,6 +18,7 @@ import date
 import grd
 import clim2bry
 import barotropic
+import IOinitial
 
 __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
@@ -283,9 +284,8 @@ def find_subset_indices(grdSODA,min_lat,max_lat,min_lon,max_lon):
     grdSODA.maxI=indices[2][2]
     
   
-def convertSODA2ROMS(years,IDS,outfilename,sodapath,romsgridpath):
+def convertSODA2ROMS(years,IDS,climName,initName,sodapath,romsgridpath):
 
-    #fileNameOut="/Users/trond/Projects/arcwarm/nordic/AA_10km_grid.nc"
     fileNameIn=sodapath+'SODA_2.0.2_'+str(years[0])+'_'+str(IDS[0])+'.cdf'
   
     """First time in loop, get the essential old grid information"""
@@ -386,7 +386,11 @@ def convertSODA2ROMS(years,IDS,outfilename,sodapath,romsgridpath):
                 HorizontalInterpolation(var,grdROMS,grdSODA,temp,salt,ssh,uvel,vvel)
                 VerticalInterpolation(var,grdROMS,grdSODA)
               
-            IOwrite.write_results(grdROMS,time,outfilename)
+            IOwrite.write_results(grdROMS,time,climName)
+            
+            if time==0:
+                IOinitial.createInitFile(grdROMS,time,initName)
+                
             time+=1
           
             
