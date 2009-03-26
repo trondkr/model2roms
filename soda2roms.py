@@ -40,14 +40,14 @@ def VerticalInterpolation(var,grdROMS,grdSODA):
         data_ST=grdROMS.t[:,:,:]
     if var=='salinity':
         data_ST=grdROMS.s[:,:,:]
-    if var=='velocity':
+    if var=='vvel':
         data_U=grdROMS.u2[:,:,:]
         data_V=grdROMS.v2[:,:,:]
         
         
     if var=='salinity' or var=='temperature':
         print 'Interpolating vertically for %s with dimensions %s x %s'%(var,grdROMS.xi_rho,grdROMS.eta_rho)
-        outdata=np.zeros((outINDEX_ST),dtype=np.float64)
+        outdata=np.zeros((outINDEX_ST),dtype=np.float64, order='Fortran')
     
         outdata = interp.interpolation.dovertinter(np.asarray(outdata,order='Fortran'),
                                                        np.asarray(data_ST,order='Fortran'),
@@ -63,7 +63,7 @@ def VerticalInterpolation(var,grdROMS,grdSODA):
         
                                     
       
-    if var=='velocity':
+    if var=='vvel':
         print 'Interpolating vertically for %s with dimensions %s x %s'%(var,grdROMS.xi_u,grdROMS.eta_u)
         outdataU=np.zeros((outINDEX_U),dtype=np.float64,order='Fortran')
         outdataUBAR=np.zeros((outINDEX_UBAR),dtype=np.float64)
@@ -79,7 +79,7 @@ def VerticalInterpolation(var,grdROMS,grdSODA):
                                                        int(grdROMS.eta_u),
                                                        int(grdROMS.xi_rho),
                                                        int(grdROMS.eta_rho))
-        
+   
         print 'Interpolating vertically for %s with dimensions %s x %s'%(var,grdROMS.xi_v,grdROMS.eta_v)
         outdataV=np.zeros((outINDEX_V),dtype=np.float64,order='Fortran')
         outdataVBAR=np.zeros((outINDEX_VBAR),dtype=np.float64)
@@ -98,14 +98,13 @@ def VerticalInterpolation(var,grdROMS,grdSODA):
     
     if var=='temperature':
         grdROMS.t2[:,:,:]=outdata #*grdROMS.mask_rho
-        #plotData.contourMap(grdROMS,grdSODA,np.squeeze(outdata[0,:,:]),"1",var)
+        #plotData.contourMap(grdROMS,grdSODA,np.squeeze(outdata[29,:,:]),"1",var)
     if var=='salinity':
         grdROMS.s2[:,:,:]=outdata #*grdROMS.mask_rho
         #plotData.contourMap(grdROMS,grdSODA,np.squeeze(outdata[29,:,:]),"1",var)
-    if var=='velocity':
-        
+    if var=='vvel':
         grdROMS.u3[:,:,:]= outdataU #*grdROMS.mask_u
-        grdROMS.v3[:,:,:]= outdataV #*grdROMS.mask_v
+        
         
         outdataUBAR  = barotropic.velocity.ubar(np.asarray(outdataU,order='Fortran'),
                                                 np.asarray(outdataUBAR,order='Fortran'),
@@ -115,7 +114,10 @@ def VerticalInterpolation(var,grdROMS,grdSODA):
                                                 grdROMS.eta_u,
                                                 grdROMS.xi_rho,
                                                 grdROMS.eta_rho)
+        grdROMS.ubar = outdataUBAR
         
+   
+        grdROMS.v3[:,:,:]= outdataV #*grdROMS.mask_v
         outdataVBAR  = barotropic.velocity.vbar(np.asarray(outdataV,order='Fortran'),
                                                 np.asarray(outdataVBAR,order='Fortran'),
                                                 np.asarray(grdROMS.z_w,order='Fortran'),
@@ -124,25 +126,24 @@ def VerticalInterpolation(var,grdROMS,grdSODA):
                                                 grdROMS.eta_v,
                                                 grdROMS.xi_rho,
                                                 grdROMS.eta_rho)
-        grdROMS.ubar = outdataUBAR
+        
         grdROMS.vbar = outdataVBAR
     
-def HorizontalInterpolation(var,grdROMS,grdSODA,temp,salt,ssh,uvel,vvel):
+def HorizontalInterpolation(var,grdROMS,grdSODA,data):
     print 'Start %s horizontal interpolation for %s'%(grdSODA.grdType,var)
     
     if grdSODA.grdType=='regular':
         if var=='temperature':
-            interp2D.doHorInterpolationRegularGrid(var,grdROMS,grdSODA,temp)
-            grdROMS.t=grdROMS.t*grdROMS.mask_rho
+            interp2D.doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data)
         if var=='salinity':
-            interp2D.doHorInterpolationRegularGrid(var,grdROMS,grdSODA,salt)
-            grdROMS.s=grdROMS.s*grdROMS.mask_rho
+            interp2D.doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data)
         if var=='ssh':
-            interp2D.doHorInterpolationSSHRegularGrid(var,grdROMS,grdSODA,ssh)
+            interp2D.doHorInterpolationSSHRegularGrid(var,grdROMS,grdSODA,data)
             grdROMS.ssh=grdROMS.ssh*grdROMS.mask_rho
-        if var=='velocity':
-            interp2D.doHorInterpolationRegularGrid('uvel',grdROMS,grdSODA,uvel)
-            interp2D.doHorInterpolationRegularGrid('vvel',grdROMS,grdSODA,vvel)
+        if var=='uvel':
+            interp2D.doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data)
+        if var=='vvel':
+            interp2D.doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data)
             
     if grdSODA.grdType=='irregular':
         if var=='temperature':
@@ -151,15 +152,18 @@ def HorizontalInterpolation(var,grdROMS,grdSODA,temp,salt,ssh,uvel,vvel):
             interp2D.doHorInterpolationIrregularGrid(var,grdROMS,grdSODA,salt)
         if var=='ssh':
             interp2D.doHorInterpolationSSHIrregularGrid(var,grdROMS,grdSODA,ssh)
-        if var=='velocity':
+        if var=='uvel':
             interp2D.doHorInterpolationIrregularGrid('uvel',grdROMS,grdSODA,uvel)
+        if var=='vvel':
             interp2D.doHorInterpolationIrregularGrid('vvel',grdROMS,grdSODA,vvel)
     
-    if var=='velocity':        
+    
+    if var=='vvel':
         """
         First rotate the values of U, V at rho points with the angle, and then interpolate
         the rho point values to U and V points and save the result
         """
+        
         urot=np.zeros((int(grdSODA.Nlevels),int(grdROMS.eta_rho),int(grdROMS.xi_rho)), np.float64)
         vrot=np.zeros((int(grdSODA.Nlevels),int(grdROMS.eta_rho),int(grdROMS.xi_rho)), np.float64)
        
@@ -187,15 +191,17 @@ def HorizontalInterpolation(var,grdROMS,grdSODA,temp,salt,ssh,uvel,vvel):
                                         int(grdSODA.Nlevels))
         
         grdROMS.u2[:,:,:]=Zu
+        #plotData.contourMap(grdROMS,grdSODA,Zu[0,:,:],"1",'urot')
         
         Zv = interp.interpolation.rho2v(np.asarray(Zv,order='Fortran'),
                                         np.asarray(vrot,order='Fortran'),
                                         int(grdROMS.xi_rho),
                                         int(grdROMS.eta_rho),
                                         int(grdSODA.Nlevels))
-     
+
         grdROMS.v2[:,:,:]=Zv
-    
+        #plotData.contourMap(grdROMS,grdSODA,Zv[0,:,:],"1",'vrot')
+
 def getTime(grdROMS,grdSODA,year,ID):
     """
     Find the day and month that the SODA file respresents based on the year and ID number.
@@ -288,21 +294,27 @@ def convertSODA2ROMS(years,IDS,climName,initName,sodapath,romsgridpath):
 
     fileNameIn=sodapath+'SODA_2.0.2_'+str(years[0])+'_'+str(IDS[0])+'.cdf'
   
-    """First time in loop, get the essential old grid information"""
-    """SODA data already at Z-levels. No need to interpolate to fixed depths, but we use the one we have"""
+    """
+    First time in loop, get the essential old grid information
+    SODA data already at Z-levels. No need to interpolate to fixed depths,
+    but we use the one we have
+    """
     
     grdSODA = grd.grdClass(fileNameIn,"SODA")
     grdROMS = grd.grdClass(romsgridpath,"ROMS")
     
     """Now we want to subset the data to avoid storing more information than we need.
     We do this by finding the indices of maximum and minimum latitude and longitude in the matrixes"""
-    find_subset_indices(grdSODA,min_lat=30, max_lat=55, min_lon=278, max_lon=305)
-
+    
+    find_subset_indices(grdSODA,min_lat=30, max_lat=90, min_lon=0, max_lon=360)
+    #grdSODA.minJ=None
+    #grdSODA.maxJ=None
+    #grdSODA.minI=None
+    #grdSODA.maxI=None
     grdSODA.lat=grdSODA.lat[grdSODA.minJ:grdSODA.maxJ,grdSODA.minI:grdSODA.maxI]
     grdSODA.lon=grdSODA.lon[grdSODA.minJ:grdSODA.maxJ,grdSODA.minI:grdSODA.maxI]
-    """Convert values larger than 180 into negative values (West)"""
-    grdSODA.lon[:,:]=np.where(grdSODA.lon>180,grdSODA.lon[:,:]-360.,grdSODA.lon[:,:])
     
+   
     print "\n---> Selected area in output file spans from (longitude=%3.2f,latitude=%3.2f) to (longitude=%3.2f,latitude=%3.2f)"%(grdROMS.lon_rho.min(),grdROMS.lat_rho.min(),grdROMS.lon_rho.max(),grdROMS.lat_rho.max())
     print "---> Selected area in input file spans from  (longitude=%3.2f,latitude=%3.2f) to (longitude=%3.2f,latitude=%3.2f)\n"%(grdSODA.lon.min(),grdSODA.lat.min(),grdSODA.lon.max(),grdSODA.lat.max())
     
@@ -325,21 +337,15 @@ def convertSODA2ROMS(years,IDS,climName,initName,sodapath,romsgridpath):
             
             """Each SODA file consist only of one time step. Get the subset data selected, and
             store that time step in a new array:"""
-            temp        = np.array(cdf.variables["TEMP"][0,:,grdSODA.minJ:grdSODA.maxJ,grdSODA.minI:grdSODA.maxI])
-            salt        = np.array(cdf.variables["SALT"][0,:,grdSODA.minJ:grdSODA.maxJ,grdSODA.minI:grdSODA.maxI])
-            ssh         = np.array(cdf.variables["SSH"][0,grdSODA.minJ:grdSODA.maxJ,grdSODA.minI:grdSODA.maxI])
-            uvel        = np.array(cdf.variables["U"][0,:,grdSODA.minJ:grdSODA.maxJ,grdSODA.minI:grdSODA.maxI])
-            vvel        = np.array(cdf.variables["V"][0,:,grdSODA.minJ:grdSODA.maxJ,grdSODA.minI:grdSODA.maxI])
             
-            cdf.close()
-            
+        
             if firstRun is True:
                 firstRun = False
                 indexTMP_ST    = (grdSODA.Nlevels,grdROMS.eta_rho,grdROMS.xi_rho)
                 indexTMP_U     = (grdSODA.Nlevels,grdROMS.eta_u,grdROMS.xi_u)
                 indexTMP_V     = (grdSODA.Nlevels,grdROMS.eta_v,grdROMS.xi_v)
                 
-                indexSODA_Z    = (grdSODA.Nlevels,temp.shape[1],temp.shape[2])
+                indexSODA_Z    = (grdSODA.Nlevels,len(grdSODA.lat),len(grdSODA.lon))
                 indexROMS_Z_ST = (grdSODA.Nlevels,grdROMS.eta_rho,grdROMS.xi_rho)
                 indexROMS_S_ST = (grdROMS.Nlevels,grdROMS.eta_rho,grdROMS.xi_rho)
                 indexROMS_SSH  = (grdROMS.eta_rho,grdROMS.xi_rho)
@@ -352,45 +358,61 @@ def convertSODA2ROMS(years,IDS,climName,initName,sodapath,romsgridpath):
                 indexROMS_UBAR = (grdROMS.eta_u,grdROMS.xi_u)
                 indexROMS_VBAR = (grdROMS.eta_v,grdROMS.xi_v)
                 
-                grdROMS.ssh=np.zeros((indexROMS_SSH),dtype=np.float64)
-                
-                grdSODA.t=np.zeros((indexSODA_Z),dtype=np.float64)
-                grdROMS.t=np.zeros((indexROMS_Z_ST),dtype=np.float64)
-                grdROMS.s=np.zeros((indexROMS_Z_ST),dtype=np.float64)
-                grdROMS.t2=np.zeros((indexROMS_S_ST),dtype=np.float64)
-                grdROMS.s2=np.zeros((indexROMS_S_ST),dtype=np.float64)
-                grdROMS.u=np.zeros((indexROMS_Z_ST),dtype=np.float64)
-                grdROMS.v=np.zeros((indexROMS_Z_ST),dtype=np.float64)
-                
-                grdROMS.u2=np.zeros((indexROMS_Z_U),dtype=np.float64)
-                grdROMS.v2=np.zeros((indexROMS_Z_V),dtype=np.float64)
-                grdROMS.u3=np.zeros((indexROMS_S_U),dtype=np.float64)
-                grdROMS.v3=np.zeros((indexROMS_S_V),dtype=np.float64)
-                
-                grdROMS.ubar=np.zeros((indexROMS_UBAR),dtype=np.float64)      
-                grdROMS.vbar=np.zeros((indexROMS_VBAR),dtype=np.float64)                
-                
-                data_ST =np.zeros((indexTMP_ST),dtype=np.float64)
-                data_U  =np.zeros((indexTMP_U),dtype=np.float64)
-                data_V  =np.zeros((indexTMP_V),dtype=np.float64)
-                
         
             """
             All variables for all time are now stored in arrays. Now, start the interpolation to the
             new grid for all variables and then finally write results to file.
             """
-            vars=['temperature','salinity','ssh','velocity']
-            #vars=['temperature','velocity']
+            vars=['temperature','salinity','ssh','uvel','vvel']
+            #vars=['temperature']
+            #vars=['uvel','vvel']
+            #vars=['ssh']
             for var in vars:
-                
-                HorizontalInterpolation(var,grdROMS,grdSODA,temp,salt,ssh,uvel,vvel)
+                if var=='temperature':
+                    data = np.array(cdf.variables["TEMP"][0,:,grdSODA.minJ:grdSODA.maxJ,grdSODA.minI:grdSODA.maxI])
+                    grdROMS.t=np.zeros((indexROMS_Z_ST),dtype=np.float64)
+                    data_ST =np.zeros((indexTMP_ST),dtype=np.float64)
+                    grdROMS.t2=np.zeros((indexROMS_S_ST),dtype=np.float64)
+                   
+                    
+                if var=='salinity':
+                    data = np.array(cdf.variables["SALT"][0,:,grdSODA.minJ:grdSODA.maxJ,grdSODA.minI:grdSODA.maxI])
+                    grdROMS.s=np.zeros((indexROMS_Z_ST),dtype=np.float64)
+                    data_ST =np.zeros((indexTMP_ST),dtype=np.float64)
+                    grdROMS.s2=np.zeros((indexROMS_S_ST),dtype=np.float64)
+                  
+                    
+                if var=='ssh':
+                    data = np.array(cdf.variables["SSH"][0,grdSODA.minJ:grdSODA.maxJ,grdSODA.minI:grdSODA.maxI])
+                    grdROMS.ssh=np.zeros((indexROMS_SSH),dtype=np.float64)
+                   
+                    
+                if var=='uvel':
+                    data = np.array(cdf.variables["U"][0,:,grdSODA.minJ:grdSODA.maxJ,grdSODA.minI:grdSODA.maxI])
+                    grdROMS.u=np.zeros((indexROMS_Z_ST),dtype=np.float64)
+                    data_U  =np.zeros((indexTMP_U),dtype=np.float64)
+                    grdROMS.u2=np.zeros((indexROMS_Z_U),dtype=np.float64)
+                    grdROMS.u3=np.zeros((indexROMS_S_U),dtype=np.float64)
+                   
+                    
+                if var=='vvel':
+                    data     = np.array(cdf.variables["V"][0,:,grdSODA.minJ:grdSODA.maxJ,grdSODA.minI:grdSODA.maxI])
+                    grdROMS.v=np.zeros((indexROMS_Z_ST),dtype=np.float64)
+                    data_V   =np.zeros((indexTMP_V),dtype=np.float64)
+                    grdROMS.v2=np.zeros((indexROMS_Z_V),dtype=np.float64)
+                    grdROMS.v3=np.zeros((indexROMS_S_V),dtype=np.float64)
+                    
+                     
+                HorizontalInterpolation(var,grdROMS,grdSODA,data)
                 VerticalInterpolation(var,grdROMS,grdSODA)
-              
-            IOwrite.write_results(grdROMS,time,climName)
+                
+                
+                IOwrite.writeClimFile(grdROMS,time,climName,var)
             
             if time==0:
-                IOinitial.createInitFile(grdROMS,time,initName)
+                IOinitial.createInitFile(grdROMS,time,initName,var)
                 
+            cdf.close()    
             time+=1
           
             

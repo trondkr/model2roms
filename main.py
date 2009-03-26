@@ -29,6 +29,7 @@ def main():
     sodapath="/Volumes/HankRaid/SODA/"
     romsgridpath="/Users/trond/Projects/arcwarm/nordic/AA_10km_grid.nc"
     romsgridpath="/Users/trond/ROMS/GoM/grid/gom_grd.nc"
+    #romsgridpath="/Users/trond/Projects/arcwarm/nordic/imr_nordic_4km.nc"
     start_year=1960
     end_year=1961
     start_day_in_start_year=10
@@ -36,14 +37,14 @@ def main():
     
     years=[(int(start_year)+kk) for kk in range(int(end_year)-int(start_year))]
     
-    IDS=[(0+i+1) for i in range(73)]
+    IDS=[(i+1) for i in range(5)]
     
     soda2roms.convertSODA2ROMS(years,IDS,climName,initName,sodapath,romsgridpath)
     
     
     grdROMS = grd.grdClass(romsgridpath,"ROMS")
     
-    clim2bry.writeBry(grdROMS,'1960',bryName,climName)   
+    #clim2bry.writeBry(grdROMS,'1960',bryName,climName)   
 
     # GB, NovaScotia, Grand Bank, Nuuk, Iceland, NS, Lofoten, BS
    

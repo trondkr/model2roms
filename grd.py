@@ -34,7 +34,15 @@ class grdClass:
         self.openNetCDF()
         self.createObject()
         self._getDims()
-        
+        if grdfilename=="/Users/trond/Projects/arcwarm/nordic/AA_10km_grid.nc":
+            self.grdName='NA'
+        elif grdfilename=="/Users/trond/ROMS/GoM/grid/gom_grd.nc":
+            self.grdName='GOM'
+        elif grdfilename=="/Users/trond/Projects/arcwarm/nordic/imr_nordic_4km.nc":
+            self.grdName='Nordic'
+        else:
+            self.grdName='undefined'
+            
         print '\n---> Generated GRD object for grid type %s'%(self.type)
     
   
@@ -78,6 +86,11 @@ class grdClass:
             self.NT=2
             self.tracer=self.NT
             
+            """Parameters that are used to fill in gaps in interpolated fields
+            due to mismatch of iput and output mask (used in cleanArray.f90)"""
+            self.smoothradius= 20
+            self.maxval=1000
+            
             self.time     = 0
             self.reftime  = 0
             self.grdType  = 'regular'
@@ -94,9 +107,9 @@ class grdClass:
             self.lat_v  = self.cdf.variables["lat_v"][:]
             self.mask_v = self.cdf.variables["mask_v"][:,:]
             
-            self.lon_psi  = self.cdf.variables["lon_psi"][:]
-            self.lat_psi  = self.cdf.variables["lat_psi"][:]
-            self.mask_psi = self.cdf.variables["mask_psi"][:,:]
+            #self.lon_psi  = self.cdf.variables["lon_psi"][:]
+            #self.lat_psi  = self.cdf.variables["lat_psi"][:]
+            #self.mask_psi = self.cdf.variables["mask_psi"][:,:]
             
             self.f  = self.cdf.variables["f"][:]
             self.xl  = self.cdf.variables["xl"][:]
@@ -121,6 +134,10 @@ class grdClass:
             self.xi_u    = self.Lp-1
             self.xi_v    = self.Lp
             self.xi_psi    = self.Lp-1
+            
+            """Boolean to check if we need to initialize the CLIM file before writing"""
+            self.ioClimInitialized=False
+            self.ioInitInitialized=False
             
             if np.rank(self.lon_rho)==1:
                     self.lon_rho, self.lat_rho = np.meshgrid(self.lon_rho,self.lat_rho)

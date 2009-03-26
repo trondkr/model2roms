@@ -6,13 +6,14 @@ import plotData
 import mpl_toolkits.basemap as mp
 import geoProjection
 import sys
+import cl
 
-__author__   = 'Trond Kristiansen and Bjorn Aadlandsvik'
+__author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
 __created__  = datetime.datetime(2008, 12, 4)
 __modified__ = datetime.datetime(2008, 12, 18)
-__modified__ = datetime.datetime(2009, 3, 10)
-__version__  = "1.1"
+__modified__ = datetime.datetime(2009, 3, 25)
+__version__  = "1.3"
 __status__   = "Development"
 
      
@@ -73,62 +74,101 @@ def doHorInterpolationIrregularGrid(var,grdROMS,grdSODA,data):
                       
 def doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data):
     
-   
-    map = mp.Basemap(llcrnrlon=-80,llcrnrlat=31.5,urcrnrlon=-55,urcrnrlat=45,
-            resolution='h',projection='tmerc',lon_0=-65,lat_0=40)
-    
-    xin, yin   = map(grdSODA.lon,grdSODA.lat)
-    xout, yout = map(grdROMS.lon_rho,grdROMS.lat_rho)
-    
-    xin=xin[0,:]
-    yin=yin[:,0]
-   
-    
-    for k in xrange(grdSODA.Nlevels):
+    #map = mp.Basemap(resolution='c',projection='robin',lon_0=0.0)
+    #map = mp.Basemap(projection='ortho',lat_0=90,lon_0=0.0,
+    #              resolution='c',area_thresh=10000.)
 
-        datain=np.squeeze(data[k,:,:]) 
-        #datain = np.ma.masked_values(datain,grdROMS.fill_value)
+    for k in xrange(grdSODA.Nlevels):
+        #print 'Interpolating level',k
         
-        Zg = mp.interp(datain, xin, yin, xout, yout, checkbounds=False, masked=False, order=1)
+        i0 = np.argmin(np.fabs(grdSODA.lon[0,:]-180))
+
+        dataout = np.zeros(np.squeeze(data[k,:,:]).shape,data.dtype)
+        lonsout = np.zeros((len(grdSODA.lon[0,:])),grdSODA.lon.dtype)
         
+        # Extract 359 is specific for SODA data as they only have maximum 359  
+        lonsout[0:len(grdSODA.lon[0,:])-i0] = grdSODA.lon[0,i0:]-359
+       
+        lonsout[len(grdSODA.lon[0,:])-i0:] = grdSODA.lon[0,1:i0+1]
+        
+        dataout[:,0:len(grdSODA.lon[0,:])-i0]  = data[k,:,i0:]
+        dataout[:,len(grdSODA.lon[0,:])-i0:] = data[k,:,1:i0+1]
+        #
+    
+        #lons,lats=np.meshgrid(lonsout,np.squeeze(grdSODA.lat[:,0]))
+        
+        #xin, yin   = map(lons,lats)
+        #xout, yout = map(grdROMS.lon_rho,grdROMS.lat_rho)
+        
+        #xin=xin[0,:]
+        #yin=yin[:,0]
+            
+        Zg = mp.interp(dataout,lonsout,grdSODA.lat[:,0],grdROMS.lon_rho,grdROMS.lat_rho,
+                       checkbounds=False, masked=False, order=1)
+        Zg2 = mp.interp(dataout,lonsout,grdSODA.lat[:,0],grdROMS.lon_rho,grdROMS.lat_rho,
+                       checkbounds=False, masked=False, order=0)
+        Zg[:,:]=np.where(abs(Zg)>int(grdROMS.maxval),Zg2[:,:],Zg)
+   
+        Zin = np.zeros((grdROMS.lon_rho.shape),dtype=np.float64, order='Fortran')
+        Zin = Zg
+      
+        #print '--->cleanArray : Using %s number of points to fill in gaps of data'%(grdROMS.smoothradius)
+        Zin = cl.cleanarray.sweep(int(grdROMS.maxval),
+                                  int(grdROMS.smoothradius),
+                                  np.asarray(Zg,order='Fortran'),
+                                  np.asarray(Zin,order='Fortran'),
+                                  np.asarray(grdROMS.mask_rho,order='Fortran'),
+                                  int(grdROMS.xi_rho),
+                                  int(grdROMS.eta_rho))
+       
         
         if var=='temperature':    
-            grdROMS.t[k,:,:]=Zg
+            grdROMS.t[k,:,:]=Zin
         elif var=='salinity':
-            grdROMS.s[k,:,:]=Zg
+            grdROMS.s[k,:,:]=Zin
         elif var=='uvel':
-            grdROMS.u[k,:,:]=Zg
+            grdROMS.u[k,:,:]=Zin
         elif var=='vvel':
-            grdROMS.v[k,:,:]=Zg
-       
-        #plotData.contourMap(grdROMS,grdSODA,Zg,k,var)
+            grdROMS.v[k,:,:]=Zin
+        
+        #plotData.contourMap(grdROMS,grdSODA,Zin,k,var)
    
 
 def doHorInterpolationSSHRegularGrid(var,grdROMS,grdSODA,data):
 
-    """
-    Use basemap instances to project the latitude/longitude pairs from input grid and output
-    grid to a general mercator projection. This enables us to use bilinear/nearest neighbor interpolation
-    when the input grid is regular.
-    """
-    map = mp.Basemap(llcrnrlon=-80,llcrnrlat=31.5,urcrnrlon=-55,urcrnrlat=45,
-            resolution='h',projection='tmerc',lon_0=-65,lat_0=40)
+    i0 = np.argmin(np.fabs(grdSODA.lon[0,:]-180))
+
+    dataout = np.zeros(np.squeeze(data[:,:]).shape,data.dtype)
+    lonsout = np.zeros((len(grdSODA.lon[0,:])),grdSODA.lon.dtype)
     
-    xin, yin   = map(grdSODA.lon,grdSODA.lat)
-    xout, yout = map(grdROMS.lon_rho,grdROMS.lat_rho)
-    
-    xin=xin[0,:]
-    yin=yin[:,0]
+    # Extract 359 is specific for SODA data as they only have maximum 359  
+    lonsout[0:len(grdSODA.lon[0,:])-i0] = grdSODA.lon[0,i0:]-359
    
+    lonsout[len(grdSODA.lon[0,:])-i0:] = grdSODA.lon[0,1:i0+1]
     
-    print 'interpolating field %s at surface'%(var)
-    datain=data[:,:] 
-    datain = np.ma.masked_values(datain,grdROMS.fill_value)
+    dataout[:,0:len(grdSODA.lon[0,:])-i0]  = data[:,i0:]
+    dataout[:,len(grdSODA.lon[0,:])-i0:] = data[:,1:i0+1]
     
-    Zg = mp.interp(datain, xin, yin, xout, yout, checkbounds=False, masked=True, order=1)
+    Zg = mp.interp(dataout,lonsout,grdSODA.lat[:,0],grdROMS.lon_rho,grdROMS.lat_rho,
+                   checkbounds=False, masked=False, order=1)
+    Zg2 = mp.interp(dataout,lonsout,grdSODA.lat[:,0],grdROMS.lon_rho,grdROMS.lat_rho,
+                   checkbounds=False, masked=False, order=0)
+    Zg[:,:]=np.where(abs(Zg)>int(grdROMS.maxval),Zg2[:,:],Zg)
+
+    Zin = np.zeros((grdROMS.lon_rho.shape),dtype=np.float64, order='Fortran')
+    Zin = Zg
   
-    grdROMS.ssh[:,:]=Zg
-    #plotData.contourMap(grdROMS,grdSODA,Zg,k,var)
+    #print '--->cleanArray : Using %s number of points to fill in gaps of data'%(grdROMS.smoothradius)
+    Zin = cl.cleanarray.sweep(int(grdROMS.maxval),
+                              int(grdROMS.smoothradius),
+                              np.asarray(Zg,order='Fortran'),
+                              np.asarray(Zin,order='Fortran'),
+                              np.asarray(grdROMS.mask_rho,order='Fortran'),
+                              int(grdROMS.xi_rho),
+                              int(grdROMS.eta_rho))
+   
+    grdROMS.ssh[:,:]=Zin
+    plotData.contourMap(grdROMS,grdSODA,Zin,1,var)
         
 def doHorInterpolationSSHIrregularGrid(var,grdROMS,grdSODA,data):
     

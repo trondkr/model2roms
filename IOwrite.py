@@ -5,13 +5,15 @@ import numpy as np
 import time
 import os
 
-def write_results(grdROMS,ntime,outfilename):
+def writeClimFile(grdROMS,ntime,outfilename,var):
         
-     if ntime==0:
+     if grdROMS.ioClimInitialized is False:
+        
+        grdROMS.ioClimInitialized=True
         
         if os.path.exists(outfilename):
             os.remove(outfilename)
-        print 'Writing first results to file %s'%(outfilename)
+        print 'Creating ouput file %s'%(outfilename)
         
         #f1 = Dataset(outfilename, mode='w', format='NETCDF3_CLASSIC')
         f1 = Dataset(outfilename, mode='w', format='NETCDF4')
@@ -177,19 +179,22 @@ def write_results(grdROMS,ntime,outfilename):
         
      else:
         f1 = Dataset(outfilename, mode='a', format='NETCDF4', zlib=True)
-        
-   
-     d= num2date(grdROMS.time,units=f1.variables['clim_time'].long_name,calendar=f1.variables['clim_time'].calendar)
-     print 'Appending data to file %s for time %s'%(outfilename,d)
-        
-     f1.variables['clim_time'][ntime]   = grdROMS.time
-     f1.variables['temp'][ntime,:,:,:]  = grdROMS.t2
-     f1.variables['salt'][ntime,:,:,:]  = grdROMS.s2
-     f1.variables['zeta'][ntime,:,:]    = grdROMS.ssh
-     f1.variables['u'][ntime,:,:,:]     = grdROMS.u3
-     f1.variables['v'][ntime,:,:,:]     = grdROMS.v3
-     f1.variables['ubar'][ntime,:,:]    = grdROMS.ubar
-     f1.variables['vbar'][ntime,:,:]    = grdROMS.vbar
+    
+     f1.variables['clim_time'][ntime]   = grdROMS.time 
+     if var=='temperature':
+        d= num2date(grdROMS.time,units=f1.variables['clim_time'].long_name,calendar=f1.variables['clim_time'].calendar)
+        print 'Appending data to file %s for time %s'%(outfilename,d)   
+        f1.variables['temp'][ntime,:,:,:]  = grdROMS.t2
+     if var=='salinity':
+        f1.variables['salt'][ntime,:,:,:]  = grdROMS.s2
+     if var=='ssh':
+        f1.variables['zeta'][ntime,:,:]    = grdROMS.ssh
+     if var=='vvel':
+        f1.variables['u'][ntime,:,:,:]     = grdROMS.u3
+        f1.variables['v'][ntime,:,:,:]     = grdROMS.v3
+     if var=='vbar':
+        f1.variables['ubar'][ntime,:,:]    = grdROMS.ubar
+        f1.variables['vbar'][ntime,:,:]    = grdROMS.vbar
      
      f1.close()
 
