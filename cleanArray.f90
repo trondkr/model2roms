@@ -42,20 +42,21 @@ Module cleanArray
             ! ------------------------------------------------------------------
           
            
-            integer II, JJ, KK, ic, jc, jcc, icc, fill, kc, total
-            integer go1,go2,go3,go4,go5,go6,go7,go8,go9,go10,go11,go12,go13,go14,go15,go16
+            integer II, JJ, KK, ic, jc, jcc, icc, fill, kc, ff, total
+
             double precision, dimension(JJ,II) :: dataout,datain
             double precision, dimension(JJ,II) :: mask
-            double precision counter, point, neg, pos
+            double precision, dimension(2,3)  :: foundWeight, foundData
+            double precision counter, point, hori, vert
             
-!f2py intent(in,out) dataout
-!f2py intent(in) datain, mask
+!f2py intent(in,out,overwrite) dataout
+!f2py intent(in,overwrite) datain, mask
 !f2py intent(in) II, JJ, FILL, KK
-!f2py intent(hide) ic, jc, icc, jcc, counter, point, total, neg, pos
+!f2py intent(hide) ic, jc,kc, ff, icc, jcc, counter, point, total, hori, verti
+!f2py intent(hide) foundWeight, foundData
 
-            !FILL=10000
-            !KK=20
-            !print*,'---> Started cleaning of array'
+            
+            print*,'---> Started cleaning of array'
             !print*,'---> Using a radius of ', KK,'points to fill in gaps'
             total   = 0    
             
@@ -71,154 +72,66 @@ Module cleanArray
                        ! print*, 'values:',abs(datain(jc,ic)), mask(jc,ic)
                         
                         total=total+1
+                        foundWeight(:,:)=-99
+                        foundData(:,:)=-99
+                        ! Horisontally find values around problem value
+                        do ff=-1,1,1
+                        do kc=-KK,KK
                         
-                        go1=0
-                        go2=0
-                        go3=0
-                        go4=0
-                        go5=0
-                        go6=0
-                        go7=0
-                        go8=0
-                        go9=0
-                        go10=0
-                        go11=0
-                        go12=0
-                        go13=0
-                        go14=0
-                        go15=0
-                        go16=0
-                        
-                        ! ROW 1 - keep JC, JC+1, JC-1 constant, move I +- kc positions
-                        do kc=1,KK
-                            neg=ic-kc
-                            pos=ic+kc
+                            hori=ic+kc
                             
-                            if (neg .LE. 1) then
-                                neg=1
-                            end if
-                            if (pos .GE. II) then
-                                pos=II
+                            if (hori .LE. 1 ) then
+                                hori=1
+                            else if (hori .GE. II) then
+                                hori=II
                             end if
                             
-                            if (abs(datain(jc+1,neg)) < FILL .AND. go1==0) THEN
-                                point = point + datain(jc+1,neg)
+                            if (abs(datain(jc+ff,hori)) < FILL .AND. mask(jc+ff,hori)==1 .AND. foundWeight(1,ff+2) .EQ. 0) THEN
                                 counter = counter + 1
-                                go1=1
+                                foundData(1,ff+2)=datain(jc+ff,hori)
+                                foundWeight(1,ff+2)=kc
+                                !print*,'found value hor',datain(jc+ff, hori)
                             end if
-                            if (abs(datain(jc+1,ic)) < FILL .AND. go2==0) THEN
-                                point = point + datain(jc+1,ic)
-                                counter = counter + 1
-                                go2=1
-                            end if
-                            if (abs(datain(jc+1,pos)) < FILL .AND. go3==0) THEN
-                                point = point + datain(jc+1,pos)
-                                counter = counter + 1
-                                go3=1
-                            end if
-
-                            ! ROW 2
-                            if (abs(datain(jc,ic-kc)) < FILL .AND. go4==0) THEN
-                                point = point + datain(jc,neg)
-                                counter = counter + 1
-                                go4=1
-                            end if
-                            if (abs(datain(jc,ic+kc)) < FILL .AND. go5==0) THEN
-                                point = point + datain(jc,pos)
-                                counter = counter + 1
-                                go5=1
-                            end if
-                        
-                            ! ROW 3
-                            if (abs(datain(jc-1,ic-1)) < FILL .AND. go6==0) THEN
-                                point = point + datain(jc-1,neg)
-                                counter = counter + 1
-                                go6=1
-                            end if
-                            if (abs(datain(jc-1,ic)) < FILL .AND. go7==0) THEN
-                                point = point + datain(jc-1,ic)
-                                counter = counter + 1
-                                go7=1
-                            end if
-                            if (abs(datain(jc-1,ic+1)) < FILL .AND. go8==0) THEN
-                                point = point + datain(jc-1,pos)
-                                counter = counter + 1
-                                go8=1
-                            end if
-                        
-                            ! SMOOTH VERTICALLY
-                            ! ROW 1 - keep IC, IC+1, IC-1 constant, move J +- kc positions
-                     
-                            neg=jc-kc
-                            pos=jc+kc
+                       
+                         ! Vertically find values around problem value
+                      
+                            vert=jc+kc
                             
-                            if (neg .LE. 1) then
-                                neg=1
-                            end if
-                            if (pos .GE. JJ) then
-                                pos=JJ
+                            if (vert .LE. 1 ) then
+                                vert=1
+                            else if (vert .GE. JJ) then
+                                vert=JJ
                             end if
                             
-                            if (abs(datain(pos,ic-1)) < FILL .AND. go9==0) THEN
-                                point = point + datain(pos,ic-1)
+                            if (abs(datain(vert,ic+ff)) < FILL .AND. mask(vert,ic+ff)==1 .AND. foundWeight(2,ff+2) .EQ. 0) THEN
                                 counter = counter + 1
-                                go9=1
+                                foundData(2,ff+2)=datain(vert,ic+ff)
+                                foundWeight(2,ff+2)=kc
+                                !print*,'found value vert',datain(vert,ic+ff)
+                                !print*,'weight',kc, jc, ic
                             end if
-                            if (abs(datain(jc,ic-1)) < FILL .AND. go10==0) THEN
-                                point = point + datain(jc,ic-1)
-                                counter = counter + 1
-                                go10=1
-                            end if
-                            if (abs(datain(neg,ic-1)) < FILL .AND. go11==0) THEN
-                                point = point + datain(neg,ic-1)
-                                counter = counter + 1
-                                go11=1
-                            end if
-                        
-                            ! ROW 2 (midpoints)
-                            if (abs(datain(pos,ic)) < FILL .AND. go12==0) THEN
-                                point = point + datain(pos,ic)
-                                counter = counter + 1
-                                go12=1
-                            end if
-                            if (abs(datain(neg,ic)) < FILL .AND. go13==0) THEN
-                                point = point + datain(neg,ic)
-                                counter = counter + 1
-                                go13=1
-                            end if
-                        
-                            ! ROW 3
-                            if (abs(datain(pos,ic+1)) < FILL .AND. go14==0) THEN
-                                point = point + datain(pos,ic+1)
-                                counter = counter + 1
-                                go14=1
-                            end if
-                            if (abs(datain(jc,ic+1)) < FILL .AND. go15==0) THEN
-                                point = point + datain(jc,ic+1)
-                                counter = counter + 1
-                                go15=1
-                            end if
-                            if (abs(datain(neg,ic+1)) < FILL .AND. go16==0) THEN
-                                point = point + datain(neg,ic+1)
-                                counter = counter + 1
-                                go16=1
-                            end if
-                        
                         end do
-                        ! Assign the final value to data array
+                        end do   
+                       
+        
+                        ! Assign the final value to data array using weights
                         if (counter > 0) then
-                            point = point/(counter*1.0)
-                            dataout(jc,ic) = point
-                        else if (counter==0 .OR. point > FILL) then
-                            dataout(jc,ic)=0.0
+                            do ff=1,1,3
+                            do kc 1,1,2
+                                
+                                dataout(jc,ic) = point
+                        else if (counter==0) then
+                            print*,'Failed to fill value at ', jc, ic
+                            !dataout(jc,ic)=0.0
                         end if
                        ! print*,'New value at point', point, dataout(jc,ic)
                        ! print*,'New point consist of ', counter,' values close to masked point'
                        ! print*,''
                         
-                        
+                   
                     end if
                 end do
+                ic=1
             end do
      
             !print*,'Cleaned up',total,'grid points that had bad values'
