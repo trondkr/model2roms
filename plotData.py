@@ -17,7 +17,6 @@ def contourMap(grdROMS,grdSODA,data,depthlevel,var):
     if var=='urot':
         tlat      = np.array(grdROMS.lat_u)
         tlon      = np.array(grdROMS.lon_u)
-        
     
     temp      = data
     
@@ -48,8 +47,8 @@ def contourMap(grdROMS,grdSODA,data,depthlevel,var):
     map.drawcountries()
     map.drawmapboundary()
 
-    map.drawmeridians(np.arange(0,360,5))
-    map.drawparallels(np.arange(0,90,5))
+    #map.drawmeridians(np.arange(0,360,5))
+    #map.drawparallels(np.arange(0,90,5))
 
     temp = np.ma.masked_values(temp,grdROMS.fill_value)
     
@@ -57,10 +56,13 @@ def contourMap(grdROMS,grdSODA,data,depthlevel,var):
         levels = np.arange(-1.5, 1.5, 0.1)
     if var in ['uvel','vvel','urot','vrot']:
         levels = np.arange(-2, 2, 0.1)
+    if var=='sodamask':
+        levels=np.arange(0,1,1)
     CS1 = map.contourf(x,y,temp,levels,cmap=cm.get_cmap('jet',len(levels)-1))
+    #CS1 = map.contourf(x,y,temp,levels,cmap=cm.get_cmap('jet',len(levels)-1))
     plt.colorbar(orientation='horizontal')
     plt.title('Variabel %s at depth %s'%(var,depthlevel))
-   
-    plt.show()
     #plotfile='figures/soda_depthK_'+str(depthlevel)+'.png'
     #plt.savefig(plotfile)
+    plt.show()
+   

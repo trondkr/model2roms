@@ -19,6 +19,7 @@ import grd
 import clim2bry
 import barotropic
 import IOinitial
+import plotData
 
 __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
@@ -97,13 +98,13 @@ def VerticalInterpolation(var,grdROMS,grdSODA):
                                                        int(grdROMS.eta_rho))
     
     if var=='temperature':
-        grdROMS.t2[:,:,:]=outdata #*grdROMS.mask_rho
+        grdROMS.t2[:,:,:]=outdata 
         #plotData.contourMap(grdROMS,grdSODA,np.squeeze(outdata[29,:,:]),"1",var)
     if var=='salinity':
-        grdROMS.s2[:,:,:]=outdata #*grdROMS.mask_rho
+        grdROMS.s2[:,:,:]=outdata 
         #plotData.contourMap(grdROMS,grdSODA,np.squeeze(outdata[29,:,:]),"1",var)
     if var=='vvel':
-        grdROMS.u3[:,:,:]= outdataU #*grdROMS.mask_u
+        grdROMS.u3[:,:,:]= outdataU
         
         
         outdataUBAR  = barotropic.velocity.ubar(np.asarray(outdataU,order='Fortran'),
@@ -117,7 +118,7 @@ def VerticalInterpolation(var,grdROMS,grdSODA):
         grdROMS.ubar = outdataUBAR
         
    
-        grdROMS.v3[:,:,:]= outdataV #*grdROMS.mask_v
+        grdROMS.v3[:,:,:]= outdataV
         outdataVBAR  = barotropic.velocity.vbar(np.asarray(outdataV,order='Fortran'),
                                                 np.asarray(outdataVBAR,order='Fortran'),
                                                 np.asarray(grdROMS.z_w,order='Fortran'),
@@ -147,15 +148,15 @@ def HorizontalInterpolation(var,grdROMS,grdSODA,data):
             
     if grdSODA.grdType=='irregular':
         if var=='temperature':
-            interp2D.doHorInterpolationIrregularGrid(var,grdROMS,grdSODA,temp)
+            interp2D.doHorInterpolationIrregularGrid(var,grdROMS,grdSODA,data)
         if var=='salinity':
-            interp2D.doHorInterpolationIrregularGrid(var,grdROMS,grdSODA,salt)
+            interp2D.doHorInterpolationIrregularGrid(var,grdROMS,grdSODA,data)
         if var=='ssh':
-            interp2D.doHorInterpolationSSHIrregularGrid(var,grdROMS,grdSODA,ssh)
+            interp2D.doHorInterpolationSSHIrregularGrid(var,grdROMS,grdSODA,data)
         if var=='uvel':
-            interp2D.doHorInterpolationIrregularGrid('uvel',grdROMS,grdSODA,uvel)
+            interp2D.doHorInterpolationIrregularGrid('uvel',grdROMS,grdSODA,data)
         if var=='vvel':
-            interp2D.doHorInterpolationIrregularGrid('vvel',grdROMS,grdSODA,vvel)
+            interp2D.doHorInterpolationIrregularGrid('vvel',grdROMS,grdSODA,data)
     
     
     if var=='vvel':
@@ -306,14 +307,13 @@ def convertSODA2ROMS(years,IDS,climName,initName,sodapath,romsgridpath):
     """Now we want to subset the data to avoid storing more information than we need.
     We do this by finding the indices of maximum and minimum latitude and longitude in the matrixes"""
     
-    find_subset_indices(grdSODA,min_lat=30, max_lat=90, min_lon=0, max_lon=360)
+    find_subset_indices(grdSODA,min_lat=25, max_lat=90, min_lon=0, max_lon=360)
     #grdSODA.minJ=None
     #grdSODA.maxJ=None
     #grdSODA.minI=None
     #grdSODA.maxI=None
     grdSODA.lat=grdSODA.lat[grdSODA.minJ:grdSODA.maxJ,grdSODA.minI:grdSODA.maxI]
     grdSODA.lon=grdSODA.lon[grdSODA.minJ:grdSODA.maxJ,grdSODA.minI:grdSODA.maxI]
-    
    
     print "\n---> Selected area in output file spans from (longitude=%3.2f,latitude=%3.2f) to (longitude=%3.2f,latitude=%3.2f)"%(grdROMS.lon_rho.min(),grdROMS.lat_rho.min(),grdROMS.lon_rho.max(),grdROMS.lat_rho.max())
     print "---> Selected area in input file spans from  (longitude=%3.2f,latitude=%3.2f) to (longitude=%3.2f,latitude=%3.2f)\n"%(grdSODA.lon.min(),grdSODA.lat.min(),grdSODA.lon.max(),grdSODA.lat.max())
@@ -373,8 +373,11 @@ def convertSODA2ROMS(years,IDS,climName,initName,sodapath,romsgridpath):
                     grdROMS.t=np.zeros((indexROMS_Z_ST),dtype=np.float64)
                     data_ST =np.zeros((indexTMP_ST),dtype=np.float64)
                     grdROMS.t2=np.zeros((indexROMS_S_ST),dtype=np.float64)
-                   
-                    
+                    if time==0:
+                        tmp=np.squeeze(data[0,:,:])
+                        grdSODA.mask = np.zeros((grdSODA.lon.shape),dtype=np.float64)
+                        grdSODA.mask[:,:] = np.where(tmp==grdROMS.fill_value,1,0)
+                        #plotData.contourMap(grdROMS,grdSODA,grdSODA.mask,1,'sodamask')
                 if var=='salinity':
                     data = np.array(cdf.variables["SALT"][0,:,grdSODA.minJ:grdSODA.maxJ,grdSODA.minI:grdSODA.maxI])
                     grdROMS.s=np.zeros((indexROMS_Z_ST),dtype=np.float64)

@@ -32,7 +32,7 @@ def doHorInterpolationIrregularGrid(var,grdROMS,grdSODA,data):
     Xg, Yg = np.meshgrid(np.arange(Lp), np.arange(Mp))
     
     for k in xrange(grdSODA.Nlevels):
-       # print 'Interpolation level %s'%(k)
+        print 'Interpolation level %s'%(k)
 
         xlist = []
         ylist = []
@@ -69,7 +69,7 @@ def doHorInterpolationIrregularGrid(var,grdROMS,grdSODA,data):
         elif var=='vvel':
             grdROMS.v[k,:,:]=Zg
            
-        #plotData.contourMap(grdROMS,grdSODA,Zg,k,var)
+        plotData.contourMap(grdROMS,grdSODA,Zg,k,var)
                   
                       
 def doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data):
@@ -78,8 +78,8 @@ def doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data):
     #map = mp.Basemap(projection='ortho',lat_0=90,lon_0=0.0,
     #              resolution='c',area_thresh=10000.)
 
-    for k in xrange(2): #grdSODA.Nlevels):
-        #print 'Interpolating level',k
+    for k in xrange(grdSODA.Nlevels):
+       # print 'Interpolating level',k
         
         i0 = np.argmin(np.fabs(grdSODA.lon[0,:]-180))
 
@@ -102,34 +102,37 @@ def doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data):
         
         #xin=xin[0,:]
         #yin=yin[:,0]
-            
+      
         Zg = mp.interp(dataout,lonsout,grdSODA.lat[:,0],grdROMS.lon_rho,grdROMS.lat_rho,
                        checkbounds=False, masked=False, order=1)
    
         Zin = np.zeros((grdROMS.lon_rho.shape),dtype=np.float64, order='Fortran')
-        Zin = Zg*grdROMS.mask_rho
+        Zin = Zg #
      
-        print '--->cleanArray : Using %s number of points to fill in gaps of data'%(grdROMS.smoothradius)
-        Zin = cl.cleanarray.sweep(int(grdROMS.maxval),
-                                  int(grdROMS.smoothradius),
+     #   print '--->cleanArray : Using %s number of points to fill in gaps of data'%(grdROMS.maxDistHorisontal)
+        Zin = cl.cleanarray.sweep(np.asarray(grdROMS.depth,order='Fortran'),
+                                  float(grdSODA.z_r[k]),
+                                  int(grdROMS.minDistPoints),
+                                  int(grdROMS.maxval),
+                                  int(grdROMS.maxDistHorisontal),
+                                  int(grdROMS.maxDistVertical),
                                   np.asarray(Zg,order='Fortran'),
                                   np.asarray(Zin,order='Fortran'),
                                   np.asarray(grdROMS.mask_rho,order='Fortran'),
                                   int(grdROMS.xi_rho),
                                   int(grdROMS.eta_rho))
-       
         
         if var=='temperature':    
-            grdROMS.t[k,:,:]=Zin
+            grdROMS.t[k,:,:]=Zin*grdROMS.mask_rho
         elif var=='salinity':
-            grdROMS.s[k,:,:]=Zin
+            grdROMS.s[k,:,:]=Zin*grdROMS.mask_rho
         elif var=='uvel':
-            grdROMS.u[k,:,:]=Zin
+            grdROMS.u[k,:,:]=Zin*grdROMS.mask_rho
         elif var=='vvel':
-            grdROMS.v[k,:,:]=Zin
+            grdROMS.v[k,:,:]=Zin*grdROMS.mask_rho
         
-        plotData.contourMap(grdROMS,grdSODA,Zin,k,var)
-        plotData.contourMap(grdROMS,grdSODA,grdROMS.mask_rho,k,var)
+        #plotData.contourMap(grdROMS,grdSODA,Zin*grdROMS.mask_rho,k,var)
+      
    
 
 def doHorInterpolationSSHRegularGrid(var,grdROMS,grdSODA,data):
@@ -149,23 +152,25 @@ def doHorInterpolationSSHRegularGrid(var,grdROMS,grdSODA,data):
     
     Zg = mp.interp(dataout,lonsout,grdSODA.lat[:,0],grdROMS.lon_rho,grdROMS.lat_rho,
                    checkbounds=False, masked=False, order=1)
-    Zg2 = mp.interp(dataout,lonsout,grdSODA.lat[:,0],grdROMS.lon_rho,grdROMS.lat_rho,
-                   checkbounds=False, masked=False, order=0)
-    Zg[:,:]=np.where(abs(Zg)>int(grdROMS.maxval),Zg2[:,:],Zg)
 
     Zin = np.zeros((grdROMS.lon_rho.shape),dtype=np.float64, order='Fortran')
     Zin = Zg
   
     #print '--->cleanArray : Using %s number of points to fill in gaps of data'%(grdROMS.smoothradius)
-    #Zin = cl.cleanarray.sweep(int(grdROMS.maxval),
-    #                          int(grdROMS.smoothradius),
-    #                          np.asarray(Zg,order='Fortran'),
-    #                          np.asarray(Zin,order='Fortran'),
-    #                          np.asarray(grdROMS.mask_rho,order='Fortran'),
-    #                          int(grdROMS.xi_rho),
-    #                          int(grdROMS.eta_rho))
+    Zin = cl.cleanarray.sweep(np.asarray(grdROMS.depth,order='Fortran'),
+                                  float(grdSODA.z_r[0]),
+                                  int(grdROMS.minDistPoints),
+                                  int(grdROMS.maxval),
+                                  int(grdROMS.maxDistHorisontal),
+                                  int(grdROMS.maxDistVertical),
+                                  np.asarray(Zg,order='Fortran'),
+                                  np.asarray(Zin,order='Fortran'),
+                                  np.asarray(grdROMS.mask_rho,order='Fortran'),
+                                  int(grdROMS.xi_rho),
+                                  int(grdROMS.eta_rho))
+        
    
-    grdROMS.ssh[:,:]=Zin
+    grdROMS.ssh[:,:]=Zin*grdROMS.mask_rho
     #plotData.contourMap(grdROMS,grdSODA,Zin,1,var)
         
 def doHorInterpolationSSHIrregularGrid(var,grdROMS,grdSODA,data):

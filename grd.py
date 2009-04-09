@@ -72,7 +72,8 @@ class grdClass:
             
             if np.rank(self.lon)==1:
                     self.lon, self.lat = np.meshgrid(self.lon,self.lat)
-                    
+            
+            
             IOverticalGrid.get_z_levels(self)
             
         if self.type=='ROMS':
@@ -88,8 +89,11 @@ class grdClass:
             
             """Parameters that are used to fill in gaps in interpolated fields
             due to mismatch of iput and output mask (used in cleanArray.f90)"""
-            self.smoothradius= 20
-            self.maxval=1000
+            
+            self.maxval=10000
+            self.minDistPoints=3
+            self.maxDistHorisontal=20
+            self.maxDistVertical=40
             
             self.time     = 0
             self.reftime  = 0
