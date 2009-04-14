@@ -111,9 +111,9 @@ class grdClass:
             self.lat_v  = self.cdf.variables["lat_v"][:]
             self.mask_v = self.cdf.variables["mask_v"][:,:]
             
-            #self.lon_psi  = self.cdf.variables["lon_psi"][:]
-            #self.lat_psi  = self.cdf.variables["lat_psi"][:]
-            #self.mask_psi = self.cdf.variables["mask_psi"][:,:]
+            self.lon_psi  = self.lon_u[:-1,:]
+            self.lat_psi  = self.lat_v[:,:-1]
+            self.mask_psi = self.mask_v[:,:-1]
             
             self.f  = self.cdf.variables["f"][:]
             self.xl  = self.cdf.variables["xl"][:]
