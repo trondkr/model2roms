@@ -87,7 +87,7 @@ def doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data):
         lonsout = np.zeros((len(grdSODA.lon[0,:])),grdSODA.lon.dtype)
         
         # Extract 359 is specific for SODA data as they only have maximum 359  
-        lonsout[0:len(grdSODA.lon[0,:])-i0] = grdSODA.lon[0,i0:]-359
+        lonsout[0:len(grdSODA.lon[0,:])-i0] = grdSODA.lon[0,i0:]-360
        
         lonsout[len(grdSODA.lon[0,:])-i0:] = grdSODA.lon[0,1:i0+1]
         
@@ -131,7 +131,7 @@ def doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data):
         elif var=='vvel':
             grdROMS.v[k,:,:]=Zin*grdROMS.mask_rho
         
-        #plotData.contourMap(grdROMS,grdSODA,Zin*grdROMS.mask_rho,k,var)
+      #  plotData.contourMap(grdROMS,grdSODA,Zin*grdROMS.mask_rho,k,var)
       
    
 
