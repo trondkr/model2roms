@@ -65,27 +65,71 @@ def writeClimFile(grdROMS,ntime,outfilename,var):
         vnc.units = 'degrees north'
         vnc[:,:] = grdROMS.lat_v
         
+        vnc = f1.createVariable('lat_psi', 'd', ('eta_psi','xi_psi',),zlib=True)
+        vnc.long_name = 'Latitude at PSI points'
+        vnc.units = 'degrees north'
+        vnc[:,:] = grdROMS.lat_psi
+        
+        vnc = f1.createVariable('lon_psi', 'd', ('eta_psi','xi_psi',),zlib=True)
+        vnc.long_name = 'Longitude at PSI points'
+        vnc.units = 'degrees east'
+        vnc[:,:] = grdROMS.lon_psi
+        
         vnc = f1.createVariable('h', 'd', ('eta_rho','xi_rho',),zlib=True)
         vnc.long_name = 'Final bathymetry at RHO points'
         vnc.units = 'meter'
         vnc.field = "bath, scalar"
         vnc[:,:] = grdROMS.depth
         
+        vnc = f1.createVariable('f', 'd', ('eta_rho','xi_rho',),zlib=True)
+        vnc.long_name = 'Coriolis parameter at RHO points'
+        vnc.units = 'second-1'
+        vnc.field = "Coriolis, scalar"
+        vnc[:,:] = grdROMS.f
+        
+        vnc = f1.createVariable('pm', 'd', ('eta_rho','xi_rho',),zlib=True)
+        vnc.long_name = 'curvilinear coordinate metric in XI'
+        vnc.units = 'meter-1'
+        vnc.field = "pm, scalar"
+        vnc[:,:] = grdROMS.pm
+        
+        vnc = f1.createVariable('pn', 'd', ('eta_rho','xi_rho',),zlib=True)
+        vnc.long_name = 'curvilinear coordinate metric in ETA'
+        vnc.units = 'meter-1'
+        vnc.field = "pn, scalar"
+        vnc[:,:] = grdROMS.pn
+        
         vnc = f1.createVariable('s_rho', 'd', ('s_rho',),zlib=True)
         vnc.long_name = "S-coordinate at RHO-points"
         vnc.valid_min = -1.
         vnc.valid_max = 0.
         vnc.standard_name = "ocean_s_coordinate"
-        vnc.formula_terms = "s: s_w eta: zeta depth: h a: theta_s b: theta_b depth_c: hc" 
+        vnc.formula_terms = "s: s_rho eta: zeta depth: h a: theta_s b: theta_b depth_c: hc" 
         vnc.field = "s_rho, scalar"
         vnc[:] = grdROMS.s_rho
-           
-        vnc= f1.createVariable('Cs_rho', 'd', ('s_rho',),zlib=True)
+        
+        vnc = f1.createVariable('s_w', 'd', ('s_w',),zlib=True)
+        vnc.long_name = "S-coordinate at W-points"
+        vnc.valid_min = -1.
+        vnc.valid_max = 0.
+        vnc.standard_name = "ocean_s_coordinate"
+        vnc.formula_terms = "s: s_w eta: zeta depth: h a: theta_s b: theta_b depth_c: hc" 
+        vnc.field = "s_w, scalar"
+        vnc[:] = grdROMS.s_w
+        
+        vnc= f1.createVariable('Cs_r', 'd', ('s_rho',),zlib=True)
         vnc.long_name = "S-coordinate stretching curves at RHO-points"
         vnc.valid_min = -1.
         vnc.valid_max = 0.
         vnc.field = "s_rho, scalar"
         vnc[:] = grdROMS.Cs_rho
+        
+        vnc= f1.createVariable('Cs_w', 'd', ('s_w',),zlib=True)
+        vnc.long_name = "S-coordinate stretching curves at W-points"
+        vnc.valid_min = -1.
+        vnc.valid_max = 0.
+        vnc.field = "s_w, scalar"
+        vnc[:] = grdROMS.Cs_w
         
         vnc=f1.createVariable('hc','d',zlib=True)
         vnc.long_name = "S-coordinate parameter, critical depth" ;
@@ -135,6 +179,12 @@ def writeClimFile(grdROMS,ntime,outfilename,var):
         vnc.FillValue = 1.0
         vnc[:,:]=grdROMS.mask_v
         
+        vnc=f1.createVariable('mask_psi','d',('eta_psi', 'xi_psi'),zlib=True)
+        vnc.long_name = "mask on PSI-points"
+        vnc.option_0 = "land" 
+        vnc.option_1 = "water"
+        vnc.FillValue = 1.0
+        vnc[:,:]=grdROMS.mask_psi
         
         v_time = f1.createVariable('clim_time', 'd', ('time',),zlib=True)
         v_time.long_name = 'Days since 1948-01-01 00:00:00'
