@@ -19,13 +19,18 @@ Module cleanArray
             ! the array and replaces fill values over ocean with the nearest points values.
             !
             ! The routine finds the points in KKxVV distance from missing value points.
-            ! This means that a maximum of KK in the horizontal direction and a maximum
+            ! This means that a maximum of KK points in the horizontal direction and a maximum
             ! of VV points in the vertical are searched for values to be used to fill in
             ! the missing value. A maximum of "maxpoints" within the distance KK and VV are
-            ! actually used to make sure you use mostly values close to missing value. However, with the
+            ! then used to make sure you use mostly values close to missing value. However, with the
             ! ability to have high values of KK and VV you make sure that a value is
             ! found to fill in if no-values exists nearby. The values are weighted
-            ! with the distance from the missing value point.
+            ! with the distance from the missing value point. If no value is found within KKxVV distance,
+            ! the search radius is increased (INCREASED=1) and for each iteration no values are found,
+            ! the KK and VV distance increases with 10 points. As soon as a good value is found,
+            ! the search radius decreases back to the original size determined in grd.py. This
+            ! increase/decrease is necessary for some points in difficult topographical areas (like Bay of Fundy).
+            ! The program increases the searh radius 3 times before giving up to find values.
             !
             ! Trond Kristiansen, March and April 2009
             ! Rutgers University, NJ.
@@ -37,16 +42,19 @@ Module cleanArray
             ! import cl
             ! Zin = cl.cleanArray.sweep(Zin,Zout, maskarray,i,j,k)
             !
-            !  (I-1,J+1)       (I,J+1)        (I+1,J+1)                                                       
-            !   O----------------O----------------O                                                                        
+            !                 (I,J+1)                                                               
+            !   |----------------O----------------|                                                                        
             !   |                |                |                                                
             !   |                |                |                                                  
             !  (I-1,J)        X (I,J)          (I+1,J)
             !   |                |                |   
             !   |                |                |                                                  
-            !   O----------------O----------------O                                                  
-            !  (I-1,J-1)       (I,J-1)        (I+1,J-1)                                       
+            !   |----------------O----------------|                                                  
+            !                 (I,J-1)                                           
             !
+            ! From each of these 6 points (5 unique) we move up and down VV points,
+            ! and KK points horisontally. A maximum of "maxpoints" are stored in each direction (foundData array)
+            ! together with the distance from the missing value point (foundWeight array) 
     
             ! ------------------------------------------------------------------
           
@@ -214,6 +222,8 @@ Module cleanArray
 
                         if (counter==0) then
                             !print*,'no data', dataout(jc,ic), mask(jc,ic), jc,ic
+                            ! Here we increase the search area as no points within KKxVV
+                            ! both vertically and horisontally was found.
                             KK=KK+10
                             VV=VV+10
                             INCREASED=1
@@ -225,6 +235,8 @@ Module cleanArray
                                 goto 100
                             end if
                         else if (counter >0 .AND. INCREASED .EQ. 1) then
+                            ! Good values found, now reset the search area to
+                            ! what is defined in grd.py
                             INCREASED=0
                             KK=orgKK
                             VV=orgVV
@@ -235,7 +247,7 @@ Module cleanArray
 100                 continue                 
                 end do
             end do
-           
+            !print*,'Number of points filled', total
         end subroutine sweep
         
     end module cleanArray
