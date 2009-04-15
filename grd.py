@@ -95,6 +95,7 @@ class grdClass:
             self.maxDistHorisontal=20
             self.maxDistVertical=40
             
+            self.message  = None  # Used to store the date for printing to screen (IOwrite.py)
             self.time     = 0
             self.reftime  = 0
             self.grdType  = 'regular'
