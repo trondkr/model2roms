@@ -30,7 +30,6 @@ def createInitFile(grdROMS,ntime,outfilename,var):
           grdROMS.ioInitInitialized=True
           if os.path.exists(outfilename):
                os.remove(outfilename)
-          print 'Writing first results to file %s'%(outfilename)
        
           f1 = Dataset(outfilename, mode='w', format='NETCDF4')
           f1.description="This is a climatology file for ROMS"
@@ -193,8 +192,8 @@ def createInitFile(grdROMS,ntime,outfilename,var):
           v_ubar.units = "m/s"
           v_ubar.FillValue = grdROMS.fill_value
                 
-          d= num2date(grdROMS.time,units=f1.variables['clim_time'].long_name,calendar=f1.variables['clim_time'].calendar)
-          print 'Appending data to file %s for time %s'%(outfilename,d)
+          #d= num2date(grdROMS.time,units=f1.variables['clim_time'].long_name,calendar=f1.variables['clim_time'].calendar)
+          #print 'Appending data to file %s for time %s'%(outfilename,d)
              
      f1.variables['clim_time'][ntime]   = grdROMS.time
     
