@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8 -*-
 import numpy as np
 import datetime
 from griddata import griddata
@@ -7,6 +7,7 @@ import mpl_toolkits.basemap as mp
 import geoProjection
 import sys
 import cl
+import time
 
 __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
@@ -72,11 +73,20 @@ def doHorInterpolationIrregularGrid(var,grdROMS,grdSODA,data):
         plotData.contourMap(grdROMS,grdSODA,Zg,k,var)
                   
                       
-def doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data):
+def doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data,show_progress):
     
     #map = mp.Basemap(resolution='c',projection='robin',lon_0=0.0)
     #map = mp.Basemap(projection='ortho',lat_0=90,lon_0=0.0,
     #              resolution='c',area_thresh=10000.)
+    if show_progress is True:
+        from progressBar import progressBar
+        # find unicode characters here: http://en.wikipedia.org/wiki/List_of_Unicode_characters#Block_elements
+        empty  =u'\u25FD'
+        filled =u'\u25FE'
+
+        progress = progressBar(color='red',width=24, block=filled.encode('UTF-8'), empty=empty.encode('UTF-8'))
+
+
 
     for k in xrange(grdSODA.Nlevels):
        # print 'Interpolating level',k
@@ -86,23 +96,13 @@ def doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data):
         dataout = np.zeros(np.squeeze(data[k,:,:]).shape,data.dtype)
         lonsout = np.zeros((len(grdSODA.lon[0,:])),grdSODA.lon.dtype)
         
-        # Extract 359 is specific for SODA data as they only have maximum 359  
         lonsout[0:len(grdSODA.lon[0,:])-i0] = grdSODA.lon[0,i0:]-360
        
         lonsout[len(grdSODA.lon[0,:])-i0:] = grdSODA.lon[0,1:i0+1]
         
         dataout[:,0:len(grdSODA.lon[0,:])-i0]  = data[k,:,i0:]
         dataout[:,len(grdSODA.lon[0,:])-i0:] = data[k,:,1:i0+1]
-        #
-    
-        #lons,lats=np.meshgrid(lonsout,np.squeeze(grdSODA.lat[:,0]))
-        
-        #xin, yin   = map(lons,lats)
-        #xout, yout = map(grdROMS.lon_rho,grdROMS.lat_rho)
-        
-        #xin=xin[0,:]
-        #yin=yin[:,0]
-      
+       
         Zg = mp.interp(dataout,lonsout,grdSODA.lat[:,0],grdROMS.lon_rho,grdROMS.lat_rho,
                        checkbounds=False, masked=False, order=1)
    
@@ -130,7 +130,12 @@ def doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data):
             grdROMS.u[k,:,:]=Zin*grdROMS.mask_rho
         elif var=='vvel':
             grdROMS.v[k,:,:]=Zin*grdROMS.mask_rho
+        if show_progress is True:
+            p=int( ((k+1*1.0)/(1.0*grdSODA.Nlevels))*100.)
         
+            progress.render(p)
+    
+
       #  plotData.contourMap(grdROMS,grdSODA,Zin*grdROMS.mask_rho,k,var)
       
    
