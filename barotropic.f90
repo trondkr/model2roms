@@ -49,7 +49,7 @@ Module velocity
             print*,'--->Started ubar calculations'
             ! average z_w to Arakawa-C u,v-points (z_wu, z_wv)
             do jc=1,JJ
-              do ic=2,II-1
+              do ic=2,II
                   do kc=1,Nroms+1
                     z_wu(kc,jc,ic) = 0.5*(z_w(kc,jc,ic-1)+z_w(kc,jc,ic))
                   end do
@@ -62,7 +62,11 @@ Module velocity
                   do kc=1,Nroms
                         outdat(jc,ic) = outdat(jc,ic) + dat(kc,jc,ic)*abs(z_wu(kc+1,jc,ic) - z_wu(kc,jc,ic))
                   end do
-                  outdat(jc,ic) = outdat(jc,ic)/abs(z_wu(Nroms,jc,ic))
+                  if (abs(z_wu(Nroms,jc,ic)) > 0.0) then
+                    outdat(jc,ic) = outdat(jc,ic)/abs(z_wu(Nroms,jc,ic))
+                  else
+                    outdat(jc,ic) = 0.0
+                  end if
               end do
             end do
         
@@ -111,7 +115,7 @@ Module velocity
             
             fill=10000
             print*,'--->Started vbar calculations'
-            do jc=2,JJ-1
+            do jc=2,JJ
               do ic=1,II
                   do kc=1,Nroms+1
                     z_wv(kc,jc,ic) = 0.5*(z_w(kc,jc-1,ic)+z_w(kc,jc,ic))
@@ -128,7 +132,13 @@ Module velocity
                   do kc=1,Nroms
                         outdat(jc,ic) = outdat(jc,ic) + dat(kc,jc,ic)*abs(z_wv(kc+1,jc,ic) - z_wv(kc,jc,ic))
                   end do
-                  outdat(jc,ic) = outdat(jc,ic)/abs(z_wv(Nroms,jc,ic))
+                  
+                  if (abs(z_wv(Nroms,jc,ic)) > 0.0) then
+                    outdat(jc,ic) = outdat(jc,ic)/abs(z_wv(Nroms,jc,ic))
+                  else
+                    outdat(jc,ic) = 0.0
+                  end if
+                 
               end do
             end do
         
