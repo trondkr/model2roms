@@ -11,10 +11,10 @@ def contourMap(grdROMS,grdSODA,data,depthlevel,var):
     tlat      = np.array(grdROMS.lat_rho)
     tlon      = np.array(grdROMS.lon_rho)
     
-    if var=='vrot':
+    if var in ['vrot','vbar','vvel']:
         tlat      = np.array(grdROMS.lat_v)
         tlon      = np.array(grdROMS.lon_v)
-    if var=='urot':
+    if var in ['urot','ubar','uvel']:
         tlat      = np.array(grdROMS.lat_u)
         tlon      = np.array(grdROMS.lon_u)
     
@@ -32,7 +32,7 @@ def contourMap(grdROMS,grdSODA,data,depthlevel,var):
     if grdROMS.grdName=='Nordic':
     # Plot the Nordic region (Greenland, Nordic Seas, and the Barents Sea)
         map = Basemap(lon_0=25,boundinglat=50,
-                      resolution='l',area_thresh=500.,projection='npstere')
+                      resolution='l',area_thresh=100.,projection='npstere')
         levels = np.arange(-2.0, 13.0, 0.1)
         
     if grdROMS.grdName=='NA':
@@ -54,8 +54,8 @@ def contourMap(grdROMS,grdSODA,data,depthlevel,var):
     
     if var=='ssh':
         levels = np.arange(-1.5, 1.5, 0.1)
-    if var in ['uvel','vvel','urot','vrot']:
-        levels = np.arange(-2, 2, 0.1)
+    if var in ['uvel','vvel','urot','vrot','ubar','vbar']:
+        levels = np.arange(-2.0, 2.0, 0.1)
     if var=='sodamask':
         levels=np.arange(0,1,1)
     CS1 = map.contourf(x,y,temp,levels,cmap=cm.get_cmap('jet',len(levels)-1))
