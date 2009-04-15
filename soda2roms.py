@@ -47,7 +47,7 @@ def VerticalInterpolation(var,grdROMS,grdSODA):
         
         
     if var=='salinity' or var=='temperature':
-        print 'Interpolating vertically for %s with dimensions %s x %s'%(var,grdROMS.xi_rho,grdROMS.eta_rho)
+        print 'Start vertical interpolation for %s (dimensions=%s x %s)'%(var,grdROMS.xi_rho,grdROMS.eta_rho)
         outdata=np.zeros((outINDEX_ST),dtype=np.float64, order='Fortran')
     
         outdata = interp.interpolation.dovertinter(np.asarray(outdata,order='Fortran'),
@@ -65,7 +65,7 @@ def VerticalInterpolation(var,grdROMS,grdSODA):
                                     
       
     if var=='vvel':
-        print 'Interpolating vertically for %s with dimensions %s x %s'%(var,grdROMS.xi_u,grdROMS.eta_u)
+        print 'Start vertical interpolation for uvel (dimensions=%s x %s)'%(grdROMS.xi_u,grdROMS.eta_u)
         outdataU=np.zeros((outINDEX_U),dtype=np.float64,order='Fortran')
         outdataUBAR=np.zeros((outINDEX_UBAR),dtype=np.float64)
 
@@ -81,7 +81,7 @@ def VerticalInterpolation(var,grdROMS,grdSODA):
                                                        int(grdROMS.xi_rho),
                                                        int(grdROMS.eta_rho))
    
-        print 'Interpolating vertically for %s with dimensions %s x %s'%(var,grdROMS.xi_v,grdROMS.eta_v)
+        print 'Start vertical interpolation for vvel (dimensions=%s x %s)'%(grdROMS.xi_v,grdROMS.eta_v)
         outdataV=np.zeros((outINDEX_V),dtype=np.float64,order='Fortran')
         outdataVBAR=np.zeros((outINDEX_VBAR),dtype=np.float64)
          
@@ -116,7 +116,7 @@ def VerticalInterpolation(var,grdROMS,grdSODA):
                                                 grdROMS.xi_rho,
                                                 grdROMS.eta_rho)
         grdROMS.ubar = outdataUBAR
-        
+        #plotData.contourMap(grdROMS,grdSODA,outdataUBAR,"1","ubar")
    
         grdROMS.v3[:,:,:]= outdataV
         outdataVBAR  = barotropic.velocity.vbar(np.asarray(outdataV,order='Fortran'),
@@ -129,22 +129,23 @@ def VerticalInterpolation(var,grdROMS,grdSODA):
                                                 grdROMS.eta_rho)
         
         grdROMS.vbar = outdataVBAR
-    
-def HorizontalInterpolation(var,grdROMS,grdSODA,data):
+        #plotData.contourMap(grdROMS,grdSODA,outdataVBAR,"1","vbar")
+   
+def HorizontalInterpolation(var,grdROMS,grdSODA,data,show_progress):
     print 'Start %s horizontal interpolation for %s'%(grdSODA.grdType,var)
     
     if grdSODA.grdType=='regular':
         if var=='temperature':
-            interp2D.doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data)
+            interp2D.doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data,show_progress)
         if var=='salinity':
-            interp2D.doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data)
+            interp2D.doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data,show_progress)
         if var=='ssh':
             interp2D.doHorInterpolationSSHRegularGrid(var,grdROMS,grdSODA,data)
             grdROMS.ssh=grdROMS.ssh*grdROMS.mask_rho
         if var=='uvel':
-            interp2D.doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data)
+            interp2D.doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data,show_progress)
         if var=='vvel':
-            interp2D.doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data)
+            interp2D.doHorInterpolationRegularGrid(var,grdROMS,grdSODA,data,show_progress)
             
     if grdSODA.grdType=='irregular':
         if var=='temperature':
@@ -291,7 +292,7 @@ def find_subset_indices(grdSODA,min_lat,max_lat,min_lon,max_lon):
     grdSODA.maxI=indices[2][2]
     
   
-def convertSODA2ROMS(years,IDS,climName,initName,sodapath,romsgridpath):
+def convertSODA2ROMS(years,IDS,climName,initName,sodapath,romsgridpath,vars,show_progress):
 
     fileNameIn=sodapath+'SODA_2.0.2_'+str(years[0])+'_'+str(IDS[0])+'.cdf'
   
@@ -363,10 +364,7 @@ def convertSODA2ROMS(years,IDS,climName,initName,sodapath,romsgridpath):
             All variables for all time are now stored in arrays. Now, start the interpolation to the
             new grid for all variables and then finally write results to file.
             """
-            vars=['temperature','salinity','ssh','uvel','vvel']
-            #vars=['temperature']
-            #vars=['uvel','vvel']
-            #vars=['ssh']
+            
             for var in vars:
                 if var=='temperature':
                     data = np.array(cdf.variables["TEMP"][0,:,grdSODA.minJ:grdSODA.maxJ,grdSODA.minI:grdSODA.maxI])
@@ -406,7 +404,7 @@ def convertSODA2ROMS(years,IDS,climName,initName,sodapath,romsgridpath):
                     grdROMS.v3=np.zeros((indexROMS_S_V),dtype=np.float64)
                     
                      
-                HorizontalInterpolation(var,grdROMS,grdSODA,data)
+                HorizontalInterpolation(var,grdROMS,grdSODA,data,show_progress)
                 VerticalInterpolation(var,grdROMS,grdSODA)
                 
                 
@@ -416,9 +414,20 @@ def convertSODA2ROMS(years,IDS,climName,initName,sodapath,romsgridpath):
                 IOinitial.createInitFile(grdROMS,time,initName,var)
                 
             cdf.close()    
+            if show_progress is True:
+                from progressBar import progressBar
+                # find unicode characters here: http://en.wikipedia.org/wiki/List_of_Unicode_characters#Block_elements
+                empty  =u'\u25FD'
+                filled =u'\u25FE'
+        
+                progress = progressBar(color='green',width=24, block=filled.encode('UTF-8'), empty=empty.encode('UTF-8'))
+                message='Finished conversions for time %s'%(grdROMS.message)
+                progress.render(100,message)
+            else:
+                message='Finished conversions for time %s'%(grdROMS.message)
+                print message
             time+=1
-          
-            
+           
           
             
     
