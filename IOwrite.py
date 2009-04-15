@@ -13,7 +13,6 @@ def writeClimFile(grdROMS,ntime,outfilename,var):
         
         if os.path.exists(outfilename):
             os.remove(outfilename)
-        print 'Creating ouput file %s'%(outfilename)
         
         #f1 = Dataset(outfilename, mode='w', format='NETCDF3_CLASSIC')
         f1 = Dataset(outfilename, mode='w', format='NETCDF4')
@@ -233,7 +232,7 @@ def writeClimFile(grdROMS,ntime,outfilename,var):
      f1.variables['clim_time'][ntime]   = grdROMS.time 
      if var=='temperature':
         d= num2date(grdROMS.time,units=f1.variables['clim_time'].long_name,calendar=f1.variables['clim_time'].calendar)
-        print 'Appending data to file %s for time %s'%(outfilename,d)   
+        grdROMS.message=d   
         f1.variables['temp'][ntime,:,:,:]  = grdROMS.t2
      if var=='salinity':
         f1.variables['salt'][ntime,:,:,:]  = grdROMS.s2
