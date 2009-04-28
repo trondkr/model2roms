@@ -47,13 +47,13 @@ Module interpolation
             !        II is the total grid points in xi direction
             ! -------------------------------------------------------------------------------------------------------
             
-            double precision rz2, rz1, fill
+            real(4) rz2, rz1, fill
             integer eta_rho, xi_rho, II, JJ, ic, jc, kc, kT, kkT, Nsoda, Nroms, ff
-            double precision, dimension(Nsoda,JJ,II) :: dat
-            double precision, dimension(eta_rho,xi_rho) :: bathymetry
-            double precision, dimension(Nroms,JJ,II) :: outdat
-            double precision, dimension(Nsoda) ::  zs
-            double precision, dimension(Nroms,eta_rho,xi_rho) :: zr
+            real(4), dimension(Nsoda,JJ,II) :: dat
+            real(4), dimension(eta_rho,xi_rho) :: bathymetry
+            real(4), dimension(Nroms,JJ,II) :: outdat
+            real(4), dimension(Nsoda) ::  zs
+            real(4), dimension(Nroms,eta_rho,xi_rho) :: zr
 
 !f2py intent(in,out,overwrite) outdat       
 !f2py intent(in,overwrite) dat, bathymetry, zr, zs
@@ -180,13 +180,13 @@ Module interpolation
           
            
             integer KK, II, JJ, kc, ic, jc, fill
-            double precision, dimension(KK,JJ,II) :: rhodata
-            double precision, dimension(KK,JJ,II-1) :: udata
+            real(4), dimension(KK,JJ,II) :: rhodata
+            real(4), dimension(KK,JJ,II-1) :: udata
        
 !f2py intent(in,out,overwrite) udata
 !f2py intent(in,overwrite) rhodata, KK, JJ, II
 !f2py intent(hide) ic,jc,kc, fill
-
+          
             fill=10000
             print*,'---> Started horisontal rho2u interpolation'
             do kc=1,KK
@@ -214,6 +214,7 @@ Module interpolation
                     end do
                 end do
             end do
+            
             print*,'-----> Ended horisontal rho2u interpolation'
         end subroutine rho2u
             
@@ -230,9 +231,9 @@ Module interpolation
             ! -------------------------------------------------------------------------------------------------------
           
            integer KK, II, JJ, kc, ic, jc, fill
-           double precision, dimension(KK,JJ,II) :: rhodata
-           double precision, dimension(KK,JJ-1,II) :: vdata
-
+           real(4), dimension(KK,JJ,II) :: rhodata
+           real(4), dimension(KK,JJ-1,II) :: vdata
+           
 !f2py intent(in,out,overwrite) vdata
 !f2py intent(in,overwrite) rhodata, KK, JJ, II
 !f2py intent(hide) ic,jc,kc, fill
@@ -272,16 +273,16 @@ Module interpolation
             ! Trond Kristiansen, January 2009
             ! Rutgers University, NJ.
             ! -------------------------------------------------------------------------------------------------------
-            
-           double precision, dimension(KK,JJ,II) :: urot, vrot
-           double precision, dimension(KK,JJ,II) :: u_rho, v_rho
-           double precision, dimension(JJ,II)  :: angle
+             
+           real(4), dimension(KK,JJ,II) :: urot, vrot
+           real(4), dimension(KK,JJ,II) :: u_rho, v_rho
+           real(4), dimension(JJ,II)  :: angle
            integer KK, II, JJ, kc, ic, jc
           
 !f2py intent(in,out,overwrite) urot, vrot
 !f2py intent(in,overwrite)  u_rho, v_rho, angle, KK, JJ, II
 !f2py intent(hide) ic,jc,kc
-    
+          
            print*,'---> Started rotation of velocities'
            do kc=1,KK
              do jc=1,JJ
@@ -296,6 +297,7 @@ Module interpolation
              end do
             end do
             print*,'-----> Ended rotation of velocities'
+            
         end subroutine rotate
     
      end module interpolation

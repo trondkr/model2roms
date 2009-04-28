@@ -34,17 +34,18 @@ Module velocity
             !        II is the total grid points in xi direction
             ! -------------------------------------------------------------------------------------------------------
             
-            double precision rz2, rz1, fill
+            real(4) rz2, rz1, fill
             integer eta_rho, xi_rho, II, JJ, ic, jc, kc, kT, Nsoda, Nroms
-            double precision, dimension(Nroms,JJ,II) :: dat
-            double precision, dimension(JJ,II) :: outdat
-            double precision, dimension(Nroms+1,eta_rho,xi_rho) ::    z_w
-            double precision, dimension(Nroms+1,eta_rho,xi_rho-1) ::  z_wu
+            real(4), dimension(Nroms,JJ,II) :: dat
+            real(4), dimension(JJ,II) :: outdat
+            real(4), dimension(Nroms+1,eta_rho,xi_rho) ::  z_w
+            real(4), dimension(Nroms+1,eta_rho,xi_rho-1) ::  z_wu
             
 !f2py intent(in,overwrite) dat, bathymetry, z_w, Nroms, Nsoda, JJ, II, xi_rho, eta_rho
 !f2py intent(in,out,overwrite) outdat
 !f2py intent(hide) ic,jc,kc,kT,rz1,rz2, z_wu, fill
-           
+            
+            
             fill=10000
             print*,'--->Started ubar calculations'
             ! average z_w to Arakawa-C u,v-points (z_wu, z_wv)
@@ -86,7 +87,8 @@ Module velocity
             ! USAGE: Compile this routine using Intel Fortran compiler and create
             ! a python module using the command:
             ! f2py --verbose --fcompiler=intel -c -m barotropic barotropic.f90
-            !
+            ! or
+            ! f2py --verbose --fcompiler=intel  -DF2PY_REPORT_ON_ARRAY_COPY=1 -c -m barotropic barotropic.f90
             ! The resulting module is imported to python using:
             ! import barotropic
             ! To call the function from python use:
@@ -102,12 +104,12 @@ Module velocity
             !        II is the total grid points in xi direction
             ! -------------------------------------------------------------------------------------------------------
             
-            double precision rz2, rz1, fill
+            real(4) rz2, rz1, fill
             integer eta_rho, xi_rho, II, JJ, ic, jc, kc, kT, Nsoda, Nroms
-            double precision, dimension(Nroms,JJ,II) :: dat
-            double precision, dimension(JJ,II) :: outdat
-            double precision, dimension(Nroms+1,eta_rho,xi_rho) ::    z_w
-            double precision, dimension(Nroms+1,eta_rho-1,xi_rho) ::  z_wv
+            real(4), dimension(Nroms,JJ,II) :: dat
+            real(4), dimension(JJ,II) :: outdat
+            real(4), dimension(Nroms+1,eta_rho,xi_rho) ::    z_w
+            real(4), dimension(Nroms+1,eta_rho-1,xi_rho) ::  z_wv
             
 !f2py intent(in,overwrite) dat, bathymetry, z_w, Nroms, Nsoda, JJ, II, xi_rho, eta_rho
 !f2py intent(in,out,overwrite) outdat

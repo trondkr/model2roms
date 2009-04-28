@@ -75,14 +75,43 @@ class grdClass:
             
             
             IOverticalGrid.get_z_levels(self)
+        
+        if self.type=='HYCOM':
+            self.grdType  = 'regular'
+            print '\n---> Assuming %s grid type for %s'%(self.grdType,self.type)
+            self.lon = self.cdf.variables["Longitude"][:]
+           
+          #  if self.lon.max() > 360:
+          #      if np.rank(self.lon)==1:
+          #          self.lon[:]=np.where(self.lon>360,self.lon[:]-360,self.lon[:])
+          #      else:
+          #          self.lon[:,:]=np.where(self.lon>360,self.lon[:,:]-360,self.lon[:,:])
+            
+            
+            self.lat = self.cdf.variables["Latitude"][:]
+            self.depth = self.cdf.variables["Depth"][:]
+            self.Nlevels = len(self.depth)
+            self.fill_value=-9.99e+33
+            
+            if np.rank(self.lon)==1:
+                    self.lon, self.lat = np.meshgrid(self.lon,self.lat)
+            
+            
+            IOverticalGrid.get_z_levels(self)
+           
             
         if self.type=='ROMS':
             
-            self.Nlevels=30
+            self.write_clim=True
+            self.write_bry=True
+            self.write_init=True
+            self.write_stations=False
+    
+            self.Nlevels=35
             self.theta_s=5.0
             self.theta_b=0.4
             self.Tcline=50.0
-            self.hc=10.0
+            self.hc=20.0
             self.ocean_time=1
             self.NT=2
             self.tracer=self.NT
@@ -158,6 +187,9 @@ class grdClass:
             self.Lp=len(self.lat_rho[1,:])
             self.Mp=len(self.lat_rho[:,1])
         if self.type=="SODA":
+            self.Lp=len(self.lat[1,:])
+            self.Mp=len(self.lat[:,1])
+        if self.type=="HYCOM":
             self.Lp=len(self.lat[1,:])
             self.Mp=len(self.lat[:,1])
         self.M =self.Mp-1

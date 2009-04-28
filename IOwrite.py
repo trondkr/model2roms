@@ -5,7 +5,7 @@ import numpy as np
 import time
 import os
 
-def writeClimFile(grdROMS,ntime,outfilename,var):
+def writeClimFile(grdROMS,ntime,outfilename,var,data1=None,data2=None,data3=None,data4=None):
         
      if grdROMS.ioClimInitialized is False:
         
@@ -19,7 +19,7 @@ def writeClimFile(grdROMS,ntime,outfilename,var):
         f1.description="This is a climatology file for ROMS"
         f1.history = 'Created ' + time.ctime(time.time())
         f1.source = 'Trond Kristiansen (trond.kristiansen@imr.no)'
-        f1.type='NetCDF4 classic created using SODA2ROMS' 
+        f1.type='NetCDF4 classic created using SODA2ROMS with %s input files'%(grdROMS.type) 
            
         # Define dimensions
         f1.createDimension('xi_rho',  grdROMS.xi_rho)
@@ -233,17 +233,17 @@ def writeClimFile(grdROMS,ntime,outfilename,var):
      if var=='temperature':
         d= num2date(grdROMS.time,units=f1.variables['clim_time'].long_name,calendar=f1.variables['clim_time'].calendar)
         grdROMS.message=d   
-        f1.variables['temp'][ntime,:,:,:]  = grdROMS.t2
+        f1.variables['temp'][ntime,:,:,:]  = data1
      if var=='salinity':
-        f1.variables['salt'][ntime,:,:,:]  = grdROMS.s2
+        f1.variables['salt'][ntime,:,:,:]  = data1
      if var=='ssh':
-        f1.variables['zeta'][ntime,:,:]    = grdROMS.ssh
+        f1.variables['zeta'][ntime,:,:]    = data1
      if var=='vvel':
-        f1.variables['u'][ntime,:,:,:]     = grdROMS.u3
-        f1.variables['v'][ntime,:,:,:]     = grdROMS.v3
-     if var=='vbar':
-        f1.variables['ubar'][ntime,:,:]    = grdROMS.ubar
-        f1.variables['vbar'][ntime,:,:]    = grdROMS.vbar
+        f1.variables['u'][ntime,:,:,:]     = data1
+        f1.variables['v'][ntime,:,:,:]     = data2
+     
+        f1.variables['ubar'][ntime,:,:]    = data3
+        f1.variables['vbar'][ntime,:,:]    = data4
      
      f1.close()
 

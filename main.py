@@ -9,7 +9,7 @@ import numpy as np
 __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
 __created__  = datetime(2009, 1,30)
-__modified__ = datetime(2009, 2,13)
+__modified__ = datetime(2009, 4,22)
 __version__  = "1.1"
 __status__   = "Development"
 
@@ -18,60 +18,70 @@ def help():
     This program is run by typing: python main.py in the command window.
     """
     
-def main():
-    print '\n--------------------------\n'
-    print 'Started ' + time.ctime(time.time())
-    
-    climName='test.nc'
-    initName='test_init.nc'
-    bryName='test_bry.nc'
-    
-    write_clim=True
-    write_bry=False
-    write_init=True
-    write_stations=False
-    
-    """Set show_progress to "False" if you do not want to see the progress
-    indicator for horizontal interpolation. This requires the two modules:
-    terminal.py and progressBar.py"""
-    show_progress=True
-    
-    sodapath="/Volumes/HankRaid/SODA/"
-    romsgridpath="/Users/trond/Projects/arcwarm/nordic/AA_10km_grid.nc"
-    romsgridpath="/Users/trond/ROMS/GoM/grid/gom_grd.nc"
-  #  romsgridpath="/Users/trond/Projects/arcwarm/nordic/imr_nordic_4km.nc"
-    start_year      =1960
-    end_year        =1961
-    start_julianday =1
-    end_julianday   =50
-    
-    vars=['temperature','salinity','ssh','uvel','vvel']
-    vars=['temperature']
+def showInfo(vars,romsgridpath,climName,initName,bryName,start_year,end_year,start_julianday,end_julianday):
     print 'Conversions run from day %s in %s to day %s in year %s'%(start_julianday,start_year,end_julianday,end_year)
     print 'The following variables will be converted:'
     for var in vars:
         print '---> %s'%(var)
     print '\nOutput grid file is: %s'%(romsgridpath)
-    print '\nThe following functions are run:'
-    if write_clim is True: print '---> write clim (%s)'%(climName)
-    if write_init is True: print '---> write init (%s)'%(initName)
-    if write_bry is True: print '---> write bry (%s)'%(bryName)
-    if write_stations is True: print '---> write stations'
     print '\n--------------------------\n'
     print '\n---> Initializing'
+    
+    
+def main():
+    print '\n--------------------------\n'
+    print 'Started ' + time.ctime(time.time())
+    
+    climName='gom_clim_1990.nc'
+    initName='gom_init_1990.nc'
+    bryName='gom_bry_1990.nc'
+    
+    """Set show_progress to "False" if you do not want to see the progress
+    indicator for horizontal interpolation. This requires the two modules:
+    terminal.py and progressBar.py"""
+    show_progress=True
+    write_stations=False
+    
+    sodapath="/Volumes/HankRaid/SODA/"
+    hycompath="/Users/trond/Projects/arcwarm/SODA/HYCOM/"
+    
+    romsgridpath="/Users/trond/Projects/arcwarm/nordic/AA_10km_grid.nc"
+    romsgridpath="/Users/trond/ROMS/GoM/grid/gom_grd.nc"
+    #romsgridpath="/Users/trond/Projects/arcwarm/nordic/imr_nordic_4km.nc"
+    start_year      =1990
+    end_year        =1991
+    start_julianday =0
+    end_julianday   =5
+    
+    """Set the input data MODEL type: Current options are SODA or HYCOM"""
+    type='HYCOM' 
+    #type='SODA'
+     
+    vars=['temperature','salinity','ssh','uvel','vvel']
+    vars=['temperature']
+    
+    showInfo(vars,romsgridpath,climName,initName,bryName,start_year,end_year,start_julianday,end_julianday)
     
     start_day_in_start_year=np.round(start_julianday/5.0)
     end_day_in_end_year=round(end_julianday/5.0)
     
     years=[(int(start_year)+kk) for kk in range(int(end_year)-int(start_year))]
-
-    IDS=[(i+1+int(start_day_in_start_year)) for i in range(int(end_day_in_end_year))]
     
-    soda2roms.convertSODA2ROMS(years,IDS,climName,initName,sodapath,romsgridpath,vars,show_progress)
+    loop=int(end_day_in_end_year)-int(start_day_in_start_year)
+   
+    if int(start_day_in_start_year)==int(end_day_in_end_year):
+        IDS=[int(start_day_in_start_year)]
+    else:
+        IDS=[(i+1+int(start_day_in_start_year)) for i in range(loop)]
     
-    if write_bry is True:
-        grdROMS = grd.grdClass(romsgridpath,"ROMS")
-        clim2bry.writeBry(grdROMS,'1960',bryName,climName)   
+    if type=='SODA':
+        soda2roms.convertMODEL2ROMS(years,IDS,climName,initName,sodapath,romsgridpath,vars,show_progress,type)
+    elif type=='HYCOM':
+        soda2roms.convertMODEL2ROMS([1],[1,2,3],climName,initName,hycompath,romsgridpath,vars,show_progress,type)
+        
+    
+    grdROMS = grd.grdClass(romsgridpath,"ROMS")
+    clim2bry.writeBry(grdROMS,'1960',bryName,climName)   
 
     if write_stations is True:
         # GB, NovaScotia, Grand Bank, Nuuk, Iceland, NS, Lofoten, BS     
@@ -83,15 +93,14 @@ def main():
     
 
 if __name__ == "__main__":
-    #import profile
-    #
-    #try:
-    #    import psyco
-    #    psyco.log()
-    #    psyco.profile(0.2)
-    #
-    #except ImportError:
-    #    pass
-    #profile.run('main()')
-    
+    import psyco
+    try:
+        import psyco
+        psyco.log()
+        psyco.full(memory=100)
+        psyco.profile(0.05, memory=100)
+        psyco.profile(0.2)
+    except ImportError:
+        pass
+
     main()

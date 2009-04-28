@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap, NetCDFFile
 from pylab import *
 
-def contourMap(grdROMS,grdSODA,data,depthlevel,var):
+def contourMap(grdROMS,grdMODEL,data,depthlevel,var):
     
     
     tlat      = np.array(grdROMS.lat_rho)
@@ -25,15 +25,15 @@ def contourMap(grdROMS,grdSODA,data,depthlevel,var):
 
     if grdROMS.grdName=='GOM':
     # Plot the Georges Bank region
-        map = Basemap(llcrnrlon=-80.5,llcrnrlat=32.5,urcrnrlon=-58,urcrnrlat=45.5,
+        map = Basemap(llcrnrlon=-78.5,llcrnrlat=32.5,urcrnrlon=-58,urcrnrlat=45.5,
                       resolution='i',projection='tmerc',lon_0=-70,lat_0=0,area_thresh=10.)
-        levels = np.arange(0.0, 25.0, 0.5)
+        levels = np.arange(2.0, 30.0, 0.5)
         
     if grdROMS.grdName=='Nordic':
     # Plot the Nordic region (Greenland, Nordic Seas, and the Barents Sea)
         map = Basemap(lon_0=25,boundinglat=50,
                       resolution='l',area_thresh=100.,projection='npstere')
-        levels = np.arange(-2.0, 13.0, 0.1)
+        levels = np.arange(-2.0, 20.0, 0.1)
         
     if grdROMS.grdName=='NA':
         map = Basemap(lon_0=25,boundinglat=0,
@@ -58,8 +58,11 @@ def contourMap(grdROMS,grdSODA,data,depthlevel,var):
         levels = np.arange(-2.0, 2.0, 0.1)
     if var=='sodamask':
         levels=np.arange(0,1,1)
-    CS1 = map.contourf(x,y,temp,levels,cmap=cm.get_cmap('jet',len(levels)-1))
-    #CS1 = map.contourf(x,y,temp,levels,cmap=cm.get_cmap('jet',len(levels)-1))
+    CS1 = map.contourf(x,y,temp,levels,cmap=cm.get_cmap('jet',len(levels)-1) )#,alpha=0.5)
+    #CS2 = contour(x,y,temp,CS1.levels[::2],
+    #                    colors = 'k',
+    #                    hold='on')
+
     plt.colorbar(orientation='horizontal')
     plt.title('Variabel %s at depth %s'%(var,depthlevel))
     #plotfile='figures/soda_depthK_'+str(depthlevel)+'.png'

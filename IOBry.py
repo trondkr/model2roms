@@ -30,7 +30,7 @@ def createBryFile(grdROMS,outfilename):
      f1.description="This is a boundary file for ROMS"
      f1.history = 'Created ' + time.ctime(time.time())
      f1.source = 'Trond Kristiansen (trond.kristiansen@imr.no)'
-     f1.type='NetCDF4 classic created using SODA2ROMS' 
+     f1.type='NetCDF4 classic created using SODA2ROMS with %s input files'%(grdROMS.type) 
         
      # Define dimensions
      f1.createDimension('xi_rho',  grdROMS.xi_rho)

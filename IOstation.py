@@ -31,10 +31,10 @@ def getAverage(latindex,lonindex,index):
         ave = Dataset(averageFile,'r')
         
         average=True
-        aveTemp=np.zeros((index),np.float64)
-        aveSalt=np.zeros((index),np.float64)
-        aveUvel=np.zeros((index),np.float64)
-        aveVvel=np.zeros((index),np.float64)
+        aveTemp=np.zeros((index),np.float32)
+        aveSalt=np.zeros((index),np.float32)
+        aveUvel=np.zeros((index),np.float32)
+        aveVvel=np.zeros((index),np.float32)
     
         aveTemp[:] = ave.variables["temp"][:,latindex,lonindex]
         aveSalt[:] = ave.variables["salt"][:,latindex,lonindex]
@@ -47,7 +47,7 @@ def getAverage(latindex,lonindex,index):
         
     return aveTemp,aveSalt,aveUvel,aveVvel, average
 
-def getStationTime(grdSODA,year,ID):
+def getStationTime(grdMODEL,year,ID):
     """
     Find the day and month that the SODA file respresents based on the year and ID number.
     Each SODA file represents a 5 day average, therefore we let the date we find be the first day
@@ -93,26 +93,26 @@ def getStationData(years,IDS,outfilename,sodapath,latlist,lonlist):
     """First time in loop, get the essential old grid information"""
     """SODA data already at Z-levels. No need to interpolate to fixed depths, but we use the one we have"""
     
-    grdSODA = grd.grdClass(fileNameIn,"SODA")
-    IOverticalGrid.get_z_levels(grdSODA)
+    grdMODEL = grd.grdClass(fileNameIn,"SODA")
+    IOverticalGrid.get_z_levels(grdMODEL)
     
     station=0
      
     for lat, lon in zip(latlist, lonlist):
         """Now we want to find the indices for our longitude, latitude station pairs in the lat-long list"""
-        lonindex,latindex=getStationIndices(grdSODA,lon,lat)
-        index=(len(years)*len(IDS),len(grdSODA.depth))
+        lonindex,latindex=getStationIndices(grdMODEL,lon,lat,'SODA')
+        index=(len(years)*len(IDS),len(grdMODEL.depth))
         indexSSH=(len(years)*len(IDS))
         
         print '-------------------------------------------------------------\n'
         print 'Extracting data for station (%s,%s) for the years %s->%s'%(lon,lat,years[0],years[-1])
         print 'Size of output data array is ->',index
         
-        stTemp=np.zeros((index),np.float64)
-        stSalt=np.zeros((index),np.float64)
-        stSSH =np.zeros((indexSSH),np.float64)
-        stUvel=np.zeros((index),np.float64)
-        stVvel=np.zeros((index),np.float64)
+        stTemp=np.zeros((index),np.float32)
+        stSalt=np.zeros((index),np.float32)
+        stSSH =np.zeros((indexSSH),np.float32)
+        stUvel=np.zeros((index),np.float32)
+        stVvel=np.zeros((index),np.float32)
         stTime=[]
         stDate=[]
         time=0
@@ -122,7 +122,7 @@ def getStationData(years,IDS,outfilename,sodapath,latlist,lonlist):
                 file="SODA_2.0.2_"+str(year)+"_"+str(ID)+".cdf"
                 filename=sodapath+file
   
-                jdsoda, yyyymmdd = getStationTime(grdSODA,year,ID)
+                jdsoda, yyyymmdd = getStationTime(grdMODEL,year,ID)
                 stTime.append(jdsoda)
                 stDate.append(yyyymmdd)
                 
@@ -141,48 +141,49 @@ def getStationData(years,IDS,outfilename,sodapath,latlist,lonlist):
                 time+=1
          
         print 'Total time steps saved to file %s for station %s'%(time,station)
-        #plotStation.contourData(stTemp,stTime,stDate,grdSODA.depth)
+        #plotStation.contourData(stTemp,stTime,stDate,grdMODEL.depth)
         
-        aveTemp,aveSalt,aveUvel,aveVvel,average = getAverage(latindex,lonindex,len(grdSODA.depth))
+        aveTemp,aveSalt,aveUvel,aveVvel,average = getAverage(latindex,lonindex,len(grdMODEL.depth))
         
         outfilename='Station_st%i_%s_to_%s.nc'%(station+1,years[0],years[-1])
         print 'Results saved to file %s'%(outfilename)
-        writeStationNETCDF4(stTemp,stSalt,stUvel,stVvel,stSSH,stTime,grdSODA.depth,lat,lon,outfilename,average,aveTemp,aveSalt,aveUvel,aveVvel)
+        writeStationNETCDF4(stTemp,stSalt,stUvel,stVvel,stSSH,stTime,grdMODEL.depth,lat,lon,outfilename,average,aveTemp,aveSalt,aveUvel,aveVvel)
         station+=1
     
-def getStationIndices(grdSODA,st_lon,st_lat):
+def getStationIndices(grdObject,st_lon,st_lat,type,numberOfPoints):
     """
     This is a function that takes longitude and latitude as
     decimal input, and returns the index values closest to
     the longitude and latitude. This is an iterative process for finding the best
     index pair. Trond Kristiansen, 11.03.2008
     """
-    if st_lon<0: st_lon=st_lon+360; NEG=True
+    if st_lon<0: st_lon=st_lon; NEG=False
     else: NEG=False
     
-    longitude=grdSODA.lon
-    latitude =grdSODA.lat 
-    #Find closest latitude column 
-    tmp2=np.abs(np.subtract(latitude,st_lat))
-
-    #Sort the column to find the index that closest matches station
-    delta_lat = tmp2.argsort(axis=0)
+    if type=='SODA':
+        longitude=grdObject.lon
+        latitude =grdObject.lat
+    if type=='ROMS':
+        longitude=grdObject.lon_rho
+        latitude =grdObject.lat_rho 
     
-    # Find closest longitude index in latitude column
-    tmp1=np.abs(np.subtract(longitude[delta_lat[0,0],:],st_lon))
+    distance = np.zeros((grdObject.lat_rho.shape),dtype=np.float32)
+    listd=[]
     
-    # Sort the result to find the best longitude in that column
-    delta_lon = tmp1.argsort()
+    for eta in range(len(grdObject.lat_rho[:,0])):
+        for xi in range(len(grdObject.lat_rho[0,:])):
+            distance[eta,xi] = np.sqrt( (grdObject.lat_rho[eta,xi]-st_lat)**2.0 + (grdObject.lon_rho[eta, xi] - st_lon)**2.0 )
+            listd.append(distance[eta,xi])
     
-    tmp2=np.abs(np.subtract(latitude[:,delta_lon[0]],st_lat))
-
-    # Repeat process to find the best latitude in the best longitude column
-    delta_lat = tmp2.argsort(axis=0)
+    listsIndexes=[]
     
-    tmp1=np.abs(np.subtract(longitude[delta_lat[0],:],st_lon))
-    
-    delta_lon = tmp1.argsort()
-    
+    for i in range(numberOfPoints):
+        value=min(listd)
+        itemindex=np.where(distance==value)
+        listsIndexes.append(itemindex)
+        
+        index=np.where(listd==value)
+        listd.pop(index[0])
    
     print '' 
     print '=====get_station======'
@@ -191,15 +192,16 @@ def getStationIndices(grdSODA,st_lon,st_lat):
     else:
         print 'Looking for longitude [%3.3f] and latitude [%3.3f]'%(st_lon,st_lat)
     print 'Result ===>'
-    print 'Found index pair [%s,%s] in gridfile'%(delta_lon[0],delta_lat[0])
-    if NEG is True:
-        print 'Index corresponds to longitude [%3.3f] and latitude [%3.3f]'%(longitude[delta_lat[0],delta_lon[0]]-360.,latitude[delta_lat[0],delta_lon[0]])
-    else:
-        print 'Index corresponds to longitude [%3.3f] and latitude [%3.3f]'%(longitude[delta_lat[0],delta_lon[0]],latitude[delta_lat[0],delta_lon[0]])
+    for i in range(numberOfPoints):
+        print 'Found index pair in gridfile',listsIndexes[i]
+        if NEG is True:
+            print 'Index corresponds to longitude [%3.3f] and latitude [%3.3f]'%(grdObject.lon_rho[listsIndexes[i]]-360., grdObject.lat_rho[listsIndexes[i]])
+        else:
+            print 'Index corresponds to longitude [%3.3f] and latitude [%3.3f]'%(grdObject.lon_rho[listsIndexes[i]],grdObject.lat_rho[listsIndexes[i]])
     print '======================'
     print ''
-        
-    return delta_lon[0], delta_lat[0]
+    print listsIndexes    
+    return listsIndexes
 
 
 
