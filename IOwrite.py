@@ -105,7 +105,7 @@ def writeClimFile(grdROMS,ntime,outfilename,var,data1=None,data2=None,data3=None
         vnc.standard_name = "ocean_s_coordinate"
         vnc.formula_terms = "s: s_rho eta: zeta depth: h a: theta_s b: theta_b depth_c: hc" 
         vnc.field = "s_rho, scalar"
-        vnc[:] = grdROMS.s_rho
+        vnc[:] = np.flipud(grdROMS.s_rho)
         
         vnc = f1.createVariable('s_w', 'd', ('s_w',),zlib=True)
         vnc.long_name = "S-coordinate at W-points"
@@ -114,21 +114,21 @@ def writeClimFile(grdROMS,ntime,outfilename,var,data1=None,data2=None,data3=None
         vnc.standard_name = "ocean_s_coordinate"
         vnc.formula_terms = "s: s_w eta: zeta depth: h a: theta_s b: theta_b depth_c: hc" 
         vnc.field = "s_w, scalar"
-        vnc[:] = grdROMS.s_w
+        vnc[:] = np.flipud(grdROMS.s_w)
         
         vnc= f1.createVariable('Cs_r', 'd', ('s_rho',),zlib=True)
         vnc.long_name = "S-coordinate stretching curves at RHO-points"
         vnc.valid_min = -1.
         vnc.valid_max = 0.
         vnc.field = "s_rho, scalar"
-        vnc[:] = grdROMS.Cs_rho
+        vnc[:] = np.flipud(grdROMS.Cs_rho)
         
         vnc= f1.createVariable('Cs_w', 'd', ('s_w',),zlib=True)
         vnc.long_name = "S-coordinate stretching curves at W-points"
         vnc.valid_min = -1.
         vnc.valid_max = 0.
         vnc.field = "s_w, scalar"
-        vnc[:] = grdROMS.Cs_w
+        vnc[:] = np.flipud(grdROMS.Cs_w)
         
         vnc=f1.createVariable('hc','d',zlib=True)
         vnc.long_name = "S-coordinate parameter, critical depth" ;

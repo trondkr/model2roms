@@ -95,11 +95,12 @@ def doHorInterpolationRegularGrid(var,grdROMS,grdMODEL,data,show_progress):
         
         lonsout[0:len(grdMODEL.lon[0,:])-i0] = grdMODEL.lon[0,i0:]-360
        
-        lonsout[len(grdMODEL.lon[0,:])-i0:] = grdMODEL.lon[0,0:i0]
-        
+        lonsout[len(grdMODEL.lon[0,:])-i0:] = grdMODEL.lon[0,1:i0+1]
+
         dataout[:,0:len(grdMODEL.lon[0,:])-i0]  = data[k,:,i0:]
-        dataout[:,len(grdMODEL.lon[0,:])-i0:] = data[k,:,0:i0]
+        dataout[:,len(grdMODEL.lon[0,:])-i0:] = data[k,:,1:i0+1]
        
+        print i0,lonsout
         Zg = mp.interp(dataout,lonsout,grdMODEL.lat[:,0],grdROMS.lon_rho,grdROMS.lat_rho,
                        checkbounds=False, masked=False, order=1)
        
@@ -118,7 +119,7 @@ def doHorInterpolationRegularGrid(var,grdROMS,grdMODEL,data,show_progress):
                                   int(grdROMS.xi_rho),
                                   int(grdROMS.eta_rho))
         
-        Zin=Zin*grdROMS.mask_rho
+        Zin=Zg*grdROMS.mask_rho #Zin*grdROMS.mask_rho
      
         array1[k,:,:]=Zin
         
@@ -127,7 +128,7 @@ def doHorInterpolationRegularGrid(var,grdROMS,grdMODEL,data,show_progress):
         
             progress.render(p)
         
-        #plotData.contourMap(grdROMS,grdMODEL,Zin,k,var)
+        plotData.contourMap(grdROMS,grdMODEL,Zin,k,var)
       
    
     return array1
@@ -157,20 +158,20 @@ def doHorInterpolationSSHRegularGrid(var,grdROMS,grdMODEL,data):
     Zin = np.zeros((grdROMS.lon_rho.shape),dtype=np.float32, order='Fortran')
     Zin = Zg
   
-    Zin = cl.cleanarray.sweep(np.asarray(grdROMS.depth,order='Fortran'),
-                                  float(grdMODEL.z_r[0]),
-                                  int(grdROMS.minDistPoints),
-                                  int(grdROMS.maxval),
-                                  int(grdROMS.maxDistHorisontal),
-                                  int(grdROMS.maxDistVertical),
-                                  np.asarray(Zg,order='Fortran'),
-                                  np.asarray(Zin,order='Fortran'),
-                                  np.asarray(grdROMS.mask_rho,order='Fortran'),
-                                  int(grdROMS.xi_rho),
-                                  int(grdROMS.eta_rho))
-        
+    #Zin = cl.cleanarray.sweep(np.asarray(grdROMS.depth,order='Fortran'),
+    #                              float(grdMODEL.z_r[0]),
+    #                              int(grdROMS.minDistPoints),
+    #                              int(grdROMS.maxval),
+    #                              int(grdROMS.maxDistHorisontal),
+    #                              int(grdROMS.maxDistVertical),
+    #                              np.asarray(Zg,order='Fortran'),
+    #                              np.asarray(Zin,order='Fortran'),
+    #                              np.asarray(grdROMS.mask_rho,order='Fortran'),
+    #                              int(grdROMS.xi_rho),
+    #                              int(grdROMS.eta_rho))
+    #    
    
-    array1[0,:,:]=Zin*grdROMS.mask_rho
+    array1[0,:,:]=Zg*grdROMS.mask_rho #Zin*grdROMS.mask_rho
     #plotData.contourMap(grdROMS,grdMODEL,np.squeeze(array1[0,:,:]),1,var)
     
     return array1

@@ -52,7 +52,7 @@ def VerticalInterpolation(var,array1,array2,grdROMS,grdMODEL):
                                     
     if var in ['temperature','salinity']:
         #for k in range(grdROMS.Nlevels):
-        #    plotData.contourMap(grdROMS,grdMODEL,np.squeeze(outdata[k,:,:]),k,var)
+        #plotData.contourMap(grdROMS,grdMODEL,np.squeeze(outdata[14,:,:]),14,var)
         return outdata
         
         
@@ -323,10 +323,17 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
     if type=='SODA':
         find_subset_indices(grdMODEL,min_lat=30, max_lat=50, min_lon=0, max_lon=360)
     if type=='HYCOM':
-        grdMODEL.minJ=1900
-        grdMODEL.maxJ=2400
-        grdMODEL.minI=2575
-        grdMODEL.maxI=2875
+        #GOM
+        #grdMODEL.minJ=1900
+        #grdMODEL.maxJ=2400
+        #grdMODEL.minI=2575
+        #grdMODEL.maxI=2875
+        
+        #NATHAN BIG
+        grdMODEL.minJ=1504  #  0 deg N
+        grdMODEL.maxJ=2171  # 47 deg N
+        grdMODEL.minI=2340  # -99 deg E
+        grdMODEL.maxI=3573  #   0 deg E
         
         # NORDIC GRID
         #grdMODEL.minJ=2200
@@ -392,20 +399,11 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
                     STdata=np.zeros((indexROMS_S_ST),dtype=np.float32)
                     data = np.array(cdf.variables[str(variableNames[0])][0,:,grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI])
                     if type=='HYCOM':
+                        
                         grdMODEL.lon[:,:]= np.where(grdMODEL.lon[:,:]>360,grdMODEL.lon[:,:]-360,grdMODEL.lon[:,:])
                         grdMODEL.lon[:,:]= np.where(grdMODEL.lon[:,:]>180,grdMODEL.lon[:,:]-360,grdMODEL.lon[:,:])
-                        i0 = np.argmin((grdMODEL.lon[0,:]))
-                        lonsout = np.zeros((len(grdMODEL.lon[0,:])),grdMODEL.lon.dtype)
                        
-                        lonsout[0:len(grdMODEL.lon[0,:])-i0] = grdMODEL.lon[0,i0:]
-       
-                        lonsout[len(grdMODEL.lon[0,:])-i0:] = grdMODEL.lon[0,1:i0+1]
-        
-                        data2=data
-                         
-                    data=data2
-                    del data2
-                 
+                        
                         
                     if time==0:
                         tmp=np.squeeze(data[0,:,:])

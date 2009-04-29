@@ -36,10 +36,14 @@ class grdClass:
         self._getDims()
         if grdfilename=="/Users/trond/Projects/arcwarm/nordic/AA_10km_grid.nc":
             self.grdName='NA'
-        elif grdfilename=="/Users/trond/ROMS/GoM/grid/gom_grd.nc":
+        elif grdfilename=="/Users/trond/ROMS/GoM/grid/gom_grd.nc" or grdfilename=='/Users/trond/ROMS/GoM/grid/gom_grd_030208.nc':
             self.grdName='GOM'
         elif grdfilename=="/Users/trond/Projects/arcwarm/nordic/imr_nordic_4km.nc":
             self.grdName='Nordic'
+        elif grdfilename=='/Users/trond/Projects/Nathan/NoMed47_GRID_Global.nc':
+            self.grdName='NA_Nathan'
+        elif grdfilename=='/Users/trond/Projects/Nathan/GOM_GRID_Global.nc':
+            self.grdName='GOM_Nathan'
         else:
             self.grdName='undefined'
             
@@ -107,7 +111,7 @@ class grdClass:
             self.write_init=True
             self.write_stations=False
     
-            self.Nlevels=35
+            self.Nlevels=15
             self.theta_s=5.0
             self.theta_b=0.4
             self.Tcline=50.0
@@ -119,7 +123,7 @@ class grdClass:
             """Parameters that are used to fill in gaps in interpolated fields
             due to mismatch of iput and output mask (used in cleanArray.f90)"""
             
-            self.maxval=10000
+            self.maxval=1000
             self.minDistPoints=3
             self.maxDistHorisontal=20
             self.maxDistVertical=40
@@ -132,7 +136,18 @@ class grdClass:
             self.lat_rho  = self.cdf.variables["lat_rho"][:]
             self.depth    = self.cdf.variables["h"][:,:]
             self.mask_rho = self.cdf.variables["mask_rho"][:,:]
-          
+           
+            # Nathan
+            # Need to convert all longitude values in grid that are less than 360 and larger than 180 to negative values.
+            #self.lon_rho=self.lon_rho-360
+            # Cannot have undefined values in depth matrix. This messes up the z_r calculautions. Therefore,
+            # convert all depth values that are not valid (e.g. >10000 m) to 0 and set the shallowest depth to self.hc.
+            # Do this in the gird file and remove from here.
+            
+            #self.depth[:,:]=np.where(self.depth[:,:]>9000,self.hc,self.depth[:,:])    
+            #self.depth[:,:]=np.where(self.depth[:,:]<self.hc,self.hc,self.depth[:,:])
+            
+            
             self.lon_u  = self.cdf.variables["lon_u"][:]
             self.lat_u  = self.cdf.variables["lat_u"][:]
             self.mask_u = self.cdf.variables["mask_u"][:,:]
@@ -180,7 +195,7 @@ class grdClass:
                     
             IOverticalGrid.calculate_z_r(self)
             IOverticalGrid.calculate_z_w(self)
-        
+           
         
     def _getDims(self):
         if self.type=="ROMS":

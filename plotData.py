@@ -27,7 +27,7 @@ def contourMap(grdROMS,grdMODEL,data,depthlevel,var):
     # Plot the Georges Bank region
         map = Basemap(llcrnrlon=-78.5,llcrnrlat=32.5,urcrnrlon=-58,urcrnrlat=45.5,
                       resolution='i',projection='tmerc',lon_0=-70,lat_0=0,area_thresh=10.)
-        levels = np.arange(2.0, 30.0, 0.5)
+        levels = np.arange(0.0, 26.0, 0.5)
         
     if grdROMS.grdName=='Nordic':
     # Plot the Nordic region (Greenland, Nordic Seas, and the Barents Sea)
@@ -39,6 +39,20 @@ def contourMap(grdROMS,grdMODEL,data,depthlevel,var):
         map = Basemap(lon_0=25,boundinglat=0,
                 resolution='l',area_thresh=2000.,projection='npstere')
         levels = np.arange(-2.0, 25.0, 0.5)
+    
+    if grdROMS.grdName=='NA_Nathan':
+        map = Basemap(lon_0=25,boundinglat=0,
+                resolution='l',area_thresh=2000.,projection='npstere')
+        levels = np.arange(2.0, 32.0, 0.5)
+        
+    if grdROMS.grdName=='GOM_Nathan':
+        map = Basemap(llcrnrlon=grdROMS.lon_rho[0,:].min()-0.25,
+                      llcrnrlat=grdROMS.lat_rho[:,0].min()-2.25,
+                      urcrnrlon=grdROMS.lon_rho[0,:].max()+5.25,
+                      urcrnrlat=grdROMS.lat_rho[:,0].max()+0.25,
+                      resolution='i',projection='tmerc',lon_0=-80,lat_0=0,area_thresh=10.)
+        levels = np.arange(12.0, 33.0, 0.5)
+        
         
     x, y = map(tlon,tlat)
     

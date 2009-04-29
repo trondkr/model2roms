@@ -47,11 +47,14 @@ def main():
     
     romsgridpath="/Users/trond/Projects/arcwarm/nordic/AA_10km_grid.nc"
     romsgridpath="/Users/trond/ROMS/GoM/grid/gom_grd.nc"
+    romsgridpath="/Users/trond/ROMS/GoM/grid/gom_grd_030208.nc"
     #romsgridpath="/Users/trond/Projects/arcwarm/nordic/imr_nordic_4km.nc"
+    #romsgridpath="/Users/trond/Projects/Nathan/NoMed47_GRID_Global.nc"
+    romsgridpath='/Users/trond/Projects/Nathan/GOM_GRID_Global.nc'
     start_year      =1990
     end_year        =1991
     start_julianday =0
-    end_julianday   =5
+    end_julianday   =1995
     
     """Set the input data MODEL type: Current options are SODA or HYCOM"""
     type='HYCOM' 

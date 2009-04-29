@@ -59,7 +59,7 @@ Module interpolation
 !f2py intent(in,overwrite) dat, bathymetry, zr, zs
 !f2py intent(in,overwrite) Nroms, Nsoda, JJ, II, xi_rho, eta_rho
 !f2py intent(hide) ic,jc,kc,kT,rz1,rz2, kkT, ff
-            fill=-10000
+            fill=10000
            
             do jc=1,JJ
               do ic=1,II
@@ -74,7 +74,7 @@ Module interpolation
                             if (dat(Nsoda,jc,ic) .LT. fill) then
                               !print*,'Inside dovert and finding deepest depth with good values. current',dat(Nsoda,jc,ic)
                               DO kT=1,Nsoda
-                                if (dat(Nsoda-kT,jc,ic) .GT. fill) then
+                                if (abs(dat(Nsoda-kT,jc,ic)) .LT. fill) then
                                     !print*,'working on depth',kT,'with value',dat(kT,jc,ic)
                                     outdat(Nroms-kc+1,jc,ic)=dat(Nsoda-kT,jc,ic)
                                     !print*,'Able to find good value at depth ', Nsoda-kT
@@ -100,12 +100,12 @@ Module interpolation
                                 
                                 ! We do not want to give the deepest depth a fill_value, so we find
                                 ! the closest value to deepest depth.
-                                if (MAXVAL(dat(:,jc,ic)) .GT. fill) then
+                                if (MAXVAL(dat(:,jc,ic)) .LT. fill) then
                                
-                                    if (dat(kT,jc,ic) .LE. fill) then
+                                    if (abs(dat(kT,jc,ic)) .LT. fill) then
                                        !print*,'case3:Need to find better value for depth ',kT,'which has value ',dat(kT,jc,ic)
                                         DO kkT=1,Nsoda
-                                            if (dat(kT-kkT,jc,ic) .GT. fill) then
+                                            if (dat(kT-kkT,jc,ic) .LT. fill) then
                                                 ! print*,'CASE 3: Found good value at depth',kT,'with value',dat(kT-kkT,jc,ic), 'at depth',kt-kkT
                                                  outdat(Nroms-kc+1,jc,ic)=dat(kT-kkT,jc,ic)
                             
@@ -116,7 +116,7 @@ Module interpolation
                                 end if
                                 
                                 ! CASE 4: Special case where ROMS layers are much deeper than in SODA
-                                ELSE IF (zr(kc,jc,ic) .LE. zs(kT) .AND. dat(kT,jc,ic) .GT. fill .AND. dat(kT+1,jc,ic) .LE. fill) THEN
+                                ELSE IF (zr(kc,jc,ic) .LE. zs(kT) .AND. abs(dat(kT,jc,ic)) .LT. fill .AND. abs(dat(kT+1,jc,ic)) .LT. fill) THEN
                                 outdat(Nroms-kc+1,jc,ic)=dat(kT,jc,ic)
                               
                               
@@ -136,10 +136,10 @@ Module interpolation
                                 
                                 if (MAXVAL(dat(:,jc,ic)) .GT. fill) then
                                
-                                    if (dat(kT,jc,ic) .LE. fill .OR. dat(kT+1,jc,ic) .LE. fill) then
+                                    if (abs(dat(kT,jc,ic)) .LT. fill .OR. abs(dat(kT+1,jc,ic)) .LT. fill) then
                                        !print*,'case4:Need to find better value for depth ',kT,kT+1,'which has values ',dat(kT,jc,ic),dat(kT+1,jc,ic)
                                         DO kkT=1,Nsoda
-                                            if (dat(kT-kkT,jc,ic) .GT. fill .and. dat(kT-kkT+1,jc,ic) .GT. fill  ) then
+                                            if (abs(dat(kT-kkT,jc,ic)) .LT. fill .and. abs(dat(kT-kkT+1,jc,ic)) .LT. fill  ) then
                                                  !print*,'CASE 4: Found good value at depth',kT-kkT,kt-kkT+1
                                                  !print*,'with values',dat(kT-kkT,jc,ic), dat(kt-kkT+1,jc,ic)
                                                  outdat(Nroms-kc+1,jc,ic) = (rz1*dat(kT+1-kkT,jc,ic) &
@@ -158,7 +158,14 @@ Module interpolation
                           END DO
                       ! TEST ALL CASES IF LOOP: CASE 1,2,3,4,5
                       END IF
-                     
+                    if (abs(outdat(Nroms-kc+1,jc,ic)) > fill) then
+                        !DO kT=1,Nsoda
+                        !    if (abs(dat(kT,jc,ic)) .LT. fill) then
+                        !        outdat(Nroms-kc+1,jc,ic)=dat(kT,jc,ic)
+                        !        !print*,jc,ic,kc,kT,outdat(Nroms-kc+1,jc,ic)
+                        !    end if
+                        !end do
+                    end if
                   end do
               end do
             end do
