@@ -52,7 +52,8 @@ def VerticalInterpolation(var,array1,array2,grdROMS,grdMODEL):
                                     
     if var in ['temperature','salinity']:
         #for k in range(grdROMS.Nlevels):
-        #plotData.contourMap(grdROMS,grdMODEL,np.squeeze(outdata[14,:,:]),14,var)
+        #    print k
+        #    plotData.contourMap(grdROMS,grdMODEL,np.squeeze(outdata[k,:,:]),k,var)
         return outdata
         
         
@@ -321,7 +322,7 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
     """Now we want to subset the data to avoid storing more information than we need.
     We do this by finding the indices of maximum and minimum latitude and longitude in the matrixes"""
     if type=='SODA':
-        find_subset_indices(grdMODEL,min_lat=30, max_lat=50, min_lon=0, max_lon=360)
+        find_subset_indices(grdMODEL,min_lat=30, max_lat=90, min_lon=0, max_lon=360)
     if type=='HYCOM':
         #GOM
         #grdMODEL.minJ=1900
@@ -336,10 +337,10 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
         grdMODEL.maxI=3573  #   0 deg E
         
         # NORDIC GRID
-        #grdMODEL.minJ=2200
-        #grdMODEL.maxJ=3298
-        #grdMODEL.minI=3000
-        #grdMODEL.maxI=4000
+        grdMODEL.minJ=2200
+        grdMODEL.maxJ=3298
+        grdMODEL.minI=3000
+        grdMODEL.maxI=4000
      
 
     grdMODEL.lat=grdMODEL.lat[grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI]
@@ -398,10 +399,10 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
                 if var=='temperature':
                     STdata=np.zeros((indexROMS_S_ST),dtype=np.float32)
                     data = np.array(cdf.variables[str(variableNames[0])][0,:,grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI])
-                    if type=='HYCOM':
+                    #if type=='HYCOM':
                         
-                        grdMODEL.lon[:,:]= np.where(grdMODEL.lon[:,:]>360,grdMODEL.lon[:,:]-360,grdMODEL.lon[:,:])
-                        grdMODEL.lon[:,:]= np.where(grdMODEL.lon[:,:]>180,grdMODEL.lon[:,:]-360,grdMODEL.lon[:,:])
+                        #grdMODEL.lon[:,:]= np.where(grdMODEL.lon[:,:]>360,grdMODEL.lon[:,:]-360,grdMODEL.lon[:,:])
+                        #grdMODEL.lon[:,:]= np.where(grdMODEL.lon[:,:]>180,grdMODEL.lon[:,:]-360,grdMODEL.lon[:,:])
                        
                         
                         

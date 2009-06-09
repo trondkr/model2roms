@@ -44,6 +44,8 @@ class grdClass:
             self.grdName='NA_Nathan'
         elif grdfilename=='/Users/trond/Projects/Nathan/GOM_GRID_Global.nc':
             self.grdName='GOM_Nathan'
+        elif grdfilename=='/Users/trond/Projects/arcwarm/SODA/soda2roms/imr_nordic_8km.nc':
+            self.grdName='Nordic2'
         else:
             self.grdName='undefined'
             
@@ -111,7 +113,7 @@ class grdClass:
             self.write_init=True
             self.write_stations=False
     
-            self.Nlevels=15
+            self.Nlevels=35
             self.theta_s=5.0
             self.theta_b=0.4
             self.Tcline=50.0
@@ -125,15 +127,15 @@ class grdClass:
             
             self.maxval=1000
             self.minDistPoints=3
-            self.maxDistHorisontal=20
-            self.maxDistVertical=40
+            self.maxDistHorisontal=600
+            self.maxDistVertical=600
             
             self.message  = None  # Used to store the date for printing to screen (IOwrite.py)
             self.time     = 0
             self.reftime  = 0
             self.grdType  = 'regular'
-            self.lon_rho  = self.cdf.variables["lon_rho"][:]
-            self.lat_rho  = self.cdf.variables["lat_rho"][:]
+            self.lon_rho  = self.cdf.variables["lon_rho"][:,:]
+            self.lat_rho  = self.cdf.variables["lat_rho"][:,:]
             self.depth    = self.cdf.variables["h"][:,:]
             self.mask_rho = self.cdf.variables["mask_rho"][:,:]
            
@@ -147,13 +149,13 @@ class grdClass:
             #self.depth[:,:]=np.where(self.depth[:,:]>9000,self.hc,self.depth[:,:])    
             #self.depth[:,:]=np.where(self.depth[:,:]<self.hc,self.hc,self.depth[:,:])
             
-            
-            self.lon_u  = self.cdf.variables["lon_u"][:]
-            self.lat_u  = self.cdf.variables["lat_u"][:]
+           
+            self.lon_u  = self.cdf.variables["lon_u"][:,:]
+            self.lat_u  = self.cdf.variables["lat_u"][:,:]
             self.mask_u = self.cdf.variables["mask_u"][:,:]
             
-            self.lon_v  = self.cdf.variables["lon_v"][:]
-            self.lat_v  = self.cdf.variables["lat_v"][:]
+            self.lon_v  = self.cdf.variables["lon_v"][:,:]
+            self.lat_v  = self.cdf.variables["lat_v"][:,:]
             self.mask_v = self.cdf.variables["mask_v"][:,:]
             
             self.lon_psi  = self.lon_u[:-1,:]
@@ -161,8 +163,8 @@ class grdClass:
             self.mask_psi = self.mask_v[:,:-1]
             
             self.f  = self.cdf.variables["f"][:]
-            self.xl  = self.cdf.variables["xl"][:]
-            self.el  = self.cdf.variables["el"][:]
+            #self.xl  = self.cdf.variables["xl"][:]
+            #self.el  = self.cdf.variables["el"][:]
             self.angle  = self.cdf.variables["angle"][:,:]
             
             self.pm  = self.cdf.variables["pm"][:,:]

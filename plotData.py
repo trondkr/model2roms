@@ -29,11 +29,11 @@ def contourMap(grdROMS,grdMODEL,data,depthlevel,var):
                       resolution='i',projection='tmerc',lon_0=-70,lat_0=0,area_thresh=10.)
         levels = np.arange(0.0, 26.0, 0.5)
         
-    if grdROMS.grdName=='Nordic':
+    if grdROMS.grdName=='Nordic' or grdROMS.grdName=='Nordic2':
     # Plot the Nordic region (Greenland, Nordic Seas, and the Barents Sea)
         map = Basemap(lon_0=25,boundinglat=50,
                       resolution='l',area_thresh=100.,projection='npstere')
-        levels = np.arange(-2.0, 20.0, 0.1)
+        levels = np.arange(-2.0, 15.0, 0.1)
         
     if grdROMS.grdName=='NA':
         map = Basemap(lon_0=25,boundinglat=0,
@@ -79,7 +79,7 @@ def contourMap(grdROMS,grdMODEL,data,depthlevel,var):
 
     plt.colorbar(orientation='horizontal')
     plt.title('Variabel %s at depth %s'%(var,depthlevel))
-    #plotfile='figures/soda_depthK_'+str(depthlevel)+'.png'
+    #plotfile='figures/Mexico_depthK_'+str(depthlevel)+'.png'
     #plt.savefig(plotfile)
     plt.show()
    

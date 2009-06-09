@@ -100,13 +100,11 @@ def doHorInterpolationRegularGrid(var,grdROMS,grdMODEL,data,show_progress):
         dataout[:,0:len(grdMODEL.lon[0,:])-i0]  = data[k,:,i0:]
         dataout[:,len(grdMODEL.lon[0,:])-i0:] = data[k,:,1:i0+1]
        
-        print i0,lonsout
         Zg = mp.interp(dataout,lonsout,grdMODEL.lat[:,0],grdROMS.lon_rho,grdROMS.lat_rho,
                        checkbounds=False, masked=False, order=1)
        
         Zin = np.zeros((grdROMS.lon_rho.shape),dtype=np.float32, order='Fortran')
         Zin = Zg
-        
         Zin = cl.cleanarray.sweep(np.asarray(grdROMS.depth,order='Fortran'),
                                   float(grdMODEL.z_r[k]),
                                   int(grdROMS.minDistPoints),
@@ -119,16 +117,18 @@ def doHorInterpolationRegularGrid(var,grdROMS,grdMODEL,data,show_progress):
                                   int(grdROMS.xi_rho),
                                   int(grdROMS.eta_rho))
         
-        Zin=Zg*grdROMS.mask_rho #Zin*grdROMS.mask_rho
-     
+        Zin=Zin*grdROMS.mask_rho
+        
         array1[k,:,:]=Zin
+        
+        #plotData.contourMap(grdROMS,grdMODEL,Zin,k,var)
         
         if show_progress is True:
             p=int( ((k+1*1.0)/(1.0*grdMODEL.Nlevels))*100.)
         
             progress.render(p)
         
-        plotData.contourMap(grdROMS,grdMODEL,Zin,k,var)
+        
       
    
     return array1

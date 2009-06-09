@@ -2,7 +2,7 @@
 import os, sys, time
 from datetime import datetime
 import soda2roms, IOstation
-import clim2bry
+import clim2bry, DecimateGrid
 import grd
 import numpy as np
 
@@ -45,23 +45,26 @@ def main():
     sodapath="/Volumes/HankRaid/SODA/"
     hycompath="/Users/trond/Projects/arcwarm/SODA/HYCOM/"
     
-    romsgridpath="/Users/trond/Projects/arcwarm/nordic/AA_10km_grid.nc"
-    romsgridpath="/Users/trond/ROMS/GoM/grid/gom_grd.nc"
-    romsgridpath="/Users/trond/ROMS/GoM/grid/gom_grd_030208.nc"
+    #romsgridpath="/Users/trond/Projects/arcwarm/nordic/AA_10km_grid.nc"
+    #romsgridpath="/Users/trond/ROMS/GoM/grid/gom_grd.nc"
+    #romsgridpath="/Users/trond/ROMS/GoM/grid/gom_grd_030208.nc"
     #romsgridpath="/Users/trond/Projects/arcwarm/nordic/imr_nordic_4km.nc"
+    romsgridpath="/Users/trond/Projects/arcwarm/SODA/soda2roms/imr_nordic_8km.nc"
     #romsgridpath="/Users/trond/Projects/Nathan/NoMed47_GRID_Global.nc"
-    romsgridpath='/Users/trond/Projects/Nathan/GOM_GRID_Global.nc'
+    #romsgridpath='/Users/trond/Projects/Nathan/GOM_GRID_Global.nc'
     start_year      =1990
     end_year        =1991
     start_julianday =0
-    end_julianday   =1995
+    end_julianday   =180
     
     """Set the input data MODEL type: Current options are SODA or HYCOM"""
-    type='HYCOM' 
-    #type='SODA'
-     
+    #type='HYCOM' 
+    type='SODA'
+    convert2Grid=True #False
+    decimateGrid=False #True
+    
     vars=['temperature','salinity','ssh','uvel','vvel']
-    vars=['temperature']
+    #vars=['temperature']
     
     showInfo(vars,romsgridpath,climName,initName,bryName,start_year,end_year,start_julianday,end_julianday)
     
@@ -77,13 +80,17 @@ def main():
     else:
         IDS=[(i+1+int(start_day_in_start_year)) for i in range(loop)]
     
-    if type=='SODA':
-        soda2roms.convertMODEL2ROMS(years,IDS,climName,initName,sodapath,romsgridpath,vars,show_progress,type)
-    elif type=='HYCOM':
-        soda2roms.convertMODEL2ROMS([1],[1,2,3],climName,initName,hycompath,romsgridpath,vars,show_progress,type)
-        
+    if convert2Grid==True:
+        if type=='SODA':
+            soda2roms.convertMODEL2ROMS(years,IDS,climName,initName,sodapath,romsgridpath,vars,show_progress,type)
+        elif type=='HYCOM':
+            soda2roms.convertMODEL2ROMS([1],[1,2,3],climName,initName,hycompath,romsgridpath,vars,show_progress,type)
     
     grdROMS = grd.grdClass(romsgridpath,"ROMS")
+    
+    if decimateGrid==True:
+        DecimateGrid.createGrid(grdROMS,'/Users/trond/Projects/arcwarm/SODA/soda2roms/imr_nordic_8km.nc',2)
+    
     clim2bry.writeBry(grdROMS,'1960',bryName,climName)   
 
     if write_stations is True:

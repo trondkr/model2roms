@@ -34,12 +34,12 @@ Module velocity
             !        II is the total grid points in xi direction
             ! -------------------------------------------------------------------------------------------------------
             
-            real(4) rz2, rz1, fill
+            real(8) rz2, rz1, fill
             integer eta_rho, xi_rho, II, JJ, ic, jc, kc, kT, Nsoda, Nroms
-            real(4), dimension(Nroms,JJ,II) :: dat
-            real(4), dimension(JJ,II) :: outdat
-            real(4), dimension(Nroms+1,eta_rho,xi_rho) ::  z_w
-            real(4), dimension(Nroms+1,eta_rho,xi_rho-1) ::  z_wu
+            real(8), dimension(Nroms,JJ,II) :: dat
+            real(8), dimension(JJ,II) :: outdat
+            real(8), dimension(Nroms+1,eta_rho,xi_rho) ::  z_w
+            real(8), dimension(Nroms+1,eta_rho,xi_rho-1) ::  z_wu
             
 !f2py intent(in,overwrite) dat, bathymetry, z_w, Nroms, Nsoda, JJ, II, xi_rho, eta_rho
 !f2py intent(in,out,overwrite) outdat
@@ -104,12 +104,12 @@ Module velocity
             !        II is the total grid points in xi direction
             ! -------------------------------------------------------------------------------------------------------
             
-            real(4) rz2, rz1, fill
+            real(8) rz2, rz1, fill
             integer eta_rho, xi_rho, II, JJ, ic, jc, kc, kT, Nsoda, Nroms
-            real(4), dimension(Nroms,JJ,II) :: dat
-            real(4), dimension(JJ,II) :: outdat
-            real(4), dimension(Nroms+1,eta_rho,xi_rho) ::    z_w
-            real(4), dimension(Nroms+1,eta_rho-1,xi_rho) ::  z_wv
+            real(8), dimension(Nroms,JJ,II) :: dat
+            real(8), dimension(JJ,II) :: outdat
+            real(8), dimension(Nroms+1,eta_rho,xi_rho) ::    z_w
+            real(8), dimension(Nroms+1,eta_rho-1,xi_rho) ::  z_wv
             
 !f2py intent(in,overwrite) dat, bathymetry, z_w, Nroms, Nsoda, JJ, II, xi_rho, eta_rho
 !f2py intent(in,out,overwrite) outdat

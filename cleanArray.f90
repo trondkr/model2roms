@@ -62,11 +62,12 @@ Module cleanArray
             integer maxpoints, II, JJ, KK, VV, ic, jc, jcc, icc, fill, kc, ff, total
             integer pointsHpos, pointsHneg, pointsVpos, pointsVneg, points, INCREASED, orgVV, orgKK, TRIES
 
-            real(4), dimension(JJ,II) :: dataout,datain
-            real(4), dimension(JJ,II) :: mask
-            real(4), dimension(4,3,maxpoints)  :: foundWeight, foundData
-            real(4) counter, hori, vert, sumweights, distance, sodadepth, weight
-            real(4), dimension(JJ,II) :: bathymetry
+            real(8), dimension(JJ,II) :: dataout,datain
+            real(8), dimension(JJ,II) :: mask
+            real(8), dimension(4,3,maxpoints)  :: foundWeight, foundData
+             
+            real(8) counter, hori, vert, sumweights, distance, sodadepth, weight
+            real(8), dimension(JJ,II) :: bathymetry
             
 !f2py intent(in,out,overwrite) dataout
 !f2py intent(in,overwrite) datain, mask, bathymetry
@@ -90,8 +91,9 @@ Module cleanArray
                     pointsHneg  = 1
                     pointsVneg  = 1
                     
-                    if (abs(datain(jc,ic)) > FILL .AND. mask(jc,ic)==1 .AND. sodadepth > -(bathymetry(jc,ic))) THEN
-                        !print*,sodadepth, bathymetry(jc,ic)    
+                    if (abs(datain(jc,ic)) > FILL .AND. mask(jc,ic)==1 .AND. sodadepth >= -(bathymetry(jc,ic))) THEN
+                        ! Have to check only grid cells that are deeper than the sodadepth. If not, we will fill in all
+                        ! values toward the coast for each iteration (sodadepth >= -(bathymetry(jc,ic)))).
                         total=total+1
                         foundWeight(:,:,:)=0
                         foundData(:,:,:)=0
@@ -244,10 +246,14 @@ Module cleanArray
                         end if
                        
                     end if
+                    
 100                 continue                 
                 end do
             end do
+           
             !print*,'Number of points filled', total
+            ! ----
+           
         end subroutine sweep
         
     end module cleanArray

@@ -156,6 +156,7 @@ def writeClimFile(grdROMS,ntime,outfilename,var,data1=None,data2=None,data3=None
         vnc=f1.createVariable('angle','d',('eta_rho','xi_rho'),zlib=True)
         vnc.long_name = "angle between xi axis and east"
         vnc.units = "radian" 
+        vnc[:,:]=grdROMS.angle
    
         vnc=f1.createVariable('mask_rho','d',('eta_rho', 'xi_rho'),zlib=True)
         vnc.long_name = "mask on RHO-points"
