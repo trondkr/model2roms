@@ -86,7 +86,7 @@ def getStationTime(grdMODEL,year,ID):
     
     return jdsoda-jdref, yyyymmdd
 
-def getStationData(years,IDS,outfilename,sodapath,latlist,lonlist):
+def getStationData(years,IDS,sodapath,latlist,lonlist):
       
     fileNameIn=sodapath+'SODA_2.0.2_'+str(years[0])+'_'+str(IDS[0])+'.cdf'
     
@@ -97,13 +97,15 @@ def getStationData(years,IDS,outfilename,sodapath,latlist,lonlist):
     IOverticalGrid.get_z_levels(grdMODEL)
     
     station=0
-     
+    numberOfPoints=4
+    
     for lat, lon in zip(latlist, lonlist):
         """Now we want to find the indices for our longitude, latitude station pairs in the lat-long list"""
-        lonindex,latindex=getStationIndices(grdMODEL,lon,lat,'SODA')
+        gridIndexes, dis = getStationIndices(grdMODEL,lon,lat,'SODA',numberOfPoints)
+        
         index=(len(years)*len(IDS),len(grdMODEL.depth))
         indexSSH=(len(years)*len(IDS))
-        
+        outfilename='station_lat_'+str(lat)+'_lon_'+str(lon)+'.xyz'
         print '-------------------------------------------------------------\n'
         print 'Extracting data for station (%s,%s) for the years %s->%s'%(lon,lat,years[0],years[-1])
         print 'Size of output data array is ->',index
@@ -116,26 +118,34 @@ def getStationData(years,IDS,outfilename,sodapath,latlist,lonlist):
         stTime=[]
         stDate=[]
         time=0
-     
+       
         for year in years:
             for ID in IDS:
                 file="SODA_2.0.2_"+str(year)+"_"+str(ID)+".cdf"
                 filename=sodapath+file
-  
+               
                 jdsoda, yyyymmdd = getStationTime(grdMODEL,year,ID)
                 stTime.append(jdsoda)
                 stDate.append(yyyymmdd)
-                
+                t=0
                 cdf = Dataset(filename,'r',format='NETCDF3')
 
                 """Each SODA file consist only of one time step. Get the subset data selected, and
                 store that time step in a new array:"""
-                stTemp[time,:] = cdf.variables["TEMP"][0,:,latindex:latindex:1,lonindex:lonindex:1]
-                stSalt[time,:] = cdf.variables["SALT"][0,:,latindex,lonindex]
-                stSSH[time]    = cdf.variables["SSH"][0,latindex,lonindex]
-                stUvel[time,:] = cdf.variables["U"][0,:,latindex,lonindex]
-                stVvel[time,:] = cdf.variables["V"][0,:,latindex,lonindex]
-                
+                for i in range(numberOfPoints):
+                    wgt=float(dis[i])/sum(dis)
+                    latindex=int(gridIndexes[i][0])
+                    lonindex=int(gridIndexes[i][1])
+
+                    """The values at a station is calculated by interpolating from the
+                    numberOfPoints around the station uysing weights (wgt)
+                    """
+                    stTemp[time,:] = stTemp[time,:] + (cdf.variables["TEMP"][t,:,latindex,lonindex])*wgt
+                    stSalt[time,:] = stSalt[time,:] + (cdf.variables["SALT"][t,:,latindex,lonindex])*wgt
+                    stSSH[time]    = stSSH[time]    + (cdf.variables["SSH"][t,latindex,lonindex])*wgt
+                    stUvel[time,:] = stUvel[time,:] + (cdf.variables["U"][t,:,latindex,lonindex])*wgt
+                    stVvel[time,:] = stVvel[time,:] + (cdf.variables["V"][t,:,latindex,lonindex])*wgt
+                    
                 cdf.close()
                     
                 time+=1
@@ -155,9 +165,9 @@ def getStationIndices(grdObject,st_lon,st_lat,type,numberOfPoints):
     This is a function that takes longitude and latitude as
     decimal input, and returns the index values closest to
     the longitude and latitude. This is an iterative process for finding the best
-    index pair. Trond Kristiansen, 11.03.2008
+    index pair. Trond Kristiansen, 11.03.2008, 09.06.2009
     """
-    if st_lon<0: st_lon=st_lon; NEG=False
+    if st_lon<0: st_lon=st_lon+360.0; NEG=True
     else: NEG=False
     
     if type=='SODA':
@@ -167,24 +177,30 @@ def getStationIndices(grdObject,st_lon,st_lat,type,numberOfPoints):
         longitude=grdObject.lon_rho
         latitude =grdObject.lat_rho 
     
-    distance = np.zeros((grdObject.lat_rho.shape),dtype=np.float32)
+    distance = np.zeros((longitude.shape),dtype=np.float64)
     listd=[]
-    
-    for eta in range(len(grdObject.lat_rho[:,0])):
-        for xi in range(len(grdObject.lat_rho[0,:])):
-            distance[eta,xi] = np.sqrt( (grdObject.lat_rho[eta,xi]-st_lat)**2.0 + (grdObject.lon_rho[eta, xi] - st_lon)**2.0 )
+    """First, create a list of distances from the station of interest, while
+    also save the matrix of dostances that contains the info to get the index pair that the distance
+    of interest corresponds to"""
+    for eta in range(len(latitude[:,0])):
+        for xi in range(len(latitude[0,:])):
+            distance[eta,xi] = np.sqrt( (latitude[eta,xi]-st_lat)**2.0 + (longitude[eta, xi] - st_lon)**2.0 )
             listd.append(distance[eta,xi])
-    
+
     listsIndexes=[]
+    listd.sort()
     
+    """Now find the closest point to the station. When that point is found, remove the
+    closests pooint and find the next closests point, until you have found numberOfPoints
+    closests to station.
+    """
     for i in range(numberOfPoints):
-        value=min(listd)
+        value=listd[0]
         itemindex=np.where(distance==value)
         listsIndexes.append(itemindex)
-        
-        index=np.where(listd==value)
-        listd.pop(index[0])
-   
+       
+        listd.pop(0)
+  
     print '' 
     print '=====get_station======'
     if NEG is True:
@@ -195,13 +211,23 @@ def getStationIndices(grdObject,st_lon,st_lat,type,numberOfPoints):
     for i in range(numberOfPoints):
         print 'Found index pair in gridfile',listsIndexes[i]
         if NEG is True:
-            print 'Index corresponds to longitude [%3.3f] and latitude [%3.3f]'%(grdObject.lon_rho[listsIndexes[i]]-360., grdObject.lat_rho[listsIndexes[i]])
+            print 'Index corresponds to longitude [%3.3f] and latitude [%3.3f]'%(longitude[listsIndexes[i][0],listsIndexes[i][1]]-360,latitude[listsIndexes[i][0],listsIndexes[i][1]])
         else:
-            print 'Index corresponds to longitude [%3.3f] and latitude [%3.3f]'%(grdObject.lon_rho[listsIndexes[i]],grdObject.lat_rho[listsIndexes[i]])
+            print 'Index corresponds to longitude [%3.3f] and latitude [%3.3f]'%(longitude[listsIndexes[i][0],listsIndexes[i][1]],latitude[listsIndexes[i][0],listsIndexes[i][1]])
     print '======================'
     print ''
-    print listsIndexes    
-    return listsIndexes
+      
+    """
+    We want to use data interpolated from the 4 surrounding points to get appropriate values at station point.
+    We do this by using relative weights determined by relative distance to total distance from all 4 points.
+    Trond Kristiansen, 09.06.2009
+    """
+    dis=[]
+    
+    for i in range(numberOfPoints):
+        dis.append(np.sqrt( (latitude[listsIndexes[i][0],listsIndexes[i][1]]-st_lat)**2.0 + (longitude[listsIndexes[i][0],listsIndexes[i][1]] - st_lon)**2.0 ))
+        
+    return listsIndexes, dis
 
 
 
