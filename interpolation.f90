@@ -66,24 +66,24 @@ Module interpolation
 !f2py intent(hide) ic,jc,kc,kT,rz1,rz2, kkT, ff
             fill=10000
             
+            
             do kc=1,Nroms
                 counterMean=0.0
                 mean=0.0
-                do jc=1,II
-                    do ic=1,JJ
+                do jc=1,JJ
+                    do ic=1,II
                        if (abs(dat(kc,jc,ic)) .LT. fill) then
                            mean = mean + dat(kc,jc,ic)
                            counterMean= counterMean + 1
                        end if
                     end do
                 end do
+    
             meanValue(kc)=mean/(counterMean*1.0)
           
            
             end do
         
-            
-            
             do jc=1,JJ
               do ic=1,II
                   do kc=1,Nroms
@@ -185,10 +185,10 @@ Module interpolation
                               END IF
                           ! DO LOOP BETWEEN SURFACE AND BOTTOM: CASE 3,4,5
                           END DO
+                          
                       ! TEST ALL CASES IF LOOP: CASE 1,2,3,4,5
                       END IF
-                        
-                        
+                    
                     if (abs(outdat(Nroms-kc+1,jc,ic)) > fill) then
                         
                        ! This final sweep is to make sure there are no missing value cells
