@@ -105,18 +105,18 @@ def doHorInterpolationRegularGrid(var,grdROMS,grdMODEL,data,show_progress):
        
         Zin = np.zeros((grdROMS.lon_rho.shape),dtype=np.float32, order='Fortran')
         Zin = Zg
-        Zin = cl.cleanarray.sweep(np.asarray(grdROMS.depth,order='Fortran'),
-                                  float(grdMODEL.z_r[k]),
-                                  int(grdROMS.minDistPoints),
-                                  int(grdROMS.maxval),
-                                  int(grdROMS.maxDistHorisontal),
-                                  int(grdROMS.maxDistVertical),
-                                  np.asarray(Zg,order='Fortran'),
-                                  np.asarray(Zin,order='Fortran'),
-                                  np.asarray(grdROMS.mask_rho,order='Fortran'),
-                                  int(grdROMS.xi_rho),
-                                  int(grdROMS.eta_rho))
-        
+        #Zin = cl.cleanarray.sweep(np.asarray(grdROMS.depth,order='Fortran'),
+        #                          float(grdMODEL.z_r[k]),
+        #                          int(grdROMS.minDistPoints),
+        #                          int(grdROMS.maxval),
+        #                          int(grdROMS.maxDistHorisontal),
+        #                          int(grdROMS.maxDistVertical),
+        #                          np.asarray(Zg,order='Fortran'),
+        #                          np.asarray(Zin,order='Fortran'),
+        #                          np.asarray(grdROMS.mask_rho,order='Fortran'),
+        #                          int(grdROMS.xi_rho),
+        #                          int(grdROMS.eta_rho))
+        #
         Zin=Zin*grdROMS.mask_rho
         
         array1[k,:,:]=Zin

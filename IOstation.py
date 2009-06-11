@@ -105,7 +105,7 @@ def getStationData(years,IDS,sodapath,latlist,lonlist):
         
         index=(len(years)*len(IDS),len(grdMODEL.depth))
         indexSSH=(len(years)*len(IDS))
-        outfilename='station_lat_'+str(lat)+'_lon_'+str(lon)+'.xyz'
+        
         print '-------------------------------------------------------------\n'
         print 'Extracting data for station (%s,%s) for the years %s->%s'%(lon,lat,years[0],years[-1])
         print 'Size of output data array is ->',index
@@ -129,7 +129,7 @@ def getStationData(years,IDS,sodapath,latlist,lonlist):
                 stDate.append(yyyymmdd)
                 t=0
                 cdf = Dataset(filename,'r',format='NETCDF3')
-
+ 
                 """Each SODA file consist only of one time step. Get the subset data selected, and
                 store that time step in a new array:"""
                 for i in range(numberOfPoints):
@@ -145,7 +145,7 @@ def getStationData(years,IDS,sodapath,latlist,lonlist):
                     stSSH[time]    = stSSH[time]    + (cdf.variables["SSH"][t,latindex,lonindex])*wgt
                     stUvel[time,:] = stUvel[time,:] + (cdf.variables["U"][t,:,latindex,lonindex])*wgt
                     stVvel[time,:] = stVvel[time,:] + (cdf.variables["V"][t,:,latindex,lonindex])*wgt
-                    
+                 
                 cdf.close()
                     
                 time+=1
@@ -156,6 +156,7 @@ def getStationData(years,IDS,sodapath,latlist,lonlist):
         aveTemp,aveSalt,aveUvel,aveVvel,average = getAverage(latindex,lonindex,len(grdMODEL.depth))
         
         outfilename='Station_st%i_%s_to_%s.nc'%(station+1,years[0],years[-1])
+        outfilename='station_lat_'+str(lat)+'_lon_'+str(lon)+'.xyz'
         print 'Results saved to file %s'%(outfilename)
         writeStationNETCDF4(stTemp,stSalt,stUvel,stVvel,stSSH,stTime,grdMODEL.depth,lat,lon,outfilename,average,aveTemp,aveSalt,aveUvel,aveVvel)
         station+=1

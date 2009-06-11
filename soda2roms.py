@@ -49,7 +49,7 @@ def VerticalInterpolation(var,array1,array2,grdROMS,grdMODEL):
                                                        int(grdROMS.xi_rho),
                                                        int(grdROMS.eta_rho))
         
-                                    
+            
     if var in ['temperature','salinity']:
         #for k in range(grdROMS.Nlevels):
         #    print k
@@ -337,10 +337,10 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
         grdMODEL.maxI=3573  #   0 deg E
         
         # NORDIC GRID
-        grdMODEL.minJ=2200
-        grdMODEL.maxJ=3298
-        grdMODEL.minI=3000
-        grdMODEL.maxI=4000
+        #grdMODEL.minJ=2200
+        #grdMODEL.maxJ=3298
+        #grdMODEL.minI=3000
+        #grdMODEL.maxI=4000
      
 
     grdMODEL.lat=grdMODEL.lat[grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI]
@@ -399,13 +399,7 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
                 if var=='temperature':
                     STdata=np.zeros((indexROMS_S_ST),dtype=np.float32)
                     data = np.array(cdf.variables[str(variableNames[0])][0,:,grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI])
-                    #if type=='HYCOM':
-                        
-                        #grdMODEL.lon[:,:]= np.where(grdMODEL.lon[:,:]>360,grdMODEL.lon[:,:]-360,grdMODEL.lon[:,:])
-                        #grdMODEL.lon[:,:]= np.where(grdMODEL.lon[:,:]>180,grdMODEL.lon[:,:]-360,grdMODEL.lon[:,:])
                        
-                        
-                        
                     if time==0:
                         tmp=np.squeeze(data[0,:,:])
                         grdMODEL.mask = np.zeros((grdMODEL.lon.shape),dtype=np.float32)

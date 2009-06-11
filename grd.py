@@ -87,11 +87,11 @@ class grdClass:
             print '\n---> Assuming %s grid type for %s'%(self.grdType,self.type)
             self.lon = self.cdf.variables["Longitude"][:]
            
-          #  if self.lon.max() > 360:
-          #      if np.rank(self.lon)==1:
-          #          self.lon[:]=np.where(self.lon>360,self.lon[:]-360,self.lon[:])
-          #      else:
-          #          self.lon[:,:]=np.where(self.lon>360,self.lon[:,:]-360,self.lon[:,:])
+            if self.lon.max() > 360:
+                if np.rank(self.lon)==1:
+                    self.lon[:]=np.where(self.lon>360,self.lon[:]-360,self.lon[:])
+                else:
+                    self.lon[:,:]=np.where(self.lon>360,self.lon[:,:]-360,self.lon[:,:])
             
             
             self.lat = self.cdf.variables["Latitude"][:]
@@ -104,16 +104,28 @@ class grdClass:
             
             
             IOverticalGrid.get_z_levels(self)
-           
+            
+        if self.type=='STATION':
+            
+            self.lon = self.cdf.variables["lon"][:]
+            self.lat = self.cdf.variables["lat"][:]
+            self.depth = self.cdf.variables["depth"][:]
+            self.time = self.cdf.variables["time"][:]
+            
+            self.Lp=1
+            self.Mp=1
+            
+            self.fill_value=-9.99e+33
+            
             
         if self.type=='ROMS':
             
             self.write_clim=True
-            self.write_bry=True
-            self.write_init=True
+            self.write_bry=False
+            self.write_init=False
             self.write_stations=False
     
-            self.Nlevels=35
+            self.Nlevels=15
             self.theta_s=5.0
             self.theta_b=0.4
             self.Tcline=50.0
@@ -127,8 +139,8 @@ class grdClass:
             
             self.maxval=1000
             self.minDistPoints=3
-            self.maxDistHorisontal=600
-            self.maxDistVertical=600
+            self.maxDistHorisontal=200
+            self.maxDistVertical=200
             
             self.message  = None  # Used to store the date for printing to screen (IOwrite.py)
             self.time     = 0
@@ -141,13 +153,13 @@ class grdClass:
            
             # Nathan
             # Need to convert all longitude values in grid that are less than 360 and larger than 180 to negative values.
-            #self.lon_rho=self.lon_rho-360
+            self.lon_rho=self.lon_rho-360
             # Cannot have undefined values in depth matrix. This messes up the z_r calculautions. Therefore,
             # convert all depth values that are not valid (e.g. >10000 m) to 0 and set the shallowest depth to self.hc.
             # Do this in the gird file and remove from here.
             
-            #self.depth[:,:]=np.where(self.depth[:,:]>9000,self.hc,self.depth[:,:])    
-            #self.depth[:,:]=np.where(self.depth[:,:]<self.hc,self.hc,self.depth[:,:])
+            self.depth[:,:]=np.where(self.depth[:,:]>9000,self.hc,self.depth[:,:])    
+            self.depth[:,:]=np.where(self.depth[:,:]<self.hc,self.hc,self.depth[:,:])
             
            
             self.lon_u  = self.cdf.variables["lon_u"][:,:]
@@ -163,8 +175,6 @@ class grdClass:
             self.mask_psi = self.mask_v[:,:-1]
             
             self.f  = self.cdf.variables["f"][:]
-            #self.xl  = self.cdf.variables["xl"][:]
-            #self.el  = self.cdf.variables["el"][:]
             self.angle  = self.cdf.variables["angle"][:,:]
             
             self.pm  = self.cdf.variables["pm"][:,:]

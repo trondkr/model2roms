@@ -51,8 +51,7 @@ def contourMap(grdROMS,grdMODEL,data,depthlevel,var):
                       urcrnrlon=grdROMS.lon_rho[0,:].max()+5.25,
                       urcrnrlat=grdROMS.lat_rho[:,0].max()+0.25,
                       resolution='i',projection='tmerc',lon_0=-80,lat_0=0,area_thresh=10.)
-        levels = np.arange(12.0, 33.0, 0.5)
-        
+        levels = np.arange(2.0, 40.0, 0.5)
         
     x, y = map(tlon,tlat)
     

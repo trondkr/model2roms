@@ -40,31 +40,31 @@ def main():
     indicator for horizontal interpolation. This requires the two modules:
     terminal.py and progressBar.py"""
     show_progress=True
-    write_stations=True
+    write_stations=False
     
     sodapath="/Volumes/HankRaid/SODA/"
     hycompath="/Users/trond/Projects/arcwarm/SODA/HYCOM/"
     
     #romsgridpath="/Users/trond/Projects/arcwarm/nordic/AA_10km_grid.nc"
-    romsgridpath="/Users/trond/ROMS/GoM/grid/gom_grd.nc"
+    #romsgridpath="/Users/trond/ROMS/GoM/grid/gom_grd.nc"
     #romsgridpath="/Users/trond/ROMS/GoM/grid/gom_grd_030208.nc"
     #romsgridpath="/Users/trond/Projects/arcwarm/nordic/imr_nordic_4km.nc"
     #romsgridpath="/Users/trond/Projects/arcwarm/SODA/soda2roms/imr_nordic_8km.nc"
     #romsgridpath="/Users/trond/Projects/Nathan/NoMed47_GRID_Global.nc"
-    #romsgridpath='/Users/trond/Projects/Nathan/GOM_GRID_Global.nc'
+    romsgridpath='/Users/trond/Projects/Nathan/GOM_GRID_Global.nc'
     start_year      =1990
-    end_year        =1991
+    end_year        =2000
     start_julianday =0
-    end_julianday   =180
+    end_julianday   =365
     
     """Set the input data MODEL type: Current options are SODA or HYCOM"""
-    #type='HYCOM' 
-    type='SODA'
-    convert2Grid=False
+    type='HYCOM' 
+    #type='SODA'
+    convert2Grid=True
     decimateGrid=False #True
     
     vars=['temperature','salinity','ssh','uvel','vvel']
-    #vars=['temperature']
+    vars=['temperature']
     
     
     start_day_in_start_year=np.round(start_julianday/5.0)
@@ -79,6 +79,8 @@ def main():
     else:
         IDS=[(i+1+int(start_day_in_start_year)) for i in range(loop)]
     
+    grdROMS = grd.grdClass(romsgridpath,"ROMS")
+    
     if convert2Grid==True:
         
         showInfo(vars,romsgridpath,climName,initName,bryName,start_year,end_year,start_julianday,end_julianday)
@@ -90,7 +92,7 @@ def main():
     
         clim2bry.writeBry(grdROMS,'1960',bryName,climName)
     
-    grdROMS = grd.grdClass(romsgridpath,"ROMS")
+    
     
     if decimateGrid==True:
         DecimateGrid.createGrid(grdROMS,'/Users/trond/Projects/arcwarm/SODA/soda2roms/imr_nordic_8km.nc',2)
