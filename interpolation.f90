@@ -47,43 +47,20 @@ Module interpolation
             !        II is the total grid points in xi direction
             ! -------------------------------------------------------------------------------------------------------
             
-            real(8) rz2, rz1, fill
-            integer eta_rho, xi_rho, II, JJ, ic, jc, kc, kcc, kT, kkT, Nsoda, Nroms, ff
-            real(8), dimension(Nsoda,JJ,II) :: dat
-            real(8), dimension(eta_rho,xi_rho) :: bathymetry
-            real(8), dimension(Nroms,JJ,II) :: outdat
-            real(8), dimension(Nsoda) ::  zs
-            real(8), dimension(Nroms,eta_rho,xi_rho) :: zr
-            real(8), dimension(25)  :: foundWeightFinal, foundDataFinal
-            integer(8) minFinal, maxFinal, counterFinal, totalFinal
-            real(8) counter, hori, vert, sumweights, distance, weight
-            real(8) counterMean, mean
-            real(8), dimension(Nsoda) :: meanValue
-            
+            double precision rz2, rz1, fill
+            integer eta_rho, xi_rho, II, JJ, ic, jc, kc, kT, kkT, Nsoda, Nroms, ff
+            double precision, dimension(Nsoda,JJ,II) :: dat
+            double precision, dimension(eta_rho,xi_rho) :: bathymetry
+            double precision, dimension(Nroms,JJ,II) :: outdat
+            double precision, dimension(Nsoda) ::  zs
+            double precision, dimension(Nroms,eta_rho,xi_rho) :: zr
+
 !f2py intent(in,out,overwrite) outdat       
 !f2py intent(in,overwrite) dat, bathymetry, zr, zs
 !f2py intent(in,overwrite) Nroms, Nsoda, JJ, II, xi_rho, eta_rho
 !f2py intent(hide) ic,jc,kc,kT,rz1,rz2, kkT, ff
-            fill=10000
-            
-            
-            do kc=1,Nroms
-                counterMean=0.0
-                mean=0.0
-                do jc=1,JJ
-                    do ic=1,II
-                       if (abs(dat(kc,jc,ic)) .LT. fill) then
-                           mean = mean + dat(kc,jc,ic)
-                           counterMean= counterMean + 1
-                       end if
-                    end do
-                end do
-    
-            meanValue(kc)=mean/(counterMean*1.0)
-          
+            fill=-10000
            
-            end do
-        
             do jc=1,JJ
               do ic=1,II
                   do kc=1,Nroms
@@ -93,13 +70,11 @@ Module interpolation
                       ! deepest, the closest value from SODA is found by looping upward in the water column.
                       IF (zr(kc,jc,ic) .LT. zs(Nsoda)) THEN
                           outdat(Nroms-kc+1,jc,ic)=dat(Nsoda,jc,ic)
-                         
-                          if (MAXVAL(abs(dat(:,jc,ic))) .LT. fill) then
-                            if (abs(dat(Nsoda,jc,ic)) .GT. fill) then
+                          if (MAXVAL(dat(:,jc,ic)) .GT. fill) then
+                            if (dat(Nsoda,jc,ic) .LT. fill) then
                               !print*,'Inside dovert and finding deepest depth with good values. current',dat(Nsoda,jc,ic)
-                             
                               DO kT=1,Nsoda
-                                if (abs(dat(Nsoda-kT,jc,ic)) .LT. fill) then
+                                if (dat(Nsoda-kT,jc,ic) .GT. fill) then
                                     !print*,'working on depth',kT,'with value',dat(kT,jc,ic)
                                     outdat(Nroms-kc+1,jc,ic)=dat(Nsoda-kT,jc,ic)
                                     !print*,'Able to find good value at depth ', Nsoda-kT
@@ -125,12 +100,12 @@ Module interpolation
                                 
                                 ! We do not want to give the deepest depth a fill_value, so we find
                                 ! the closest value to deepest depth.
-                                if (MAXVAL(abs(dat(:,jc,ic))) .LT. fill) then
+                                if (MAXVAL(dat(:,jc,ic)) .GT. fill) then
                                
-                                    if (abs(dat(kT,jc,ic)) .GT. fill) then
+                                    if (dat(kT,jc,ic) .LE. fill) then
                                        !print*,'case3:Need to find better value for depth ',kT,'which has value ',dat(kT,jc,ic)
                                         DO kkT=1,Nsoda
-                                            if (dat(kT-kkT,jc,ic) .LT. fill) then
+                                            if (dat(kT-kkT,jc,ic) .GT. fill) then
                                                 ! print*,'CASE 3: Found good value at depth',kT,'with value',dat(kT-kkT,jc,ic), 'at depth',kt-kkT
                                                  outdat(Nroms-kc+1,jc,ic)=dat(kT-kkT,jc,ic)
                             
@@ -141,7 +116,7 @@ Module interpolation
                                 end if
                                 
                                 ! CASE 4: Special case where ROMS layers are much deeper than in SODA
-                                ELSE IF (zr(kc,jc,ic) .LE. zs(kT) .AND. abs(dat(kT,jc,ic)) .LT. fill .AND. abs(dat(kT+1,jc,ic)) .LT. fill) THEN
+                                ELSE IF (zr(kc,jc,ic) .LE. zs(kT) .AND. dat(kT,jc,ic) .GT. fill .AND. dat(kT+1,jc,ic) .LE. fill) THEN
                                 outdat(Nroms-kc+1,jc,ic)=dat(kT,jc,ic)
                               
                               
@@ -150,8 +125,7 @@ Module interpolation
                               ELSE IF ( (zr(kc,jc,ic) .LE. zs(kT)) .AND.       &
                               (zr(kc,jc,ic) .GE. zs(kT+1)) .AND.               &
                               (-bathymetry(jc,ic) .LE. zs(kT+1)) ) THEN
-                                
-                                 
+                              
                                  rz2 = abs((zr(kc,jc,ic)-zs(kT+1))/            &
                                  (abs(zs(kT+1))-abs(zs(kT))))
                                  
@@ -160,12 +134,12 @@ Module interpolation
                                  outdat(Nroms-kc+1,jc,ic) = (rz1*dat(kT+1,jc,ic) &
                                  + rz2*dat(kT,jc,ic))
                                 
-                                if (MAXVAL(abs(dat(:,jc,ic))) .LT. fill) then
+                                if (MAXVAL(dat(:,jc,ic)) .GT. fill) then
                                
-                                    if (abs(dat(kT,jc,ic)) .GT. fill .OR. abs(dat(kT+1,jc,ic)) .GT. fill) then
+                                    if (dat(kT,jc,ic) .LE. fill .OR. dat(kT+1,jc,ic) .LE. fill) then
                                        !print*,'case4:Need to find better value for depth ',kT,kT+1,'which has values ',dat(kT,jc,ic),dat(kT+1,jc,ic)
                                         DO kkT=1,Nsoda
-                                            if (abs(dat(kT-kkT,jc,ic)) .LT. fill .and. abs(dat(kT-kkT+1,jc,ic)) .LT. fill  ) then
+                                            if (dat(kT-kkT,jc,ic) .GT. fill .and. dat(kT-kkT+1,jc,ic) .GT. fill  ) then
                                                  !print*,'CASE 4: Found good value at depth',kT-kkT,kt-kkT+1
                                                  !print*,'with values',dat(kT-kkT,jc,ic), dat(kt-kkT+1,jc,ic)
                                                  outdat(Nroms-kc+1,jc,ic) = (rz1*dat(kT+1-kkT,jc,ic) &
@@ -175,90 +149,16 @@ Module interpolation
                                             end if
                                         END DO
                                     end if
-                                 else
-                                    ! If the whole water column is just missing values, set in average value for that layer
-                                    outdat(Nroms-kc+1,jc,ic)=meanValue(kc)
-                                 
                                  end if
+                                
                                  exit
                                  
                               END IF
                           ! DO LOOP BETWEEN SURFACE AND BOTTOM: CASE 3,4,5
                           END DO
-                          
                       ! TEST ALL CASES IF LOOP: CASE 1,2,3,4,5
                       END IF
-                    
-                    if (abs(outdat(Nroms-kc+1,jc,ic)) > fill) then
-                        
-                       ! This final sweep is to make sure there are no missing value cells
-                       ! in the final output matrix. If there is, then we interpolate around the cell with 
-                      
-                        foundWeightFinal(:)=0
-                        foundDataFinal(:)=0
-                        counter=0
-                        counterFinal=0
-                      
-                        minFinal=-2
-                        maxFinal=2
-                        
-                        do ff=minFinal,maxFinal,1
-                        do kcc=minfinal,maxFinal,1
-                            
-                            vert=jc+kcc
-                            
-                            if (vert .LE. 1 ) then
-                                vert=1
-                            else if (vert .GE. JJ) then
-                                vert=JJ
-                            end if
-                            
-                            hori=ic+ff
-                            
-                             if (hori .LE. 1 ) then
-                                hori=1
-                            else if (hori .GE. II) then
-                                hori=II
-                            end if
-                            !print*,ff,kcc, vert, hori, jc,ic
-                           
-                            if (abs(dat(kc,vert,hori)) < FILL) THEN
-                                counter = counter + 1
-                                counterFinal=counterFinal+1
-                                foundDataFinal(counterFinal)=dat(kc,vert,hori)
-                                foundWeightFinal(counterFinal)=sqrt(((hori) - ic)**2.0 + ((vert) - jc)**2.0)
-                            end if
-                            
-                        end do
-                        end do
-                        
-                        ! Reset the bad value
-                        outdat(Nroms-kc+1,jc,ic) = 0.0
-                        
-                        distance = sum(abs(foundWeightFinal))
-                        sumweights=0.0
-                        weight=0.0
-                        do ff=1,25
-                            
-                            if (foundWeightFinal(ff) .NE. 0) then
-                                
-                                if (counter > 1) then
-                                    weight=((1.0-(abs(foundWeightFinal(ff)))/distance)/(counter-1.0)*1.0)
-                                    sumweights=sumweights + ((1.0-(abs(foundWeightFinal(ff)))/distance)/(counter-1.0)*1.0)
-                                else
-                                    weight=1.0
-                                    sumweights=sumweights + 1.0
-                                end if
-                                outdat(Nroms-kc+1,jc,ic) = outdat(Nroms-kc+1,jc,ic) + foundDataFinal(ff)*weight
-                                
-                            end if
-                            
-                        end do
-                      !if (ic==576 .AND. jc==33 ) then
-                      !  print*,'after',jc,ic, outdat(Nroms-kc+1,jc,ic)
-                      !end if
-                        
-                    end if
+                     
                   end do
               end do
             end do
@@ -280,13 +180,13 @@ Module interpolation
           
            
             integer KK, II, JJ, kc, ic, jc, fill
-            real(8), dimension(KK,JJ,II) :: rhodata
-            real(8), dimension(KK,JJ,II-1) :: udata
+            double precision, dimension(KK,JJ,II) :: rhodata
+            double precision, dimension(KK,JJ,II-1) :: udata
        
 !f2py intent(in,out,overwrite) udata
 !f2py intent(in,overwrite) rhodata, KK, JJ, II
 !f2py intent(hide) ic,jc,kc, fill
-          
+
             fill=10000
             print*,'---> Started horisontal rho2u interpolation'
             do kc=1,KK
@@ -314,7 +214,6 @@ Module interpolation
                     end do
                 end do
             end do
-            
             print*,'-----> Ended horisontal rho2u interpolation'
         end subroutine rho2u
             
@@ -331,9 +230,9 @@ Module interpolation
             ! -------------------------------------------------------------------------------------------------------
           
            integer KK, II, JJ, kc, ic, jc, fill
-           real(8), dimension(KK,JJ,II) :: rhodata
-           real(8), dimension(KK,JJ-1,II) :: vdata
-           
+           double precision, dimension(KK,JJ,II) :: rhodata
+           double precision, dimension(KK,JJ-1,II) :: vdata
+
 !f2py intent(in,out,overwrite) vdata
 !f2py intent(in,overwrite) rhodata, KK, JJ, II
 !f2py intent(hide) ic,jc,kc, fill
@@ -373,16 +272,16 @@ Module interpolation
             ! Trond Kristiansen, January 2009
             ! Rutgers University, NJ.
             ! -------------------------------------------------------------------------------------------------------
-             
-           real(8), dimension(KK,JJ,II) :: urot, vrot
-           real(8), dimension(KK,JJ,II) :: u_rho, v_rho
-           real(8), dimension(JJ,II)  :: angle
+            
+           double precision, dimension(KK,JJ,II) :: urot, vrot
+           double precision, dimension(KK,JJ,II) :: u_rho, v_rho
+           double precision, dimension(JJ,II)  :: angle
            integer KK, II, JJ, kc, ic, jc
           
 !f2py intent(in,out,overwrite) urot, vrot
 !f2py intent(in,overwrite)  u_rho, v_rho, angle, KK, JJ, II
 !f2py intent(hide) ic,jc,kc
-          
+    
            print*,'---> Started rotation of velocities'
            do kc=1,KK
              do jc=1,JJ
@@ -397,7 +296,6 @@ Module interpolation
              end do
             end do
             print*,'-----> Ended rotation of velocities'
-            
         end subroutine rotate
     
      end module interpolation
