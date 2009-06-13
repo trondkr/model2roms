@@ -125,7 +125,7 @@ class grdClass:
             self.write_init=False
             self.write_stations=False
     
-            self.Nlevels=15
+            self.Nlevels=35
             self.theta_s=5.0
             self.theta_b=0.4
             self.Tcline=50.0
@@ -138,9 +138,9 @@ class grdClass:
             due to mismatch of iput and output mask (used in cleanArray.f90)"""
             
             self.maxval=1000
-            self.minDistPoints=3
-            self.maxDistHorisontal=200
-            self.maxDistVertical=200
+            self.minDistPoints=5
+            self.maxDistHorisontal=50
+            self.maxDistVertical=50
             
             self.message  = None  # Used to store the date for printing to screen (IOwrite.py)
             self.time     = 0
@@ -151,15 +151,15 @@ class grdClass:
             self.depth    = self.cdf.variables["h"][:,:]
             self.mask_rho = self.cdf.variables["mask_rho"][:,:]
            
-            # Nathan
+            # Nathan fixes
             # Need to convert all longitude values in grid that are less than 360 and larger than 180 to negative values.
-            self.lon_rho=self.lon_rho-360
+            #self.lon_rho=self.lon_rho-360
             # Cannot have undefined values in depth matrix. This messes up the z_r calculautions. Therefore,
             # convert all depth values that are not valid (e.g. >10000 m) to 0 and set the shallowest depth to self.hc.
             # Do this in the gird file and remove from here.
             
-            self.depth[:,:]=np.where(self.depth[:,:]>9000,self.hc,self.depth[:,:])    
-            self.depth[:,:]=np.where(self.depth[:,:]<self.hc,self.hc,self.depth[:,:])
+            #self.depth[:,:]=np.where(self.depth[:,:]>9000,self.hc,self.depth[:,:])    
+            #self.depth[:,:]=np.where(self.depth[:,:]<self.hc,self.hc,self.depth[:,:])
             
            
             self.lon_u  = self.cdf.variables["lon_u"][:,:]

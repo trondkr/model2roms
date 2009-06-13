@@ -31,10 +31,10 @@ def getAverage(latindex,lonindex,index):
         ave = Dataset(averageFile,'r')
         
         average=True
-        aveTemp=np.zeros((index),np.float32)
-        aveSalt=np.zeros((index),np.float32)
-        aveUvel=np.zeros((index),np.float32)
-        aveVvel=np.zeros((index),np.float32)
+        aveTemp=np.zeros((index),np.float64)
+        aveSalt=np.zeros((index),np.float64)
+        aveUvel=np.zeros((index),np.float64)
+        aveVvel=np.zeros((index),np.float64)
     
         aveTemp[:] = ave.variables["temp"][:,latindex,lonindex]
         aveSalt[:] = ave.variables["salt"][:,latindex,lonindex]
@@ -110,11 +110,11 @@ def getStationData(years,IDS,sodapath,latlist,lonlist):
         print 'Extracting data for station (%s,%s) for the years %s->%s'%(lon,lat,years[0],years[-1])
         print 'Size of output data array is ->',index
         
-        stTemp=np.zeros((index),np.float32)
-        stSalt=np.zeros((index),np.float32)
-        stSSH =np.zeros((indexSSH),np.float32)
-        stUvel=np.zeros((index),np.float32)
-        stVvel=np.zeros((index),np.float32)
+        stTemp=np.zeros((index),np.float64)
+        stSalt=np.zeros((index),np.float64)
+        stSSH =np.zeros((indexSSH),np.float64)
+        stUvel=np.zeros((index),np.float64)
+        stVvel=np.zeros((index),np.float64)
         stTime=[]
         stDate=[]
         time=0

@@ -84,7 +84,7 @@ def doHorInterpolationRegularGrid(var,grdROMS,grdMODEL,data,show_progress):
         progress = progressBar(color='red',width=24, block=filled.encode('UTF-8'), empty=empty.encode('UTF-8'))
 
     indexROMS_Z_ST = (grdMODEL.Nlevels,grdROMS.eta_rho,grdROMS.xi_rho)
-    array1=np.zeros((indexROMS_Z_ST),dtype=np.float32)
+    array1=np.zeros((indexROMS_Z_ST),dtype=np.float64)
 
     for k in xrange(grdMODEL.Nlevels):
         
@@ -103,20 +103,20 @@ def doHorInterpolationRegularGrid(var,grdROMS,grdMODEL,data,show_progress):
         Zg = mp.interp(dataout,lonsout,grdMODEL.lat[:,0],grdROMS.lon_rho,grdROMS.lat_rho,
                        checkbounds=False, masked=False, order=1)
        
-        Zin = np.zeros((grdROMS.lon_rho.shape),dtype=np.float32, order='Fortran')
+        Zin = np.zeros((grdROMS.lon_rho.shape),dtype=np.float64, order='Fortran')
         Zin = Zg
-        #Zin = cl.cleanarray.sweep(np.asarray(grdROMS.depth,order='Fortran'),
-        #                          float(grdMODEL.z_r[k]),
-        #                          int(grdROMS.minDistPoints),
-        #                          int(grdROMS.maxval),
-        #                          int(grdROMS.maxDistHorisontal),
-        #                          int(grdROMS.maxDistVertical),
-        #                          np.asarray(Zg,order='Fortran'),
-        #                          np.asarray(Zin,order='Fortran'),
-        #                          np.asarray(grdROMS.mask_rho,order='Fortran'),
-        #                          int(grdROMS.xi_rho),
-        #                          int(grdROMS.eta_rho))
-        #
+        Zin = cl.cleanarray.sweep(np.asarray(grdROMS.depth,order='Fortran'),
+                                  float(grdMODEL.z_r[k]),
+                                  int(grdROMS.minDistPoints),
+                                  int(grdROMS.maxval),
+                                  int(grdROMS.maxDistHorisontal),
+                                  int(grdROMS.maxDistVertical),
+                                  np.asarray(Zg,order='Fortran'),
+                                  np.asarray(Zin,order='Fortran'),
+                                  np.asarray(grdROMS.mask_rho,order='Fortran'),
+                                  int(grdROMS.xi_rho),
+                                  int(grdROMS.eta_rho))
+
         Zin=Zin*grdROMS.mask_rho
         
         array1[k,:,:]=Zin
@@ -138,7 +138,7 @@ def doHorInterpolationRegularGrid(var,grdROMS,grdMODEL,data,show_progress):
 def doHorInterpolationSSHRegularGrid(var,grdROMS,grdMODEL,data):
     
     indexROMS_Z_ST = (grdMODEL.Nlevels,grdROMS.eta_rho,grdROMS.xi_rho)
-    array1=np.zeros((indexROMS_Z_ST),dtype=np.float32)
+    array1=np.zeros((indexROMS_Z_ST),dtype=np.float64)
     
     i0 = np.argmin(np.fabs(grdMODEL.lon[0,:]-180))
 
@@ -155,7 +155,7 @@ def doHorInterpolationSSHRegularGrid(var,grdROMS,grdMODEL,data):
     Zg = mp.interp(dataout,lonsout,grdMODEL.lat[:,0],grdROMS.lon_rho,grdROMS.lat_rho,
                    checkbounds=False, masked=False, order=1)
 
-    Zin = np.zeros((grdROMS.lon_rho.shape),dtype=np.float32, order='Fortran')
+    Zin = np.zeros((grdROMS.lon_rho.shape),dtype=np.float64, order='Fortran')
     Zin = Zg
   
     #Zin = cl.cleanarray.sweep(np.asarray(grdROMS.depth,order='Fortran'),

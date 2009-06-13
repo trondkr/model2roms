@@ -35,7 +35,7 @@ def VerticalInterpolation(var,array1,array2,grdROMS,grdMODEL):
             
     if var=='salinity' or var=='temperature':
         print 'Start vertical interpolation for %s (dimensions=%s x %s)'%(var,grdROMS.xi_rho,grdROMS.eta_rho)
-        outdata=np.zeros((outINDEX_ST),dtype=np.float32, order='Fortran')
+        outdata=np.zeros((outINDEX_ST),dtype=np.float64, order='Fortran')
     
         outdata = interp.interpolation.dovertinter(np.asarray(outdata,order='Fortran'),
                                                        np.asarray(array1,order='Fortran'),
@@ -59,8 +59,8 @@ def VerticalInterpolation(var,array1,array2,grdROMS,grdMODEL):
         
     if var=='vvel':
         print 'Start vertical interpolation for uvel (dimensions=%s x %s)'%(grdROMS.xi_u,grdROMS.eta_u)
-        outdataU=np.zeros((outINDEX_U),dtype=np.float32,order='Fortran')
-        outdataUBAR=np.zeros((outINDEX_UBAR),dtype=np.float32)
+        outdataU=np.zeros((outINDEX_U),dtype=np.float64,order='Fortran')
+        outdataUBAR=np.zeros((outINDEX_UBAR),dtype=np.float64)
 
         outdataU = interp.interpolation.dovertinter(np.asarray(outdataU,order='Fortran'),
                                                        np.asarray(array1,order='Fortran'),
@@ -75,8 +75,8 @@ def VerticalInterpolation(var,array1,array2,grdROMS,grdMODEL):
                                                        int(grdROMS.eta_rho))
    
         print 'Start vertical interpolation for vvel (dimensions=%s x %s)'%(grdROMS.xi_v,grdROMS.eta_v)
-        outdataV=np.zeros((outINDEX_V),dtype=np.float32,order='Fortran')
-        outdataVBAR=np.zeros((outINDEX_VBAR),dtype=np.float32)
+        outdataV=np.zeros((outINDEX_V),dtype=np.float64,order='Fortran')
+        outdataVBAR=np.zeros((outINDEX_VBAR),dtype=np.float64)
        
         outdataV = interp.interpolation.dovertinter(np.asarray(outdataV,order='Fortran'),
                                                        np.asarray(array2,order='Fortran'),
@@ -155,8 +155,8 @@ def rotate(grdROMS,grdMODEL,data,u,v):
         the rho point values to U and V points and save the result
         """
         
-        urot=np.zeros((int(grdMODEL.Nlevels),int(grdROMS.eta_rho),int(grdROMS.xi_rho)), np.float32)
-        vrot=np.zeros((int(grdMODEL.Nlevels),int(grdROMS.eta_rho),int(grdROMS.xi_rho)), np.float32)
+        urot=np.zeros((int(grdMODEL.Nlevels),int(grdROMS.eta_rho),int(grdROMS.xi_rho)), np.float64)
+        vrot=np.zeros((int(grdMODEL.Nlevels),int(grdROMS.eta_rho),int(grdROMS.xi_rho)), np.float64)
         
         urot, vrot = interp.interpolation.rotate(np.asarray(urot,order='Fortran'),
                                                  np.asarray(vrot,order='Fortran'),
@@ -170,8 +170,8 @@ def rotate(grdROMS,grdMODEL,data,u,v):
     
 def interpolate2UV(grdROMS,grdMODEL,urot, vrot):        
         
-        Zu=np.zeros((int(grdMODEL.Nlevels),int(grdROMS.eta_u),int(grdROMS.xi_u)), np.float32)
-        Zv=np.zeros((int(grdMODEL.Nlevels),int(grdROMS.eta_v),int(grdROMS.xi_v)), np.float32)
+        Zu=np.zeros((int(grdMODEL.Nlevels),int(grdROMS.eta_u),int(grdROMS.xi_u)), np.float64)
+        Zv=np.zeros((int(grdMODEL.Nlevels),int(grdROMS.eta_v),int(grdROMS.xi_v)), np.float64)
         
         """
         Interpolate from RHO points to U and V points for velocities
@@ -325,16 +325,16 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
         find_subset_indices(grdMODEL,min_lat=30, max_lat=90, min_lon=0, max_lon=360)
     if type=='HYCOM':
         #GOM
-        #grdMODEL.minJ=1900
-        #grdMODEL.maxJ=2400
-        #grdMODEL.minI=2575
-        #grdMODEL.maxI=2875
+        grdMODEL.minJ=1900
+        grdMODEL.maxJ=2400
+        grdMODEL.minI=2575
+        grdMODEL.maxI=2875
         
         #NATHAN BIG
-        grdMODEL.minJ=1504  #  0 deg N
-        grdMODEL.maxJ=2171  # 47 deg N
-        grdMODEL.minI=2340  # -99 deg E
-        grdMODEL.maxI=3573  #   0 deg E
+        #grdMODEL.minJ=1504  #  0 deg N
+        #grdMODEL.maxJ=2171  # 47 deg N
+        #grdMODEL.minI=2340  # -99 deg E
+        #grdMODEL.maxI=3573  #   0 deg E
         
         # NORDIC GRID
         #grdMODEL.minJ=2200
@@ -397,28 +397,28 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
             for var in vars:
                 
                 if var=='temperature':
-                    STdata=np.zeros((indexROMS_S_ST),dtype=np.float32)
+                    STdata=np.zeros((indexROMS_S_ST),dtype=np.float64)
                     data = np.array(cdf.variables[str(variableNames[0])][0,:,grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI])
                        
                     if time==0:
                         tmp=np.squeeze(data[0,:,:])
-                        grdMODEL.mask = np.zeros((grdMODEL.lon.shape),dtype=np.float32)
+                        grdMODEL.mask = np.zeros((grdMODEL.lon.shape),dtype=np.float64)
                         grdMODEL.mask[:,:] = np.where(tmp==grdROMS.fill_value,1,0)
                         
                 if var=='salinity':
-                    STdata = np.zeros((indexROMS_S_ST),dtype=np.float32)
+                    STdata = np.zeros((indexROMS_S_ST),dtype=np.float64)
                     data  = np.array(cdf.variables[str(variableNames[1])][0,:,grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI])
                  
                 if var=='ssh':
-                    SSHdata = np.zeros((indexROMS_SSH),dtype=np.float32)
+                    SSHdata = np.zeros((indexROMS_SSH),dtype=np.float64)
                     data  = np.array(cdf.variables[str(variableNames[2])][0,grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI])
                     
                 if var=='uvel':
-                    Udata = np.zeros((indexROMS_S_U),dtype=np.float32)
+                    Udata = np.zeros((indexROMS_S_U),dtype=np.float64)
                     data  = np.array(cdf.variables[str(variableNames[3])][0,:,grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI])
                    
                 if var=='vvel':
-                    Vdata = np.zeros((indexROMS_S_V),dtype=np.float32)
+                    Vdata = np.zeros((indexROMS_S_V),dtype=np.float64)
                     data  = np.array(cdf.variables[str(variableNames[4])][0,:,grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI])
                    
                     
@@ -442,8 +442,8 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
                     
                 if var=='vvel':
         
-                    UBARdata = np.zeros((indexROMS_UBAR),dtype=np.float32)
-                    VBARdata = np.zeros((indexROMS_VBAR),dtype=np.float32)
+                    UBARdata = np.zeros((indexROMS_UBAR),dtype=np.float64)
+                    VBARdata = np.zeros((indexROMS_VBAR),dtype=np.float64)
                 
                     urot,vrot = rotate(grdROMS,grdMODEL,data,array2,array1)
                     

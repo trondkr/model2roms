@@ -34,9 +34,9 @@ def calculate_z_w(self):
      
     Trond Kristiansen, 20.01.2008, 03.12.2008, 09.12.2008
     """
-    sc_w=np.zeros((self.Nlevels+1),np.float32)
-    Cs_w=np.zeros((self.Nlevels+1),np.float32)
-    z_w=np.zeros((len(sc_w),self.eta_rho,self.xi_rho),np.float32)
+    sc_w=np.zeros((self.Nlevels+1),np.float64)
+    Cs_w=np.zeros((self.Nlevels+1),np.float64)
+    z_w=np.zeros((len(sc_w),self.eta_rho,self.xi_rho),np.float64)
     
     h =self.depth
     hc=np.min(h,self.Tcline)
@@ -86,9 +86,9 @@ def calculate_z_r(self):
      
     Trond Kristiansen, 20.01.2008, 03.12.2008, 09.12.2008, 11.03.2009
     """
-    sc_r=np.zeros((self.Nlevels),np.float32)
-    Cs_r=np.zeros((self.Nlevels),np.float32)
-    z_r=np.zeros((len(sc_r),self.eta_rho,self.xi_rho),np.float32)
+    sc_r=np.zeros((self.Nlevels),np.float64)
+    Cs_r=np.zeros((self.Nlevels),np.float64)
+    z_r=np.zeros((len(sc_r),self.eta_rho,self.xi_rho),np.float64)
     
     h =self.depth
     hc=np.min(h,self.Tcline)

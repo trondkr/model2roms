@@ -41,17 +41,19 @@ def main():
     terminal.py and progressBar.py"""
     show_progress=True
     write_stations=False
+    convert2Grid=True
+    decimateGrid=False 
     
     sodapath="/Volumes/HankRaid/SODA/"
     hycompath="/Users/trond/Projects/arcwarm/SODA/HYCOM/"
     
     #romsgridpath="/Users/trond/Projects/arcwarm/nordic/AA_10km_grid.nc"
-    #romsgridpath="/Users/trond/ROMS/GoM/grid/gom_grd.nc"
+    romsgridpath="/Users/trond/ROMS/GoM/grid/gom_grd.nc"
     #romsgridpath="/Users/trond/ROMS/GoM/grid/gom_grd_030208.nc"
     #romsgridpath="/Users/trond/Projects/arcwarm/nordic/imr_nordic_4km.nc"
     #romsgridpath="/Users/trond/Projects/arcwarm/SODA/soda2roms/imr_nordic_8km.nc"
     #romsgridpath="/Users/trond/Projects/Nathan/NoMed47_GRID_Global.nc"
-    romsgridpath='/Users/trond/Projects/Nathan/GOM_GRID_Global.nc'
+    #romsgridpath='/Users/trond/Projects/Nathan/GOM_GRID_Global.nc'
     start_year      =1990
     end_year        =2000
     start_julianday =0
@@ -59,9 +61,7 @@ def main():
     
     """Set the input data MODEL type: Current options are SODA or HYCOM"""
     type='HYCOM' 
-    #type='SODA'
-    convert2Grid=True
-    decimateGrid=False #True
+    type='SODA'
     
     vars=['temperature','salinity','ssh','uvel','vvel']
     vars=['temperature']
