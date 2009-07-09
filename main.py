@@ -48,24 +48,24 @@ def main():
     hycompath="/Users/trond/Projects/arcwarm/SODA/HYCOM/"
     
     #romsgridpath="/Users/trond/Projects/arcwarm/nordic/AA_10km_grid.nc"
-    romsgridpath="/Users/trond/ROMS/GoM/grid/gom_grd.nc"
+    romsgridpath="/Volumes/HankRaid/ROMS/GoM/grid/gom_grd.nc"
     #romsgridpath="/Users/trond/ROMS/GoM/grid/gom_grd_030208.nc"
     #romsgridpath="/Users/trond/Projects/arcwarm/nordic/imr_nordic_4km.nc"
     #romsgridpath="/Users/trond/Projects/arcwarm/SODA/soda2roms/imr_nordic_8km.nc"
     #romsgridpath="/Users/trond/Projects/Nathan/NoMed47_GRID_Global.nc"
     #romsgridpath='/Users/trond/Projects/Nathan/GOM_GRID_Global.nc'
-    start_year      =1990
-    end_year        =2000
+    start_year      =1960
+    end_year        =1961
     start_julianday =0
-    end_julianday   =365
+    end_julianday   =20
     
     """Set the input data MODEL type: Current options are SODA or HYCOM"""
     type='HYCOM' 
     type='SODA'
     
     vars=['temperature','salinity','ssh','uvel','vvel']
-    vars=['temperature']
-    
+    #vars=['temperature']
+    vars=['uvel','vvel']
     
     start_day_in_start_year=np.round(start_julianday/5.0)
     end_day_in_end_year=round(end_julianday/5.0)
@@ -101,8 +101,8 @@ def main():
     if write_stations is True:
         print "Running in station mode"
         # GB, NovaScotia, Grand Bank, Nuuk, Iceland, NS, Lofoten, BS     
-        lonlist=[-66.5233]#,-66.40,-50.43,-54.38, 21.51,  1.53, 13.38, 32.75]
-        latlist=[ 41.5423]#, 43.41, 44.50, 64.72, 63.35, 58.36, 67.50, 71.77]
+        lonlist=[-66.5233-66.4001,-50.4321,-54.3801, 21.5101,  1.5301, 13.3801, 32.7501]
+        latlist=[ 41.5423, 43.4111, 44.5001, 64.7201, 63.3501, 58.3601, 67.5001, 71.7701]
         
         IOstation.getStationData(years,IDS,sodapath,latlist,lonlist)
 
