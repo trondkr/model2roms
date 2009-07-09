@@ -191,25 +191,23 @@ Module interpolation
             print*,'---> Started horisontal rho2u interpolation'
             do kc=1,KK
                 do jc=1,JJ
-                    do ic=1,II-1
-                        if (jc .EQ. 1) then
-                            udata(kc,jc,ic)=rhodata(kc,jc,ic)
-                        else if (jc .EQ. JJ) then
-                            udata(kc,jc,ic)=rhodata(kc,jc,ic)
+                    do ic=2,II-1
+                        
+                        udata(kc,jc,1)=rhodata(kc,jc,1)
                         ! Now make sure that if we have two stations where one has values
                         ! and the other not, we only use the good value
                         ! case 1: one value is good (jc+1) other bad (jc-1)
-                        else if (abs(rhodata(kc,jc-1,ic)) > fill .AND. abs(rhodata(kc,jc+1,ic)) < fill) then
-                            udata(kc,jc,ic)=(rhodata(kc,jc+1,ic))
+                        if (abs(rhodata(kc,jc,ic-1)) > fill .AND. abs(rhodata(kc,jc,ic+1)) < fill) then
+                            udata(kc,jc,ic)=(rhodata(kc,jc,ic+1))
                         ! case 2: one value is good (jc-1) other bad (jc+1)
-                        else if (abs(rhodata(kc,jc-1,ic)) < fill .AND. abs(rhodata(kc,jc+1,ic)) > fill) then
-                            udata(kc,jc,ic)=(rhodata(kc,jc-1,ic))
+                        else if (abs(rhodata(kc,jc,ic-1)) < fill .AND. abs(rhodata(kc,jc,ic+1)) > fill) then
+                            udata(kc,jc,ic)=(rhodata(kc,jc,ic-1))
                         ! Both values are bad:
-                        else if (abs(rhodata(kc,jc-1,ic)) > fill .AND. abs(rhodata(kc,jc+1,ic)) > fill) then
+                        else if (abs(rhodata(kc,jc,ic-1)) > fill .AND. abs(rhodata(kc,jc,ic+1)) > fill) then
                             udata(kc,jc,ic)=0.0
                         ! Both values are good and we do linear interpolation
                         else 
-                            udata(kc,jc,ic)=(rhodata(kc,jc-1,ic)+rhodata(kc,jc+1,ic))*0.5
+                            udata(kc,jc,ic)=(rhodata(kc,jc,ic-1)+rhodata(kc,jc,ic+1))*0.5
                         end if
                     end do
                 end do
@@ -240,21 +238,20 @@ Module interpolation
             fill=10000
             print*,'---> Started horisontal rho2v interpolation'
             do kc=1,KK
-                do jc=1,JJ-1
+                do jc=2,JJ-1
                     do ic=1,II
-                        if (ic .EQ. 1) then
-                            vdata(kc,jc,ic)=rhodata(kc,jc,ic)
-                        else if (ic .EQ. II) then
-                            vdata(kc,jc,ic)=rhodata(kc,jc,ic)
+                       
+                        
+                        vdata(kc,1,ic)=rhodata(kc,1,ic)
                             
-                        else if (abs(rhodata(kc,jc,ic-1)) > fill .AND. abs(rhodata(kc,jc,ic+1)) < fill) then
+                        if (abs(rhodata(kc,jc-1,ic)) > fill .AND. abs(rhodata(kc,jc+1,ic)) < fill) then
                             vdata(kc,jc,ic)=(rhodata(kc,jc+1,ic))
-                        else if (abs(rhodata(kc,jc,ic-1)) < fill .AND. abs(rhodata(kc,jc,ic+1)) > fill) then
-                            vdata(kc,jc,ic)=(rhodata(kc,jc,ic-1))
-                        else if (abs(rhodata(kc,jc,ic-1)) > fill .AND. abs(rhodata(kc,jc,ic-1)) > fill) then
+                        else if (abs(rhodata(kc,jc-1,ic)) < fill .AND. abs(rhodata(kc,jc+1,ic)) > fill) then
+                            vdata(kc,jc,ic)=(rhodata(kc,jc-1,ic))
+                        else if (abs(rhodata(kc,jc-1,ic)) > fill .AND. abs(rhodata(kc,jc+1,ic)) > fill) then
                             vdata(kc,jc,ic)=0.0
                         else
-                            vdata(kc,jc,ic)=(rhodata(kc,jc,ic-1)+rhodata(kc,jc,ic+1))*0.5
+                            vdata(kc,jc,ic)=(rhodata(kc,jc-1,ic)+rhodata(kc,jc+1,ic))*0.5
                         end if
                     end do
                 end do
