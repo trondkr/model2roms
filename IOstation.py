@@ -7,10 +7,9 @@ import soda2roms
 import date
 from netCDF4 import Dataset
 from netCDF4 import num2date
-import time
-import os
+import os, time
 import plotStation
-import Nio
+from progressBar import progressBar
 
 __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
@@ -20,32 +19,47 @@ __modified__ = datetime.datetime(2009, 1, 22)
 __version__  = "1.0"
 __status__   = "Development"
 
-def getAverage(latindex,lonindex,index):
+def getAverage(ID,gridIndexes,validIndex,validDis):
     """The input file for this routine is created by making an average of all the SODA files from 1961-1990.
-    This is done using the script soda2average/average_soda.py"""
+    This is done using the script soda2average/average_soda_v2.py"""
     
-    averageFile='../soda2average/average_SODA_1961-1990.nc'
+    averageFile='../soda2average/clim/average_SODA_1961-1990_'+str(ID)+'.nc'
     if os.path.exists(averageFile):
-        print 'Average file %s exists so anomaly values of salt, '%(averageFile)
-        print 'temp, u, and v will be written to file'
+        print '======================================================================='
+        print 'Average file %s exists so clim values written to file for day %s, '%(averageFile,ID*5)   
+        print '======================================================================='
         ave = Dataset(averageFile,'r')
         
+        index =(len(ave.variables["depth"][:]))
         average=True
         aveTemp=np.zeros((index),np.float64)
         aveSalt=np.zeros((index),np.float64)
         aveUvel=np.zeros((index),np.float64)
         aveVvel=np.zeros((index),np.float64)
     
-        aveTemp[:] = ave.variables["temp"][:,latindex,lonindex]
-        aveSalt[:] = ave.variables["salt"][:,latindex,lonindex]
-        aveUvel[:] = ave.variables["uvel"][:,latindex,lonindex]
-        aveVvel[:] = ave.variables["vvel"][:,latindex,lonindex]
+        aveTime=ID
+        
+        for i in validIndex:
+            wgt=float(validDis[i])/sum(validDis)
+            latindex=int(gridIndexes[i][0])
+            lonindex=int(gridIndexes[i][1])
+            
+            """The values at a station is calculated by interpolating from the
+            numberOfPoints around the station uysing weights (wgt)
+            """
+                
+            aveTemp[:] = aveTemp[:]  + (ave.variables["temp"][:,latindex,lonindex])*wgt
+            aveSalt[:] = aveSalt[:]  + (ave.variables["salt"][:,latindex,lonindex])*wgt
+            aveUvel[:] = aveUvel[:]  + (ave.variables["uvel"][:,latindex,lonindex])*wgt
+            aveVvel[:] = aveVvel[:]  + (ave.variables["vvel"][:,latindex,lonindex])*wgt
+         
         ave.close()
+        
     else:
         average=False
-        aveTemp=None; aveSalt=None; aveUvel=None; aveVvel=None
+        aveTemp=None; aveSalt=None; aveUvel=None; aveVvel=None; aveTime=None
         
-    return aveTemp,aveSalt,aveUvel,aveVvel, average
+    return aveTemp,aveSalt,aveUvel,aveVvel,aveTime,average
 
 def getStationTime(grdMODEL,year,ID):
     """
@@ -82,12 +96,71 @@ def getStationTime(grdMODEL,year,ID):
     jdsoda=soda_date.ToJDNumber()
     yyyymmdd = '%s/%s/%s'%(soda_date.year,soda_date.month,soda_date.day)
     
-    print 'Current time of SODA file : %s/%s/%s'%(soda_date.year,soda_date.month,soda_date.day)
+    message='Current time of SODA file : %s/%s/%s'%(soda_date.year,soda_date.month,soda_date.day)
     
-    return jdsoda-jdref, yyyymmdd
+    return jdsoda-jdref, yyyymmdd, message
 
-def getStationData(years,IDS,sodapath,latlist,lonlist):
-      
+def testValidStation(cdf,dis,numberOfPoints,gridIndexes):
+    validIndex=[]; validDis=[]
+    for i in range(numberOfPoints):
+        latindex=int(gridIndexes[i][0])
+        lonindex=int(gridIndexes[i][1])
+        
+        """Test to see if station contains anything but missing values. If it does, we assume
+        this holds for salinity, u, and v as well. We also assume all values less than 10000"""
+        if any(abs(cdf.variables["TEMP"][0,:,latindex,lonindex])< 10000):
+            validIndex.append(i)
+            validDis.append(dis[i])
+  
+    if not validIndex:
+        print 'No valid data found for position'
+        exit()
+    print "Found %s valid surounding grid cells for station"%(len(validIndex))
+    return validIndex, validDis
+
+def testValidDepth(cdf,numberOfPoints,gridIndexes,depth):
+    """To avoid having to extract all depth layers that do not
+    contain valid data, we find the deepest depth layer of the surrouding stations
+    and use that indices in the further extration"""
+    deepestMax=40 # The deepes soda depth is 40
+    deepest=0
+    for i in range(numberOfPoints):
+        latindex=int(gridIndexes[i][0])
+        lonindex=int(gridIndexes[i][1])
+        
+        """Test to see how many depth layers we should extract. We do not want layers
+        that only contain missing values"""
+        d = cdf.variables["TEMP"][0,:,latindex,lonindex]
+        for k in range(len(d)):
+            if abs(d[k]) < 1000:
+                """One of the other stations may have values valid at
+                deeper stations than this one. Make sure we find absolute deepest"""
+                #if k>deepest:
+                deepest=k
+       
+    print "Found deepest valid depth-layer %s which is equivavelnt to %sm\n" %(deepest+1, depth[deepest+1])
+    """Now we return deepest + 1 as the index is one value more than the counter"""
+    return deepest      
+    
+def initArrays(years,IDS,deepest,name,lon,lat):
+    index=(len(years)*len(IDS),deepest)
+    indexSSH=(len(years)*len(IDS))
+        
+    print 'Extracting data for station (%s,%s) for the years %s->%s'%(lon,lat,years[0],years[-1])
+    print 'Size of output data array is ->',index
+   
+    stTemp=np.zeros((index),np.float64)
+    stSalt=np.zeros((index),np.float64)
+    stSSH =np.zeros((indexSSH),np.float64)
+    stUvel=np.zeros((index),np.float64)
+    stVvel=np.zeros((index),np.float64)
+    
+    return stTemp, stSalt, stSSH, stUvel, stVvel
+
+def getStationData(years,IDS,sodapath,latlist,lonlist,stationNames):
+    empty  =u'\u25FD'; filled =u'\u25FE'
+    progress  = progressBar(color='red',width=30, block=filled.encode('UTF-8'), empty=empty.encode('UTF-8'))
+    
     fileNameIn=sodapath+'SODA_2.0.2_'+str(years[0])+'_'+str(IDS[0])+'.cdf'
     
     """First time in loop, get the essential old grid information"""
@@ -98,67 +171,64 @@ def getStationData(years,IDS,sodapath,latlist,lonlist):
     
     station=0
     numberOfPoints=4
-    
+   
     for lat, lon in zip(latlist, lonlist):
+        print '\n----------------NEW STATION==> %s ------------------------------------------'%(stationNames[station])
+     
         """Now we want to find the indices for our longitude, latitude station pairs in the lat-long list"""
         gridIndexes, dis = getStationIndices(grdMODEL,lon,lat,'SODA',numberOfPoints)
-        
-        index=(len(years)*len(IDS),len(grdMODEL.depth))
-        indexSSH=(len(years)*len(IDS))
-        
-        print '-------------------------------------------------------------\n'
-        print 'Extracting data for station (%s,%s) for the years %s->%s'%(lon,lat,years[0],years[-1])
-        print 'Size of output data array is ->',index
-        
-        stTemp=np.zeros((index),np.float64)
-        stSalt=np.zeros((index),np.float64)
-        stSSH =np.zeros((indexSSH),np.float64)
-        stUvel=np.zeros((index),np.float64)
-        stVvel=np.zeros((index),np.float64)
-        stTime=[]
-        stDate=[]
-        time=0
-       
+    
+        stTime=[]; stDate=[]; time=0; counter=0; t=0
+        total=float(len(years)*len(IDS))
         for year in years:
             for ID in IDS:
                 file="SODA_2.0.2_"+str(year)+"_"+str(ID)+".cdf"
                 filename=sodapath+file
                
-                jdsoda, yyyymmdd = getStationTime(grdMODEL,year,ID)
+                jdsoda, yyyymmdd, message = getStationTime(grdMODEL,year,ID)
+                
                 stTime.append(jdsoda)
                 stDate.append(yyyymmdd)
-                t=0
-                cdf = Dataset(filename,'r',format='NETCDF3')
+               
+                cdf = Dataset(filename,'r')
  
                 """Each SODA file consist only of one time step. Get the subset data selected, and
                 store that time step in a new array:"""
-                for i in range(numberOfPoints):
-                    wgt=float(dis[i])/sum(dis)
+                if year==years[0] and ID==IDS[0]:
+                    validIndex, validDis = testValidStation(cdf,dis,numberOfPoints, gridIndexes)
+                    deepest              = testValidDepth(cdf,numberOfPoints, gridIndexes,grdMODEL.depth)
+                    stTemp, stSalt, stSSH, stUvel, stVvel = initArrays(years,IDS,deepest,stationNames[station],lon,lat)
+                     
+                for i in validIndex:
+                    wgt=float(validDis[i])/sum(validDis)
                     latindex=int(gridIndexes[i][0])
                     lonindex=int(gridIndexes[i][1])
-
+                    
                     """The values at a station is calculated by interpolating from the
                     numberOfPoints around the station uysing weights (wgt)
                     """
-                    stTemp[time,:] = stTemp[time,:] + (cdf.variables["TEMP"][t,:,latindex,lonindex])*wgt
-                    stSalt[time,:] = stSalt[time,:] + (cdf.variables["SALT"][t,:,latindex,lonindex])*wgt
+                    stTemp[time,:] = stTemp[time,:] + (cdf.variables["TEMP"][t,0:deepest,latindex,lonindex])*wgt
+                    stSalt[time,:] = stSalt[time,:] + (cdf.variables["SALT"][t,0:deepest,latindex,lonindex])*wgt
                     stSSH[time]    = stSSH[time]    + (cdf.variables["SSH"][t,latindex,lonindex])*wgt
-                    stUvel[time,:] = stUvel[time,:] + (cdf.variables["U"][t,:,latindex,lonindex])*wgt
-                    stVvel[time,:] = stVvel[time,:] + (cdf.variables["V"][t,:,latindex,lonindex])*wgt
+                    stUvel[time,:] = stUvel[time,:] + (cdf.variables["U"][t,0:deepest,latindex,lonindex])*wgt
+                    stVvel[time,:] = stVvel[time,:] + (cdf.variables["V"][t,0:deepest,latindex,lonindex])*wgt
                  
                 cdf.close()
-                    
+                counter+=1
+                
+                """Show progress bar"""
+                p=int( ((time*1.0+1)/(1.0*total))*100.)
+                progress.render(p,message)
                 time+=1
-         
+                
+        
         print 'Total time steps saved to file %s for station %s'%(time,station)
-        #plotStation.contourData(stTemp,stTime,stDate,grdMODEL.depth)
+        #plotStation.contourData(stTemp,stTime,stDate,-grdMODEL.depth[0:deepest],stationNames[station])
         
-        aveTemp,aveSalt,aveUvel,aveVvel,average = getAverage(latindex,lonindex,len(grdMODEL.depth))
-        
-        outfilename='Station_st%i_%s_to_%s.nc'%(station+1,years[0],years[-1])
-        outfilename='station_lat_'+str(lat)+'_lon_'+str(lon)+'.xyz'
+        outfilename='station_'+str(stationNames[station])+'.nc'
         print 'Results saved to file %s'%(outfilename)
-        writeStationNETCDF4(stTemp,stSalt,stUvel,stVvel,stSSH,stTime,grdMODEL.depth,lat,lon,outfilename,average,aveTemp,aveSalt,aveUvel,aveVvel)
+        writeStationNETCDF4(stTemp,stSalt,stUvel,stVvel,stSSH,stTime,
+                            grdMODEL.depth[0:deepest],lat,lon,outfilename)
         station+=1
     
 def getStationIndices(grdObject,st_lon,st_lat,type,numberOfPoints):
@@ -203,7 +273,7 @@ def getStationIndices(grdObject,st_lon,st_lat,type,numberOfPoints):
         listd.pop(0)
   
     print '' 
-    print '=====get_station======'
+    print '=====getStationIndices======'
     if NEG is True:
         print 'Looking for longitude [%3.3f] and latitude [%3.3f]'%(st_lon-360,st_lat)
     else:
@@ -232,7 +302,7 @@ def getStationIndices(grdObject,st_lon,st_lat,type,numberOfPoints):
 
 
 
-def writeStationNETCDF4(t,s,uvel,vvel,ssh,ntime,depth,lat,lon,outfilename,average,aveTemp,aveSalt,aveUvel,aveVvel):
+def writeStationNETCDF4(t,s,uvel,vvel,ssh,ntime,depth,lat,lon,outfilename):
        
     if os.path.exists(outfilename):
         os.remove(outfilename)
@@ -246,7 +316,7 @@ def writeStationNETCDF4(t,s,uvel,vvel,ssh,ntime,depth,lat,lon,outfilename,averag
        
     f1.createDimension('time', len(ntime))
     f1.createDimension('z', len(depth))
-     
+  
     v=f1.createVariable('lon','d')
     v.long_name = "Longitude position of station" ;
     v.units = "Longitude"
@@ -293,37 +363,7 @@ def writeStationNETCDF4(t,s,uvel,vvel,ssh,ntime,depth,lat,lon,outfilename,averag
     v_v.long_name = "V-velocity, scalar, series"
     v_v.units = "m/s"
     v_v[:,:] = vvel
- 
-    if average==True:
-        v_anom=f1.createVariable('tempAnomaly', 'f', ('time','z'), zlib=True)
-        v_anom.long_name = "Ocean temperature anomaly"
-        v_anom.units = "degrees Celsius"
-
-        for k in range(len(t[:,1])):
-             v_anom[k,:] = t[k,:] - aveTemp[:]
-       
-        v_anom=f1.createVariable('saltAnomaly', 'f', ('time','z'), zlib=True)
-        v_anom.long_name = "Ocean salinity anomaly"
-        v_anom.units = "psu"
-
-        for k in range(len(s[:,1])):
-             v_anom[k,:] = s[k,:] - aveSalt[:]
-    
-        v_anom=f1.createVariable('uAnomaly', 'f', ('time','z'), zlib=True)
-        v_anom.long_name = "Ocean u anomaly"
-        v_anom.units = "m/s"
-
-        for k in range(len(s[:,1])):
-             v_anom[k,:] = uvel[k,:]- aveUvel[:]
-     
-     
-        v_anom=f1.createVariable('vAnomaly', 'f', ('time','z'), zlib=True)
-        v_anom.long_name = "Ocean v anomaly"
-        v_anom.units = "m/s"
-
-        for k in range(len(s[:,1])):
-             v_anom[k,:] = vvel[k,:]- aveVvel[:]
-             
+        
     f1.close()
 
 
