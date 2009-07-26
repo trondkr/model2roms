@@ -40,8 +40,8 @@ def main():
     indicator for horizontal interpolation. This requires the two modules:
     terminal.py and progressBar.py"""
     show_progress=True
-    write_stations=False
-    convert2Grid=True
+    write_stations=True
+    convert2Grid=False
     decimateGrid=False 
     
     sodapath="/Volumes/HankRaid/SODA/"
@@ -54,10 +54,10 @@ def main():
     #romsgridpath="/Users/trond/Projects/arcwarm/SODA/soda2roms/imr_nordic_8km.nc"
     #romsgridpath="/Users/trond/Projects/Nathan/NoMed47_GRID_Global.nc"
     #romsgridpath='/Users/trond/Projects/Nathan/GOM_GRID_Global.nc'
-    start_year      =1960
-    end_year        =1961
+    start_year      =1959
+    end_year        =2004
     start_julianday =0
-    end_julianday   =20
+    end_julianday   =365
     
     """Set the input data MODEL type: Current options are SODA or HYCOM"""
     type='HYCOM' 
@@ -65,7 +65,6 @@ def main():
     
     vars=['temperature','salinity','ssh','uvel','vvel']
     #vars=['temperature']
-    vars=['uvel','vvel']
     
     start_day_in_start_year=np.round(start_julianday/5.0)
     end_day_in_end_year=round(end_julianday/5.0)
@@ -100,17 +99,18 @@ def main():
 
     if write_stations is True:
         print "Running in station mode"
-        # GB, NovaScotia, Grand Bank, Nuuk, Iceland, NS, Lofoten, BS     
-        lonlist=[-66.5233-66.4001,-50.4321,-54.3801, 21.5101,  1.5301, 13.3801, 32.7501]
-        latlist=[ 41.5423, 43.4111, 44.5001, 64.7201, 63.3501, 58.3601, 67.5001, 71.7701]
-        
-        IOstation.getStationData(years,IDS,sodapath,latlist,lonlist)
+        stationNames=['North Sea','Iceland','East and West Greenland','Lofoten', 'Georges Bank']
+        lonlist=[ 2.4301, -22.6001, -47.0801,  13.3801, -67.2001]
+        latlist=[54.5601, 63.7010,  60.4201,  67.5001,  41.6423]
+    
+    
+        IOstation.getStationData(years,IDS,sodapath,latlist,lonlist,stationNames)
 
     print 'Finished ' + time.ctime(time.time())
     
 
 if __name__ == "__main__":
-    import psyco
+    
     try:
         import psyco
         psyco.log()
