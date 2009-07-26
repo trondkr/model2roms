@@ -5,28 +5,19 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap, NetCDFFile
 from pylab import *
 
-def contourData(data,timedata,datedata,depthdata):
+def contourData(data,timedata,datedata,depthdata,stationName):
     
-    plt.figure(figsize=(12,12))
-
     x = timedata
-    y = -flipud(depthdata)
-
+    y = flipud(depthdata)
     X,Y = meshgrid(x, y)
-    print datedata
-     
-    pcolor(X,Y,rot90(data),shading = "flat")
-    plt.colorbar(orientation='horizontal')
+    data=rot90(data)
+    levels=np.arange(0, data.max(), 0.5)
+    plt.figure(figsize=(10,4))
+    cs1=contourf(X,Y,data,levels,cmap=cm.get_cmap('RdYlBu_r',len(levels)-1),alpha=1.0,extend='both')
+    cs2=contour(X,Y,data,cs1.levels[::4],colors = ('k',),hold='on',linewidths = (0.1,))
+    colorbar(cs1,extend='both')
    
-    axis('tight')
-    clim([0,25]) 
-    ylim([-500,-5])
-    plt.title('test of contour')
-    
-    sep=73
-    s=0
-    d=[]
-    t=[]
+    sep=73; s=0; d=[]; t=[]
     
     for i in range(len(timedata)):
         if s==sep:
@@ -35,12 +26,10 @@ def contourData(data,timedata,datedata,depthdata):
             s=0
            
         s+=1
-    locs, labels = xticks(t, d)
-    setp(labels, 'rotation', 'vertical')
+    locs, labels = plt.xticks(t, d)
+    plt.setp(labels, 'rotation', 'vertical')
     
-    show()
-
- 
+    plotfile='figures/station_'+str(stationName)+'.png'
+    plt.savefig(plotfile)
     
-    #plotfile='figures/soda_depthK_'+str(depthlevel)+'.png'
-    #plt.savefig(plotfile)
+    #plt.show()
