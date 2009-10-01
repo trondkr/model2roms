@@ -9,8 +9,8 @@ import numpy as np
 __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
 __created__  = datetime(2009, 1,30)
-__modified__ = datetime(2009, 4,22)
-__version__  = "1.1"
+__modified__ = datetime(2009,10, 1)
+__version__  = "1.2"
 __status__   = "Development"
 
 def help():
@@ -40,11 +40,13 @@ def main():
     indicator for horizontal interpolation. This requires the two modules:
     terminal.py and progressBar.py"""
     show_progress=True
-    write_stations=True
-    convert2Grid=False
+    write_stations=False
+    createForcing=True
     decimateGrid=False 
     
     sodapath="/Volumes/HankRaid/SODA/"
+    sodapath="/Volumes/MacintoshHD2/Datasets/SODA/"
+    sodapath="/Volumes/MacintoshHD2/Datasets/SODAMonthly/"
     hycompath="/Users/trond/Projects/arcwarm/SODA/HYCOM/"
     
     #romsgridpath="/Users/trond/Projects/arcwarm/nordic/AA_10km_grid.nc"
@@ -55,19 +57,23 @@ def main():
     #romsgridpath="/Users/trond/Projects/Nathan/NoMed47_GRID_Global.nc"
     #romsgridpath='/Users/trond/Projects/Nathan/GOM_GRID_Global.nc'
     start_year      =1959
-    end_year        =2004
+    end_year        =1964
     start_julianday =0
     end_julianday   =365
     
     """Set the input data MODEL type: Current options are SODA or HYCOM"""
     type='HYCOM' 
     type='SODA'
+    type='SODAMONTHLY'
     
     vars=['temperature','salinity','ssh','uvel','vvel']
     #vars=['temperature']
     
-    start_day_in_start_year=np.round(start_julianday/5.0)
-    end_day_in_end_year=round(end_julianday/5.0)
+    if type=='SODA': aveDays=5.0
+    if type=='SODAMONTHLY': aveDays=30.0
+    
+    start_day_in_start_year=np.round(start_julianday/aveDays)
+    end_day_in_end_year=round(end_julianday/aveDays)
     
     years=[(int(start_year)+kk) for kk in range(int(end_year)-int(start_year))]
     
@@ -79,12 +85,12 @@ def main():
         IDS=[(i+1+int(start_day_in_start_year)) for i in range(loop)]
     
     grdROMS = grd.grdClass(romsgridpath,"ROMS")
-    
-    if convert2Grid==True:
+
+    if createForcing==True:
         
         showInfo(vars,romsgridpath,climName,initName,bryName,start_year,end_year,start_julianday,end_julianday)
         
-        if type=='SODA':
+        if type=='SODA' or type=='SODAMONTHLY':
             soda2roms.convertMODEL2ROMS(years,IDS,climName,initName,sodapath,romsgridpath,vars,show_progress,type)
         elif type=='HYCOM':
             soda2roms.convertMODEL2ROMS([1],[1,2,3],climName,initName,hycompath,romsgridpath,vars,show_progress,type)
@@ -99,7 +105,7 @@ def main():
 
     if write_stations is True:
         print "Running in station mode"
-        stationNames=['North Sea','Iceland','East and West Greenland','Lofoten', 'Georges Bank']
+        stationNames=['NorthSea','Iceland','EastandWestGreenland','Lofoten', 'Georges Bank']
         lonlist=[ 2.4301, -22.6001, -47.0801,  13.3801, -67.2001]
         latlist=[54.5601, 63.7010,  60.4201,  67.5001,  41.6423]
     
