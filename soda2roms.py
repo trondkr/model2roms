@@ -20,8 +20,8 @@ __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
 __created__  = datetime(2008, 8, 15)
 __modified__ = datetime(2008, 8, 19)
-__modified__ = datetime(2009, 4, 27)
-__version__  = "1.4"
+__modified__ = datetime(2009,10, 1)
+__version__  = "1.5"
 __status__   = "Development"
 
 def VerticalInterpolation(var,array1,array2,grdROMS,grdMODEL):
@@ -89,8 +89,7 @@ def VerticalInterpolation(var,array1,array2,grdROMS,grdMODEL):
                                                        int(grdROMS.eta_v),
                                                        int(grdROMS.xi_rho),
                                                        int(grdROMS.eta_rho))
-    
-   
+        
         outdataUBAR  = barotropic.velocity.ubar(np.asarray(outdataU,order='Fortran'),
                                                 np.asarray(outdataUBAR,order='Fortran'),
                                                 np.asarray(grdROMS.z_w,order='Fortran'),
@@ -253,6 +252,24 @@ def getTime(cdf,grdROMS,grdMODEL,year,ID,type):
         grdROMS.reftime=jdref
        
         print '\nCurrent time of SODA file : %s/%s/%s'%(soda_date.year,soda_date.month,soda_date.day)
+    if type=='SODAMONTHLY':
+        """
+        Find the day and month that the SODAMONTHLY file respresents based on the year and ID number.
+        Each SODA file represents a 1 month average.
+        """
+        month=ID
+        day=15
+                
+        soda_date = date.Date()
+        soda_date.day=day
+        soda_date.month=month
+        soda_date.year=year
+        jdsoda=soda_date.ToJDNumber()
+    
+        grdROMS.time=(jdsoda-jdref)
+        grdROMS.reftime=jdref
+       
+        print '\nCurrent time of SODAMONTHLY file : %s/%s/%s'%(soda_date.year,soda_date.month,soda_date.day)
     
 def find_subset_indices(grdMODEL,min_lat,max_lat,min_lon,max_lon):
     """
@@ -306,7 +323,9 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
 
     if type=='SODA':
         fileNameIn=dataPath+'SODA_2.0.2_'+str(years[0])+'_'+str(IDS[0])+'.cdf'
-  
+    if type=='SODAMONTHLY':
+        fileNameIn=dataPath+'SODA_2.0.2_'+str(years[0])+'0'+str(IDS[0])+'.cdf'
+        
     if type=='HYCOM':
        fileNameIn=dataPath+'archv.2003_307_00_3zt.nc'
        
@@ -321,7 +340,7 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
     
     """Now we want to subset the data to avoid storing more information than we need.
     We do this by finding the indices of maximum and minimum latitude and longitude in the matrixes"""
-    if type=='SODA':
+    if type=='SODA' or type=='SODAMONTHLY':
         find_subset_indices(grdMODEL,min_lat=30, max_lat=90, min_lon=0, max_lon=360)
     if type=='HYCOM':
         #GOM
@@ -329,18 +348,6 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
         grdMODEL.maxJ=2400
         grdMODEL.minI=2575
         grdMODEL.maxI=2875
-        
-        #NATHAN BIG
-        #grdMODEL.minJ=1504  #  0 deg N
-        #grdMODEL.maxJ=2171  # 47 deg N
-        #grdMODEL.minI=2340  # -99 deg E
-        #grdMODEL.maxI=3573  #   0 deg E
-        
-        # NORDIC GRID
-        #grdMODEL.minJ=2200
-        #grdMODEL.maxJ=3298
-        #grdMODEL.minI=3000
-        #grdMODEL.maxI=4000
      
 
     grdMODEL.lat=grdMODEL.lat[grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI]
@@ -360,12 +367,17 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
         firstRun = True ;
         
         for ID in IDS:
-          
+           
             if type=='SODA':
                 file="SODA_2.0.2_"+str(year)+"_"+str(ID)+".cdf"
                 filename=dataPath+file
                 variableNames=['TEMP','SALT','SSH','U','V']
                 
+            if type=='SODAMONTHLY':
+                if ID <  10: filename=dataPath+'SODA_2.0.2_'+str(years[0])+'0'+str(ID)+'.cdf'
+                if ID >= 10: filename=dataPath+'SODA_2.0.2_'+str(years[0])+str(ID)+'.cdf'
+                variableNames=['temp','salt','ssh','u','v']
+              
             if type=='HYCOM':
                 filename=dataPath+'archv.2003_307_00_3zt.nc'
                 variableNames=['temperature','salinity','SSH','U','V'] # NATHAN FIXME; give correct name of hycom variables
@@ -398,8 +410,9 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
                 
                 if var=='temperature':
                     STdata=np.zeros((indexROMS_S_ST),dtype=np.float64)
-                    data = np.array(cdf.variables[str(variableNames[0])][0,:,grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI])
-                       
+                    if type=="SODA": data = np.array(cdf.variables[str(variableNames[0])][0,:,grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI])
+                    if type=="SODAMONTHLY": data = np.array(cdf.variables[str(variableNames[0])][:,grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI])
+                    
                     if time==0:
                         tmp=np.squeeze(data[0,:,:])
                         grdMODEL.mask = np.zeros((grdMODEL.lon.shape),dtype=np.float64)
@@ -407,20 +420,23 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
                         
                 if var=='salinity':
                     STdata = np.zeros((indexROMS_S_ST),dtype=np.float64)
-                    data  = np.array(cdf.variables[str(variableNames[1])][0,:,grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI])
-                 
+                    if type=="SODA": data  = np.array(cdf.variables[str(variableNames[1])][0,:,grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI])
+                    if type=="SODAMONTHLY": data  = np.array(cdf.variables[str(variableNames[1])][:,grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI])
+                
                 if var=='ssh':
                     SSHdata = np.zeros((indexROMS_SSH),dtype=np.float64)
-                    data  = np.array(cdf.variables[str(variableNames[2])][0,grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI])
-                    
+                    if type=="SODA": data  = np.array(cdf.variables[str(variableNames[2])][0,grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI])
+                    if type=="SODAMONTHLY": data  = np.array(cdf.variables[str(variableNames[2])][grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI])
+                
                 if var=='uvel':
                     Udata = np.zeros((indexROMS_S_U),dtype=np.float64)
-                    data  = np.array(cdf.variables[str(variableNames[3])][0,:,grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI])
-                   
+                    if type=="SODA": data  = np.array(cdf.variables[str(variableNames[3])][0,:,grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI])
+                    if type=="SODAMONTHLY": data  = np.array(cdf.variables[str(variableNames[3])][:,grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI])
+                    
                 if var=='vvel':
                     Vdata = np.zeros((indexROMS_S_V),dtype=np.float64)
-                    data  = np.array(cdf.variables[str(variableNames[4])][0,:,grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI])
-                   
+                    if type=="SODA": data  = np.array(cdf.variables[str(variableNames[4])][0,:,grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI])
+                    if type=="SODAMONTHLY": data  = np.array(cdf.variables[str(variableNames[4])][:,grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI])
                     
                 array1 = HorizontalInterpolation(var,grdROMS,grdMODEL,data,show_progress)
                 
