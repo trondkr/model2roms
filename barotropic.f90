@@ -4,7 +4,7 @@ Module velocity
                 
         contains
   
-            subroutine ubar(dat,outdat,z_w,Nroms,II,JJ,xi_rho,eta_rho)
+            subroutine ubar(dat,outdat,z_w,z_wu,Nroms,II,JJ,xi_rho,eta_rho)
             
             ! ----------------------------------
             ! Program : ubar
@@ -16,14 +16,15 @@ Module velocity
             ! USAGE: Compile this routine using Intel Fortran compiler and create
             ! a python module using the command:
             ! f2py-64 --verbose --fcompiler=intelem -c -m barotropic barotropic.f90
-            !
+            ! or
+            ! f2py --verbose --fcompiler=intelem -c -m barotropic barotropic.f90
             ! The resulting module is imported to python using:
             ! import barotropic
             ! To call the function from python use:
-            ! barotropic.ubar(dat,bathymetry,outdat,zr,zw,Nroms,II,JJ)
+            ! barotropic.ubar(dat,outdat,zr,zw,Nroms,II,JJ)
             !
             ! where: dat is the data such as temperature (3D structure (z,y,x))
-            !        bathymetry is the 2D bottom matrix from the output grid (in ROMS this is usually 'h')
+            !      
             !        outdat is a 3D output array with the correct size (Nroms,JJ,II)
             !        zr is the depth matrix for the output grid (Nroms,JJ,II)
             !        zs is the 1D SODA depth-matrix (e.g. zs=[5,10,20,30])
@@ -37,11 +38,11 @@ Module velocity
             double precision, dimension(Nroms,JJ,II) :: dat
             double precision, dimension(JJ,II) :: outdat
             double precision, dimension(Nroms+1,eta_rho,xi_rho) ::  z_w
-            double precision, dimension(Nroms+1,eta_rho,xi_rho-1) ::  z_wu
+            double precision, dimension(Nroms+1,JJ,II) ::  z_wu
             
-!f2py intent(in,overwrite) dat, z_w, Nroms, JJ, II, xi_rho, eta_rho
+!f2py intent(in,overwrite) dat,z_w,z_wu,Nroms, JJ, II, xi_rho, eta_rho
 !f2py intent(in,out,overwrite) outdat
-!f2py intent(hide) ic,jc,kc,kT,rz1,rz2, z_wu
+!f2py intent(hide) ic,jc,kc,kT,rz1,rz2
 
             print*,'--->Started ubar calculations'
             ! average z_w to Arakawa-C u,v-points (z_wu, z_wv)
@@ -69,7 +70,7 @@ Module velocity
         
             end subroutine ubar
             
-            subroutine vbar(dat,outdat,z_w,Nroms,II,JJ,xi_rho,eta_rho)
+            subroutine vbar(dat,outdat,z_w,z_wv,Nroms,II,JJ,xi_rho,eta_rho)
             
             ! ----------------------------------
             ! Program : vbar
@@ -91,7 +92,7 @@ Module velocity
             ! barotropic.ubar(dat,bathymetry,outdat,zr,zw,Nroms,II,JJ)
             !
             ! where: dat is the data such as temperature (3D structure (z,y,x))
-            !        bathymetry is the 2D bottom matrix from the output grid (in ROMS this is usually 'h')
+            !       
             !        outdat is a 3D output array with the correct size (Nroms,JJ,II)
             !        zr is the depth matrix for the output grid (Nroms,JJ,II)
             !        zs is the 1D SODA depth-matrix (e.g. zs=[5,10,20,30])
@@ -101,15 +102,15 @@ Module velocity
             ! -------------------------------------------------------------------------------------------------------
             
             double precision rz2, rz1
-            integer eta_rho, xi_rho, II, JJ, ic, jc, kc, kT, Nroms
+            integer eta_rho, xi_rho, II, JJ, ic, jc, kc, kT, Nroms  
             double precision, dimension(Nroms,JJ,II) :: dat
             double precision, dimension(JJ,II) :: outdat
             double precision, dimension(Nroms+1,eta_rho,xi_rho) ::    z_w
-            double precision, dimension(Nroms+1,eta_rho-1,xi_rho) ::  z_wv
+            double precision, dimension(Nroms+1,JJ,II) ::  z_wv
             
-!f2py intent(in,overwrite) dat, z_w, Nroms, JJ, II, xi_rho, eta_rho
+!f2py intent(in,overwrite) dat, z_w, z_wv, Nroms, JJ, II, xi_rho, eta_rho
 !f2py intent(in,out,overwrite) outdat
-!f2py intent(hide) ic,jc,kc,kT,rz1,rz2, z_wv
+!f2py intent(hide) ic,jc,kc,kT,rz1,rz2
             
             print*,'--->Started vbar calculations'
             do jc=2,JJ+1
