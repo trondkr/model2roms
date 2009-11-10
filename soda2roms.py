@@ -61,7 +61,7 @@ def VerticalInterpolation(var,array1,array2,grdROMS,grdMODEL):
         print 'Start vertical interpolation for uvel (dimensions=%s x %s)'%(grdROMS.xi_u,grdROMS.eta_u)
         outdataU=np.zeros((outINDEX_U),dtype=np.float64)
         outdataUBAR=np.zeros((outINDEX_UBAR),dtype=np.float64)
-
+    
         outdataU = interp.interpolation.dovertinter(np.asarray(outdataU,order='Fortran'),
                                                        np.asarray(array1,order='Fortran'),
                                                        np.asarray(grdROMS.depth,order='Fortran'),
@@ -89,10 +89,18 @@ def VerticalInterpolation(var,array1,array2,grdROMS,grdMODEL):
                                                        int(grdROMS.eta_v),
                                                        int(grdROMS.xi_rho),
                                                        int(grdROMS.eta_rho))
+        print outdataUBAR.shape
+        print 'II=',grdROMS.xi_u, 'JJ=',grdROMS.eta_u, grdROMS.xi_rho, grdROMS.eta_rho
+               
+        z_wu=np.zeros((grdROMS.Nlevels+1,grdROMS.eta_u,grdROMS.xi_u), dtype=np.float64)
+        z_wv=np.zeros((grdROMS.Nlevels+1,grdROMS.eta_v,grdROMS.xi_v), dtype=np.float64)
         
+        print z_wu.shape
+    
         outdataUBAR  = barotropic.velocity.ubar(np.asarray(outdataU,order='Fortran'),
                                                 np.asarray(outdataUBAR,order='Fortran'),
                                                 np.asarray(grdROMS.z_w,order='Fortran'),
+                                                np.asarray(z_wu,order='Fortran'),
                                                 grdROMS.Nlevels,
                                                 grdROMS.xi_u,
                                                 grdROMS.eta_u,
@@ -100,11 +108,14 @@ def VerticalInterpolation(var,array1,array2,grdROMS,grdMODEL):
                                                 grdROMS.eta_rho)
         
         #plotData.contourMap(grdROMS,grdMODEL,outdataUBAR,"1","ubar")
-        
+        print outdataVBAR.shape
+        print 'II=',grdROMS.xi_v, 'JJ=',grdROMS.eta_v, grdROMS.xi_rho, grdROMS.eta_rho
+               
         
         outdataVBAR  = barotropic.velocity.vbar(np.asarray(outdataV,order='Fortran'),
                                                 np.asarray(outdataVBAR,order='Fortran'),
                                                 np.asarray(grdROMS.z_w,order='Fortran'),
+                                                np.asarray(z_wv,order='Fortran'),
                                                 grdROMS.Nlevels,
                                                 grdROMS.xi_v,
                                                 grdROMS.eta_v,
