@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import datetime
-from griddata import griddata
+#from griddata import griddata
 import plotData
 import mpl_toolkits.basemap as mp
 import geoProjection

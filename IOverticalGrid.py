@@ -7,8 +7,8 @@ __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
 __created__  = datetime(2008, 8, 15)
 __modified__ = datetime(2008, 8, 19)
-__modified__ = datetime(2008, 12, 9)
-__version__  = "1.1"
+__modified__ = datetime(2009, 10, 1)
+__version__  = "1.2"
 __status__   = "Development"
 
 
@@ -16,7 +16,7 @@ def get_z_levels(self):
     """
     Get a list of all the variables contained in netCDF file "filename"
     """
-    if self.type=='SODA':
+    if self.type=='SODA' or self.type=='SODAMONTHLY':
             self.z_r=-self.depth
     if self.type=='HYCOM':
             self.z_r=-self.depth

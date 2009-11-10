@@ -28,9 +28,11 @@ Module interpolation
             !
             ! USAGE: Compile this routine using Intel Fortran compiler and create
             ! a python module using the command:
-            ! f2py --verbose --fcompiler=intel -c -m interpolation interpolation.f90
+            !  
             ! or
-            ! f2py --verbose -DF2PY_REPORT_ON_ARRAY_COPY=1 --fcompiler=intel -c -m interpolation interpolation.f90
+            ! f2py-64 --verbose -DF2PY_REPORT_ON_ARRAY_COPY=1 --fcompiler=intelem -c -m interpolation interpolation.f90
+            ! or
+            ! f2py --verbose --fcompiler=intelem -c -m interpolation interpolation.f90
             !
             ! The resulting module is imported to python using:
             ! import vertInterp as interp2D

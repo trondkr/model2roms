@@ -154,8 +154,10 @@ def initArrays(years,IDS,deepest,name,lon,lat):
     stSSH =np.zeros((indexSSH),np.float64)
     stUvel=np.zeros((index),np.float64)
     stVvel=np.zeros((index),np.float64)
+    stTauX=np.zeros((indexSSH),np.float64)
+    stTauY=np.zeros((indexSSH),np.float64)
     
-    return stTemp, stSalt, stSSH, stUvel, stVvel
+    return stTemp, stSalt, stSSH, stUvel, stVvel, stTauX, stTauY
 
 def getStationData(years,IDS,sodapath,latlist,lonlist,stationNames):
     empty  =u'\u25FD'; filled =u'\u25FE'
@@ -197,7 +199,7 @@ def getStationData(years,IDS,sodapath,latlist,lonlist,stationNames):
                 if year==years[0] and ID==IDS[0]:
                     validIndex, validDis = testValidStation(cdf,dis,numberOfPoints, gridIndexes)
                     deepest              = testValidDepth(cdf,numberOfPoints, gridIndexes,grdMODEL.depth)
-                    stTemp, stSalt, stSSH, stUvel, stVvel = initArrays(years,IDS,deepest,stationNames[station],lon,lat)
+                    stTemp, stSalt, stSSH, stUvel, stVvel, stTauX, stTauY = initArrays(years,IDS,deepest,stationNames[station],lon,lat)
                      
                 for i in validIndex:
                     wgt=float(validDis[i])/sum(validDis)
@@ -210,6 +212,8 @@ def getStationData(years,IDS,sodapath,latlist,lonlist,stationNames):
                     stTemp[time,:] = stTemp[time,:] + (cdf.variables["TEMP"][t,0:deepest,latindex,lonindex])*wgt
                     stSalt[time,:] = stSalt[time,:] + (cdf.variables["SALT"][t,0:deepest,latindex,lonindex])*wgt
                     stSSH[time]    = stSSH[time]    + (cdf.variables["SSH"][t,latindex,lonindex])*wgt
+                    stTauX[time]    = stTauX[time]    + (cdf.variables["TAUX"][t,latindex,lonindex])*wgt
+                    stTauY[time]    = stTauY[time]    + (cdf.variables["TAUY"][t,latindex,lonindex])*wgt
                     stUvel[time,:] = stUvel[time,:] + (cdf.variables["U"][t,0:deepest,latindex,lonindex])*wgt
                     stVvel[time,:] = stVvel[time,:] + (cdf.variables["V"][t,0:deepest,latindex,lonindex])*wgt
                  
@@ -227,7 +231,7 @@ def getStationData(years,IDS,sodapath,latlist,lonlist,stationNames):
         
         outfilename='station_'+str(stationNames[station])+'.nc'
         print 'Results saved to file %s'%(outfilename)
-        writeStationNETCDF4(stTemp,stSalt,stUvel,stVvel,stSSH,stTime,
+        writeStationNETCDF4(stTemp,stSalt,stUvel,stVvel,stSSH,stTauX,stTauY,stTime,
                             grdMODEL.depth[0:deepest],lat,lon,outfilename)
         station+=1
     
@@ -302,7 +306,7 @@ def getStationIndices(grdObject,st_lon,st_lat,type,numberOfPoints):
 
 
 
-def writeStationNETCDF4(t,s,uvel,vvel,ssh,ntime,depth,lat,lon,outfilename):
+def writeStationNETCDF4(t,s,uvel,vvel,ssh,taux,tauy,ntime,depth,lat,lon,outfilename):
        
     if os.path.exists(outfilename):
         os.remove(outfilename)
@@ -354,6 +358,16 @@ def writeStationNETCDF4(t,s,uvel,vvel,ssh,ntime,depth,lat,lon,outfilename):
     v_ssh.units = "m"
     v_ssh[:] = ssh
     
+    v_taux=f1.createVariable('taux','d',('time',), zlib=True)
+    v_taux.long_name = "Wind stress in x direction"
+    v_taux.units = "N/m^2"
+    v_taux[:] = taux
+    
+    v_tauy=f1.createVariable('tauy','d',('time',), zlib=True)
+    v_tauy.long_name = "Wind stress in y direction"
+    v_tauy.units = "N/m^2"
+    v_tauy[:] = tauy
+    
     v_u=f1.createVariable('u', 'f', ('time','z'), zlib=True)
     v_u.long_name = "U-velocity, scalar, series"
     v_u.units = "m/s"
@@ -365,71 +379,3 @@ def writeStationNETCDF4(t,s,uvel,vvel,ssh,ntime,depth,lat,lon,outfilename):
     v_v[:,:] = vvel
         
     f1.close()
-
-
-def writeStationNETCDF3(t,s,uvel,vvel,ssh,ntime,depth,lat,lon,outfilename):
-       
-    if os.path.exists(outfilename):
-        os.remove(outfilename)
-    print 'Writing first results to file %s'%(outfilename)
-    
-    f1 = Dataset(outfilename, mode='w', format='NETCDF3_CLASSIC')
-    f1.description="This is a station (lat=%3.2f,lon=%3.2f) file from SODA data"%(lat,lon)
-    f1.history = 'Created ' + time.ctime(time.time())
-    f1.source = 'Trond Kristiansen (trond.kristiansen@imr.no)'
-    f1.type='NetCDF3 time-depth file created using SODA2ROMS' 
-       
-    # Define dimensions
-    f1.createDimension('time', len(ntime))
-    f1.createDimension('z', len(depth))
-     
-    v=f1.createVariable('lon','d')
-    v.long_name = "Longitude position of station" ;
-    v.units = "Longitude"
-    v[:]=lon
-    
-    v=f1.createVariable('lat','d')
-    v.long_name = "Latitude position of station" ;
-    v.units = "Latitude"
-    v[:]=lat
-    
-    v=f1.createVariable('depth','d',('z',))
-    v.long_name = "Z-depth matrix" ;
-    v.units = "meter"
-    v[:]=depth
-     
-    v_time = f1.createVariable('time', 'd', ('time',))
-    v_time.long_name = 'Days since 1948-01-01 00:00:00'
-    v_time.units = 'days'
-    v_time.field = 'time, scalar, series'
-    v_time.calendar='standard'
-    v_time[:] = ntime
-    
-    v_temp=f1.createVariable('temp', 'f', ('time','z'))
-    v_temp.long_name = "Ocean temperature"
-    v_temp.units = "degrees Celsius"
-    v_temp[:,:] = t
-    
-    v_salt=f1.createVariable('salt', 'f', ('time','z'))
-    v_salt.long_name = "Ocean salinity"
-    v_salt.units = "psu"
-    v_salt[:,:]=s
-    
-    v_ssh=f1.createVariable('zeta','d',('time',))
-    v_ssh.long_name = "Sea surface height (SSH)"
-    v_ssh.units = "m"
-    v_ssh[:] = ssh
-    
-    v_u=f1.createVariable('u', 'f', ('time','z'))
-    v_u.long_name = "U-velocity, scalar, series"
-    v_u.units = "m/s"
-    v_u[:,:] = uvel
-    
-    v_v=f1.createVariable('v', 'f', ('time','z'))
-    v_v.long_name = "V-velocity, scalar, series"
-    v_v.units = "m/s"
-    v_v[:,:] = vvel
- 
-    
-    f1.close()
-

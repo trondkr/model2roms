@@ -19,9 +19,8 @@ def contourMap(grdROMS,grdMODEL,data,depthlevel,var):
         tlon      = np.array(grdROMS.lon_u)
     
     temp      = data
-    
-    
-    plt.figure(figsize=(12,12))
+ 
+    plt.figure(figsize=(10,10))
 
     if grdROMS.grdName=='GOM':
     # Plot the Georges Bank region
@@ -58,27 +57,35 @@ def contourMap(grdROMS,grdMODEL,data,depthlevel,var):
     map.drawcoastlines()
     map.fillcontinents(color='grey')
     map.drawcountries()
-    map.drawmapboundary()
+    #map.drawmapboundary()
 
     #map.drawmeridians(np.arange(0,360,5))
     #map.drawparallels(np.arange(0,90,5))
 
     temp = np.ma.masked_values(temp,grdROMS.fill_value)
     
+    if var=='runoff':
+        levels = np.arange(1e-4, 1e-8, 1e-10)
     if var=='ssh':
         levels = np.arange(-1.5, 1.5, 0.1)
     if var in ['uvel','vvel','urot','vrot','ubar','vbar']:
         levels = np.arange(-2.0, 2.0, 0.1)
     if var=='sodamask':
         levels=np.arange(0,1,1)
-    CS1 = map.contourf(x,y,temp,levels,cmap=cm.get_cmap('jet',len(levels)-1) )#,alpha=0.5)
+    if var =='runoff':
+        CS1 = map.contourf(x,y,temp)#,alpha=0.5)
+        plt.colorbar(orientation='horizontal')  
+    else:
+        CS1 = map.contourf(x,y,temp,levels,cmap=cm.get_cmap('jet',len(levels)-1) )#,alpha=0.5)
+
+        #plt.colorbar(orientation='horizontal')     
     #CS2 = contour(x,y,temp,CS1.levels[::2],
     #                    colors = 'k',
     #                    hold='on')
 
-    plt.colorbar(orientation='horizontal')
-    plt.title('Variabel %s at depth %s'%(var,depthlevel))
-    #plotfile='figures/Mexico_depthK_'+str(depthlevel)+'.png'
-    #plt.savefig(plotfile)
-    plt.show()
+   
+    #plt.title('Variabel %s at depth %s'%(var,depthlevel))
+    plotfile='uvel_'+str(depthlevel)+'.png'
+    plt.savefig(plotfile)
+    #plt.show()
    

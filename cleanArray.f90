@@ -36,7 +36,9 @@ Module cleanArray
             ! Rutgers University, NJ.
             !
             ! Compile with:
-            ! f2py --verbose -DF2PY_REPORT_ON_ARRAY_COPY=1 --fcompiler=intel -c -m cl cleanArray.f90
+            ! f2py-64 --verbose -DF2PY_REPORT_ON_ARRAY_COPY=1 --fcompiler=intelem -c -m cl cleanArray.f90
+            ! or
+            ! f2py --verbose --fcompiler=intelem -c -m cl cleanArray.f90
             !
             ! USAGE:
             ! import cl
@@ -62,12 +64,12 @@ Module cleanArray
             integer maxpoints, II, JJ, KK, VV, ic, jc, jcc, icc, fill, kc, ff, total
             integer pointsHpos, pointsHneg, pointsVpos, pointsVneg, points, INCREASED, orgVV, orgKK, TRIES
 
-            real(8), dimension(JJ,II) :: dataout,datain
-            real(8), dimension(JJ,II) :: mask
-            real(8), dimension(4,3,maxpoints)  :: foundWeight, foundData
+            double precision, dimension(JJ,II) :: dataout,datain
+            double precision, dimension(JJ,II) :: mask
+            double precision, dimension(4,3,maxpoints)  :: foundWeight, foundData
              
-            real(8) counter, hori, vert, sumweights, distance, sodadepth, weight
-            real(8), dimension(JJ,II) :: bathymetry
+            double precision counter, hori, vert, sumweights, distance, sodadepth, weight
+            double precision, dimension(JJ,II) :: bathymetry
             
 !f2py intent(in,out,overwrite) dataout
 !f2py intent(in,overwrite) datain, mask, bathymetry
