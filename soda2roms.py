@@ -59,7 +59,7 @@ def VerticalInterpolation(var,array1,array2,grdROMS,grdMODEL):
         
     if var=='vvel':
         print 'Start vertical interpolation for uvel (dimensions=%s x %s)'%(grdROMS.xi_u,grdROMS.eta_u)
-        outdataU=np.zeros((outINDEX_U),dtype=np.float64,order='Fortran')
+        outdataU=np.zeros((outINDEX_U),dtype=np.float64)
         outdataUBAR=np.zeros((outINDEX_UBAR),dtype=np.float64)
 
         outdataU = interp.interpolation.dovertinter(np.asarray(outdataU,order='Fortran'),
@@ -75,7 +75,7 @@ def VerticalInterpolation(var,array1,array2,grdROMS,grdMODEL):
                                                        int(grdROMS.eta_rho))
    
         print 'Start vertical interpolation for vvel (dimensions=%s x %s)'%(grdROMS.xi_v,grdROMS.eta_v)
-        outdataV=np.zeros((outINDEX_V),dtype=np.float64,order='Fortran')
+        outdataV=np.zeros((outINDEX_V),dtype=np.float64)
         outdataVBAR=np.zeros((outINDEX_VBAR),dtype=np.float64)
        
         outdataV = interp.interpolation.dovertinter(np.asarray(outdataV,order='Fortran'),
@@ -100,7 +100,8 @@ def VerticalInterpolation(var,array1,array2,grdROMS,grdMODEL):
                                                 grdROMS.eta_rho)
         
         #plotData.contourMap(grdROMS,grdMODEL,outdataUBAR,"1","ubar")
-   
+        
+        
         outdataVBAR  = barotropic.velocity.vbar(np.asarray(outdataV,order='Fortran'),
                                                 np.asarray(outdataVBAR,order='Fortran'),
                                                 np.asarray(grdROMS.z_w,order='Fortran'),
@@ -328,13 +329,12 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
         
     if type=='HYCOM':
        fileNameIn=dataPath+'archv.2003_307_00_3zt.nc'
-       
+   
     """
     First time in loop, get the essential old grid information
     MODEL data already at Z-levels. No need to interpolate to fixed depths,
     but we use the one we have
     """
-    
     grdMODEL = grd.grdClass(fileNameIn,type)
     grdROMS = grd.grdClass(romsgridpath,"ROMS")
     
@@ -342,8 +342,8 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
     We do this by finding the indices of maximum and minimum latitude and longitude in the matrixes"""
     if type=='SODA' or type=='SODAMONTHLY':
         find_subset_indices(grdMODEL,min_lat=30, max_lat=90, min_lon=0, max_lon=360)
+        
     if type=='HYCOM':
-        #GOM
         grdMODEL.minJ=1900
         grdMODEL.maxJ=2400
         grdMODEL.minI=2575
@@ -466,7 +466,7 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
                     u,v = interpolate2UV(grdROMS,grdMODEL,urot,vrot)
                    
                     Udata,Vdata,UBARdata,VBARdata = VerticalInterpolation(var,u,v,grdROMS,grdMODEL)
-                
+                   
                 if var=='vvel':
                     IOwrite.writeClimFile(grdROMS,time,climName,var,Udata,Vdata,UBARdata,VBARdata)
                     if time==0:
@@ -480,7 +480,7 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
                 empty  =u'\u25FD'
                 filled =u'\u25FE'
         
-                progress = progressBar(color='green',width=24, block=filled.encode('UTF-8'), empty=empty.encode('UTF-8'))
+                progress = progressBar(color='green',width=30, block=filled.encode('UTF-8'), empty=empty.encode('UTF-8'))
                 message='Finished conversions for time %s'%(grdROMS.message)
                 progress.render(100,message)
             else:
