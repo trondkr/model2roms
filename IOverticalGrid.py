@@ -39,7 +39,7 @@ def calculate_z_w(self):
     z_w=np.zeros((len(sc_w),self.eta_rho,self.xi_rho),np.float64)
     
     h =self.depth
-    hc=np.min(h,self.Tcline)
+    hc=np.min(np.min(h),self.Tcline)
     cff=1.0/float(self.Nlevels+1)
     
     for k in xrange(self.Nlevels+1):
@@ -84,14 +84,14 @@ def calculate_z_r(self):
     (zeta varies), and also position dependent since the bottom matrix varies.
     Results are stored in array z[s,eta_rho,xi_rho]
      
-    Trond Kristiansen, 20.01.2008, 03.12.2008, 09.12.2008, 11.03.2009
+    Trond Kristiansen, 20.01.2008, 03.12.2008, 09.12.2008, 11.03.2009, 11.11.2009
     """
     sc_r=np.zeros((self.Nlevels),np.float64)
     Cs_r=np.zeros((self.Nlevels),np.float64)
     z_r=np.zeros((len(sc_r),self.eta_rho,self.xi_rho),np.float64)
     
     h =self.depth
-    hc=np.min(h,self.Tcline)
+    hc=np.min(np.min(h),self.Tcline)
     cff=1.0/float(self.Nlevels)
             
     for k in xrange(self.Nlevels):
