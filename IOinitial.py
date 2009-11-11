@@ -8,7 +8,7 @@ import numpy as np
 __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
 __created__  = datetime(2009, 3, 16)
-__modified__ = datetime(2009, 3, 16)
+__modified__ = datetime(2009, 11, 11)
 __version__  = "1.0"
 __status__   = "Development"
 
@@ -18,6 +18,8 @@ def help ():
      This function generates an INIT file from scratch. Varibales include:
      salt, temp, u, v, ubar, vbar, zeta, and time. Time dimension for each variable is ocean_time which is days
      since 1948/1/1.
+     
+     Edited by Trond Kristiansen, 16.3.2009, 11.11.2009
      """
 
 def createInitFile(grdROMS,ntime,outfilename,var,data1=None,data2=None,data3=None,data4=None):
@@ -150,8 +152,7 @@ def createInitFile(grdROMS,ntime,outfilename,var,data1=None,data2=None,data3=Non
           vnc.FillValue = 1.0
           vnc[:,:]=grdROMS.mask_v
           
-          
-          v_time = f1.createVariable('clim_time', 'd', ('time',),zlib=True)
+          v_time = f1.createVariable('ocean_time', 'd', ('time',),zlib=True)
           v_time.long_name = 'Days since 1948-01-01 00:00:00'
           v_time.units = 'days'
           v_time.field = 'time, scalar, series'
@@ -192,13 +193,10 @@ def createInitFile(grdROMS,ntime,outfilename,var,data1=None,data2=None,data3=Non
           v_ubar.units = "m/s"
           v_ubar.FillValue = grdROMS.fill_value
                 
-          #d= num2date(grdROMS.time,units=f1.variables['clim_time'].long_name,calendar=f1.variables['clim_time'].calendar)
-          #print 'Appending data to file %s for time %s'%(outfilename,d)
-             
      else:
         f1 = Dataset(outfilename, mode='a', format='NETCDF4', zlib=True)
         
-     f1.variables['clim_time'][ntime]   = grdROMS.time
+     f1.variables['ocean_time'][ntime]   = grdROMS.time
 
      if var=='temperature':
         f1.variables['temp'][ntime,:,:,:]  = data1

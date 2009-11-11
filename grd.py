@@ -138,11 +138,12 @@ class grdClass:
             self.write_init=True
             self.write_stations=False
     
-            self.Nlevels=5
+            self.vstretching=2
+            self.Nlevels=35
             self.theta_s=5.0
-            self.theta_b=0.4
+            self.theta_b=0.8
             self.Tcline=50.0
-            self.hc=20.0
+            self.hc=50.0
             self.ocean_time=1
             self.NT=2
             self.tracer=self.NT

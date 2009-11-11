@@ -41,9 +41,17 @@ def main():
     indicator for horizontal interpolation. This requires the two modules:
     terminal.py and progressBar.py"""
     show_progress=True
+    """Set compileAll to True if you want automatic re-compilation of all the
+    fortran files necessary to run soda2roms. You need to edit compile.py for this"""
+    compileAll=False
+    """Extract time-series of data for given longitude/latitude""" 
     extractStations=False
+    """Create the bry, init, and clim files for a given grid and input data"""
     createForcing=True
+    """Create a smaller resolution grid based on your original. Decimates every second for
+    each time run"""
     decimateGrid=False
+    """Create river runoff file based on NCEP-NCAR CORE data"""
     createRiverRunoff=False
     
     """Define the paths to the CORE data (only river file), and the SODA/HYCOM data"""
@@ -51,11 +59,11 @@ def main():
     sodapath="/Volumes/HankRaid/SODA/"
     sodapath="/Volumes/MacintoshHD2/Datasets/SODA/"
     sodapath="/Volumes/MacintoshHD2/Datasets/SODAMonthly/"
-    sodapath="/Users/trond/Projects/arcwarm/SODAmonthly/"
+  #  sodapath="/Users/trond/Projects/arcwarm/SODAmonthly/"
     hycompath="/Users/trond/Projects/arcwarm/SODA/HYCOM/"
     
     romsgridpath="/Volumes/HankRaid/ROMS/GoM/grid/gom_grd.nc"
-    romsgridpath="/Users/trond/Projects/Roms/GOMfull/Inputs/gom_grd.nc"
+  #  romsgridpath="/Users/trond/Projects/Roms/GOMfull/Inputs/gom_grd.nc"
     #romsgridpath="/Users/trond/Projects/arcwarm/nordic/imr_nordic_4km.nc"
     #romsgridpath="/Users/trond/Projects/arcwarm/SODA/soda2roms/imr_nordic_8km.nc"
     
@@ -90,7 +98,10 @@ def main():
     
         
     """" NO EDIT BELOW ========================================================="""
-    
+    if compileAll is True:
+        import compile
+        compile.compileAll()
+        
     start_day_in_start_year=np.round(start_julianday/aveDays)
     end_day_in_end_year=round(end_julianday/aveDays)
     

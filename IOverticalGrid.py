@@ -97,7 +97,6 @@ def calculate_z_w(self):
    
     self.z_w = z_w
     self.Cs_w=Cs_w
-    self.hc=hc
     self.s_w=sc_w
     
   
@@ -176,7 +175,6 @@ def calculate_z_r(self):
    
     self.z_r = z_r
     self.Cs_rho=Cs_r
-    self.hc=hc
     self.s_rho=sc_r
     
     #print 'max',self.z_r.max(), 'stretching function=',self.vstretching

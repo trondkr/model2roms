@@ -139,6 +139,11 @@ def writeClimFile(grdROMS,ntime,outfilename,var,data1=None,data2=None,data3=None
         vnc.long_name = "Sigma layer to depth matrix" ;
         vnc.units = "meter"
         vnc[:,:,:]=grdROMS.z_r
+        
+        vnc=f1.createVariable('z_w','d',('s_w','eta_rho','xi_rho',),zlib=True)
+        vnc.long_name = "Sigma layer to depth matrix" ;
+        vnc.units = "meter"
+        vnc[:,:,:]=grdROMS.z_w
        
         vnc=f1.createVariable('Tcline','d',zlib=True)
         vnc.long_name = "S-coordinate surface/bottom layer width" ;

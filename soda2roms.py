@@ -89,13 +89,11 @@ def VerticalInterpolation(var,array1,array2,grdROMS,grdMODEL):
                                                        int(grdROMS.eta_v),
                                                        int(grdROMS.xi_rho),
                                                        int(grdROMS.eta_rho))
-        print outdataUBAR.shape
-        print 'II=',grdROMS.xi_u, 'JJ=',grdROMS.eta_u, grdROMS.xi_rho, grdROMS.eta_rho
-               
+         
         z_wu=np.zeros((grdROMS.Nlevels+1,grdROMS.eta_u,grdROMS.xi_u), dtype=np.float64)
         z_wv=np.zeros((grdROMS.Nlevels+1,grdROMS.eta_v,grdROMS.xi_v), dtype=np.float64)
         
-        print z_wu.shape
+       
     
         outdataUBAR  = barotropic.velocity.ubar(np.asarray(outdataU,order='Fortran'),
                                                 np.asarray(outdataUBAR,order='Fortran'),
@@ -108,9 +106,7 @@ def VerticalInterpolation(var,array1,array2,grdROMS,grdMODEL):
                                                 grdROMS.eta_rho)
         
         #plotData.contourMap(grdROMS,grdMODEL,outdataUBAR,"1","ubar")
-        print outdataVBAR.shape
-        print 'II=',grdROMS.xi_v, 'JJ=',grdROMS.eta_v, grdROMS.xi_rho, grdROMS.eta_rho
-               
+        
         
         outdataVBAR  = barotropic.velocity.vbar(np.asarray(outdataV,order='Fortran'),
                                                 np.asarray(outdataVBAR,order='Fortran'),
