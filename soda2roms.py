@@ -260,6 +260,7 @@ def getTime(cdf,grdROMS,grdMODEL,year,ID,type):
         grdROMS.reftime=jdref
        
         print '\nCurrent time of SODA file : %s/%s/%s'%(soda_date.year,soda_date.month,soda_date.day)
+
     if type=='SODAMONTHLY':
         """
         Find the day and month that the SODAMONTHLY file respresents based on the year and ID number.
@@ -451,13 +452,13 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
                     STdata = VerticalInterpolation(var,array1,array1,grdROMS,grdMODEL)
                 
                     IOwrite.writeClimFile(grdROMS,time,climName,var,STdata)
-                    if time==0 and grdROMS.write_init is True:
+                    if time==grdROMS.initTime and grdROMS.write_init is True:
                         IOinitial.createInitFile(grdROMS,time,initName,var,STdata)
                         
                 if var=='ssh':
                     SSHdata=array1[0,:,:]
                     IOwrite.writeClimFile(grdROMS,time,climName,var,SSHdata)
-                    if time==0:
+                    if time==grdROMS.initTime:
                         IOinitial.createInitFile(grdROMS,time,initName,var,SSHdata)
                         
                 if var=='uvel':
@@ -476,7 +477,8 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
                    
                 if var=='vvel':
                     IOwrite.writeClimFile(grdROMS,time,climName,var,Udata,Vdata,UBARdata,VBARdata)
-                    if time==0:
+                    if time==grdROMS.initTime:
+                        """We print time=initTime to init file so that we have values for ubar and vbar (not present at time=1)"""
                         IOinitial.createInitFile(grdROMS,time,initName,var,Udata,Vdata,UBARdata,VBARdata)
                   
                 

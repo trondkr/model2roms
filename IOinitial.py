@@ -192,25 +192,34 @@ def createInitFile(grdROMS,ntime,outfilename,var,data1=None,data2=None,data3=Non
           v_ubar.long_name = "Barotropic U-velocity, scalar, series"
           v_ubar.units = "m/s"
           v_ubar.FillValue = grdROMS.fill_value
-                
+              
+          d= num2date(grdROMS.time,units=v_time.long_name,calendar=v_time.calendar)
+          print '\n'
+          print '========================================================================='
+          print 'Created INIT file'
+          print 'set initTime in grd.py for time-index to print (current=%s)'%(grdROMS.initTime)
+          print 'The time stamp for ROMS .in file saved to initial file is=> %s'%(d)
+          print 'DSTART   = %s'%(grdROMS.time)
+          print 'TIME_REF = %s'%(v_time.long_name)
+          print '========================================================================='
+          print '\n'
+     
      else:
         f1 = Dataset(outfilename, mode='a', format='NETCDF4', zlib=True)
         
+     ntime=0
      f1.variables['ocean_time'][ntime]   = grdROMS.time
-
+       
      if var=='temperature':
         f1.variables['temp'][ntime,:,:,:]  = data1
      if var=='salinity':
         f1.variables['salt'][ntime,:,:,:]  = data1
      if var=='ssh':
         f1.variables['zeta'][ntime,:,:]    = data1
-     if var=='uvel':
+     if var in ['uvel','vvel','ubar','vbar']:
         f1.variables['u'][ntime,:,:,:]     = data1
-     if var=='vvel':
         f1.variables['v'][ntime,:,:,:]     = data2
-     if var=='ubar':
         f1.variables['ubar'][ntime,:,:]    = data3
-     if var=='vbar':
         f1.variables['vbar'][ntime,:,:]    = data4
      
      f1.close()

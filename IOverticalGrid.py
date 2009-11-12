@@ -177,8 +177,8 @@ def calculate_z_r(self):
     self.Cs_rho=Cs_r
     self.s_rho=sc_r
     
-    #print 'max',self.z_r.max(), 'stretching function=',self.vstretching
-    #print 'min',self.z_r.min()
-    #import sys
-    #sys.exit()
+#    print 'max',self.z_r.max(), 'stretching function=',self.vstretching
+#    print 'min',self.z_r.min()
+#    import sys
+#    sys.exit()
     

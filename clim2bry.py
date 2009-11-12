@@ -54,7 +54,6 @@ def writeBry(grdROMS,year,bryName,climName):
         v           = np.array(clim.variables["v"][itime,:,:,:])
         ubar        = np.array(clim.variables["ubar"][itime,:,:])
         vbar        = np.array(clim.variables["vbar"][itime,:,:])
-        
       
         temp_west = temp[:,:,0].reshape(No,Mpo,order='F').copy()
         salt_west = salt[:,:,0].reshape(No,Mpo,order='F').copy()

@@ -140,10 +140,11 @@ class grdClass:
     
             self.vstretching=2
             self.Nlevels=35
-            self.theta_s=5.0
-            self.theta_b=0.8
+            self.theta_s=1.0
+            self.theta_b=3.0
             self.Tcline=50.0
             self.hc=50.0
+            self.initTime=1 # Set to 1 if you dont want the first timestep to be the initial field (no ubar and vbar if time=0)
             self.ocean_time=1
             self.NT=2
             self.tracer=self.NT
@@ -164,7 +165,6 @@ class grdClass:
             self.lat_rho  = self.cdf.variables["lat_rho"][:,:]
             self.depth    = self.cdf.variables["h"][:,:]
             self.mask_rho = self.cdf.variables["mask_rho"][:,:]
-           
             # Nathan fixes
             # Need to convert all longitude values in grid that are less than 360 and larger than 180 to negative values.
             #self.lon_rho=self.lon_rho-360

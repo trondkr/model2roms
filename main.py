@@ -59,11 +59,11 @@ def main():
     sodapath="/Volumes/HankRaid/SODA/"
     sodapath="/Volumes/MacintoshHD2/Datasets/SODA/"
     sodapath="/Volumes/MacintoshHD2/Datasets/SODAMonthly/"
-  #  sodapath="/Users/trond/Projects/arcwarm/SODAmonthly/"
+    sodapath="/Users/trond/Projects/arcwarm/SODAmonthly/"
     hycompath="/Users/trond/Projects/arcwarm/SODA/HYCOM/"
     
     romsgridpath="/Volumes/HankRaid/ROMS/GoM/grid/gom_grd.nc"
-  #  romsgridpath="/Users/trond/Projects/Roms/GOMfull/Inputs/gom_grd.nc"
+    romsgridpath="/Users/trond/Projects/Roms/GOMfull/Inputs/gom_grd.nc"
     #romsgridpath="/Users/trond/Projects/arcwarm/nordic/imr_nordic_4km.nc"
     #romsgridpath="/Users/trond/Projects/arcwarm/SODA/soda2roms/imr_nordic_8km.nc"
     
