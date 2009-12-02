@@ -361,14 +361,13 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
     grdMODEL.lat=grdMODEL.lat[grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI]
     grdMODEL.lon=grdMODEL.lon[grdMODEL.minJ:grdMODEL.maxJ,grdMODEL.minI:grdMODEL.maxI]
   
-    print "\n---> Selected area in output file spans from (longitude=%3.2f,latitude=%3.2f) to (longitude=%3.2f,latitude=%3.2f)"%(grdROMS.lon_rho.min(),grdROMS.lat_rho.min(),grdROMS.lon_rho.max(),grdROMS.lat_rho.max())
-    print "---> Selected area in input file spans from  (longitude=%3.2f,latitude=%3.2f) to (longitude=%3.2f,latitude=%3.2f)\n"%(grdMODEL.lon.min(),grdMODEL.lat.min(),grdMODEL.lon.max(),grdMODEL.lat.max())
+    print "---> Selected area in output file spans from (longitude=%3.2f,latitude=%3.2f) to (longitude=%3.2f,latitude=%3.2f)"%(grdROMS.lon_rho.min(),grdROMS.lat_rho.min(),grdROMS.lon_rho.max(),grdROMS.lat_rho.max())
+    print "---> Selected area in input file spans from  (longitude=%3.2f,latitude=%3.2f) to (longitude=%3.2f,latitude=%3.2f)"%(grdMODEL.lon.min(),grdMODEL.lat.min(),grdMODEL.lon.max(),grdMODEL.lat.max())
     
-    print '\n---> Finished initializing'
-    print '\n--------------------------\n'
+    print 'Initializing done'
+    print '\n--------------------------'
     
     time=0
-   
     
     for year in years:
         
@@ -480,8 +479,7 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
                     if time==grdROMS.initTime:
                         """We print time=initTime to init file so that we have values for ubar and vbar (not present at time=1)"""
                         IOinitial.createInitFile(grdROMS,time,initName,var,Udata,Vdata,UBARdata,VBARdata)
-                  
-                
+                            
             cdf.close()    
             if show_progress is True:
                 from progressBar import progressBar

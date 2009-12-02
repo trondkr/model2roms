@@ -95,7 +95,7 @@ def calculate_z_w(self):
         if self.vstretching==2:
             z_w[k,:,:] =np.multiply(sc_w[k],hc) + np.subtract(h,hc)*Cs_w[k]
    
-    self.z_w = z_w
+    self.z_w = z_w * self.mask_rho
     self.Cs_w=Cs_w
     self.s_w=sc_w
     
@@ -173,12 +173,7 @@ def calculate_z_r(self):
         if self.vstretching==2:
             z_r[k,:,:] =np.multiply(sc_r[k],hc) + np.subtract(h,hc)*Cs_r[k]
    
-    self.z_r = z_r
+    self.z_r = z_r * self.mask_rho
     self.Cs_rho=Cs_r
     self.s_rho=sc_r
-    
-#    print 'max',self.z_r.max(), 'stretching function=',self.vstretching
-#    print 'min',self.z_r.min()
-#    import sys
-#    sys.exit()
     

@@ -26,14 +26,18 @@ class grdClass:
     def __init__(self,grdfilename,type):
         """
         The object is initialised and created through the __init__ method
+        As an example of how to use, these lines return a grid object called grdTEST:
+        => import grd
+        => grdTEST = grd.grdClass("grdfilename","ROMS")
         """
+        
         self.grdfilename= grdfilename
-      
         self.type=type
         
         self.openNetCDF()
         self.createObject()
-        self._getDims()
+        self.getDims()
+        
         if grdfilename=="/Users/trond/Projects/arcwarm/nordic/AA_10km_grid.nc":
             self.grdName='NA'
         elif grdfilename=="/Users/trond/Projects/arcwarm/nordic/imr_nordic_4km.nc":
@@ -47,13 +51,11 @@ class grdClass:
         else:
             self.grdName='GOM'
             
-        print '\n---> Generated GRD object for grid type %s'%(self.type)
+        print '---> Generated GRD object for grid type %s'%(self.type)
     
   
     def openNetCDF(self):
-        """
-        Open the netCDF file and store the contents in arrays associated with variable names
-        """
+        """Open the netCDF file and store the contents in arrays associated with variable names"""
         try:
             self.cdf = Dataset(self.grdfilename,"r")
         except IOError:
@@ -63,11 +65,19 @@ class grdClass:
   
     def createObject(self):
         """
-        This method creates a new object by reading the grd input file
+        This method creates a new object by reading the grd input file. All
+        dimensions (eta, xi, lon, lat etc.) are defined here and used througout these scripts.
+        Also, the depth matrix is calculated in this function by calling IOverticalGrid.py (ROMS grid only). For
+        input model depths, the depth array is a one dimensional. If input data has 2 or 3 dimensions, this
+        has to be accounted for througout the soda2roms package as one dimension is currently only supported.
+        
+        Object types currently supported: HYCOM,SODA,SODAMONTHLY,STATION,ROMS
+        
+        Trond Kristiansen, 18.11.2009.
         """
         if self.type=='SODA':
             self.grdType  = 'regular'
-            print '\n---> Assuming %s grid type for %s'%(self.grdType,self.type)
+            print '---> Assuming %s grid type for %s'%(self.grdType,self.type)
             self.lon = self.cdf.variables["LON"][:]
             self.lat = self.cdf.variables["LAT"][:]
             self.depth = self.cdf.variables["DEPTH"][:]
@@ -77,12 +87,11 @@ class grdClass:
             if np.rank(self.lon)==1:
                     self.lon, self.lat = np.meshgrid(self.lon,self.lat)
             
-            
             IOverticalGrid.get_z_levels(self)
             
         if self.type=='SODAMONTHLY':
             self.grdType  = 'regular'
-            print '\n---> Assuming %s grid type for %s'%(self.grdType,self.type)
+            print '---> Assuming %s grid type for %s'%(self.grdType,self.type)
             self.lon = self.cdf.variables["lon"][:]
             self.lat = self.cdf.variables["lat"][:]
             self.depth = self.cdf.variables["depth"][:]
@@ -92,12 +101,11 @@ class grdClass:
             if np.rank(self.lon)==1:
                     self.lon, self.lat = np.meshgrid(self.lon,self.lat)
             
-            
             IOverticalGrid.get_z_levels(self)
         
         if self.type=='HYCOM':
             self.grdType  = 'regular'
-            print '\n---> Assuming %s grid type for %s'%(self.grdType,self.type)
+            print '---> Assuming %s grid type for %s'%(self.grdType,self.type)
             self.lon = self.cdf.variables["Longitude"][:]
            
             if self.lon.max() > 360:
@@ -115,7 +123,6 @@ class grdClass:
             if np.rank(self.lon)==1:
                     self.lon, self.lat = np.meshgrid(self.lon,self.lat)
             
-            
             IOverticalGrid.get_z_levels(self)
             
         if self.type=='STATION':
@@ -127,9 +134,7 @@ class grdClass:
             
             self.Lp=1
             self.Mp=1
-            
             self.fill_value=-9.99e+33
-            
             
         if self.type=='ROMS':
             
@@ -138,13 +143,22 @@ class grdClass:
             self.write_init=True
             self.write_stations=False
     
+            """Define varibales needed to set the apropriate vertical stretching parameters. Note
+            that according to the ROMS forum
+            (https://www.myroms.org/forum/viewtopic.php?f=23&t=1254&hilit=critical+depth+tcline&sid=ec98a9e63e7857e2615b9182af752cde)
+            the value of Tcline should now be equal to hc"""
+            
             self.vstretching=2
             self.Nlevels=35
             self.theta_s=1.0
             self.theta_b=3.0
-            self.Tcline=50.0
-            self.hc=50.0
-            self.initTime=1 # Set to 1 if you dont want the first timestep to be the initial field (no ubar and vbar if time=0)
+            self.Tcline=10.0
+            self.hc=10.0
+            
+            """Set initTime to 1 if you dont want the first timestep to be
+            the initial field (no ubar and vbar if time=0)"""
+            
+            self.initTime=1 
             self.ocean_time=1
             self.NT=2
             self.tracer=self.NT
@@ -188,7 +202,7 @@ class grdClass:
             self.lat_psi  = self.lat_v[:,:-1]
             self.mask_psi = self.mask_v[:,:-1]
             
-            self.f  = self.cdf.variables["f"][:]
+            self.f  = self.cdf.variables["f"][:,:]
             self.angle  = self.cdf.variables["angle"][:,:]
             
             self.pm  = self.cdf.variables["pm"][:,:]
@@ -223,7 +237,7 @@ class grdClass:
             IOverticalGrid.calculate_z_w(self)
            
         
-    def _getDims(self):
+    def getDims(self):
         if self.type=="ROMS":
             self.Lp=len(self.lat_rho[1,:])
             self.Mp=len(self.lat_rho[:,1])
@@ -233,7 +247,6 @@ class grdClass:
         if self.type=="HYCOM":
             self.Lp=len(self.lat[1,:])
             self.Mp=len(self.lat[:,1])
-        self.M =self.Mp-1
         self.M =self.Mp-1
         self.L =self.Lp-1
         

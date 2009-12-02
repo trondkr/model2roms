@@ -8,11 +8,10 @@ import numpy as np
 import ncarRiver
 #import ncarSSS
 
-
 __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
 __created__  = datetime(2009, 1,30)
-__modified__ = datetime(2009,11, 9)
+__modified__ = datetime(2009,11,13)
 __version__  = "1.3"
 __status__   = "Development"
 
@@ -27,8 +26,7 @@ def showInfo(vars,romsgridpath,climName,initName,bryName,start_year,end_year,sta
     for var in vars:
         print '---> %s'%(var)
     print '\nOutput grid file is: %s'%(romsgridpath)
-    print '\n--------------------------\n'
-    print '\n---> Initializing'
+    print '\nInitializing'
     
     
 def main():
@@ -59,18 +57,19 @@ def main():
     sodapath="/Volumes/HankRaid/SODA/"
     sodapath="/Volumes/MacintoshHD2/Datasets/SODA/"
     sodapath="/Volumes/MacintoshHD2/Datasets/SODAMonthly/"
-    sodapath="/Users/trond/Projects/arcwarm/SODAmonthly/"
+    #sodapath="/Users/trond/Projects/arcwarm/SODAmonthly/"
     hycompath="/Users/trond/Projects/arcwarm/SODA/HYCOM/"
     
     romsgridpath="/Volumes/HankRaid/ROMS/GoM/grid/gom_grd.nc"
-    romsgridpath="/Users/trond/Projects/Roms/GOMfull/Inputs/gom_grd.nc"
+    romsgridpath="/Users/trond/Projects/Roms/GOMsmall/Inputs/gom_grd_small.nc"
+    #romsgridpath="/Users/trond/Projects/Roms/GOMfull/Inputs/gom_grd.nc"
     #romsgridpath="/Users/trond/Projects/arcwarm/nordic/imr_nordic_4km.nc"
     #romsgridpath="/Users/trond/Projects/arcwarm/SODA/soda2roms/imr_nordic_8km.nc"
     
     start_year      =1960
     end_year        =1961
     start_julianday =0
-    end_julianday   =365
+    end_julianday   =135
     
     """Name of output files for CLIM, BRY, and INIT files"""
     climName='gom_clim_'+str(start_year)+'.nc'
@@ -114,8 +113,10 @@ def main():
     else:
         IDS=[(i+1+int(start_day_in_start_year)) for i in range(loop)]
     
+    """Create the grid object for the output grid"""
     grdROMS = grd.grdClass(romsgridpath,"ROMS")
-
+    grdROMS.vars = vars
+    
     if createForcing==True:
         
         showInfo(vars,romsgridpath,climName,initName,bryName,start_year,end_year,start_julianday,end_julianday)
