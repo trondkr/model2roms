@@ -69,7 +69,7 @@ def main():
     start_year      =1960
     end_year        =1961
     start_julianday =0
-    end_julianday   =135
+    end_julianday   =95
     
     """Name of output files for CLIM, BRY, and INIT files"""
     climName='gom_clim_'+str(start_year)+'.nc'
@@ -83,7 +83,7 @@ def main():
     
     """Define what variables to include in the forcing files"""
     vars=['temperature','salinity','ssh','uvel','vvel']
-    #vars=['uvel','vvel']
+   # vars=['ssh','uvel','vvel']
     
     """5 day or 30 day average files for SODA"""
     if type=='SODA': aveDays=5.0
@@ -115,8 +115,7 @@ def main():
     
     """Create the grid object for the output grid"""
     grdROMS = grd.grdClass(romsgridpath,"ROMS")
-    grdROMS.vars = vars
-    
+   
     if createForcing==True:
         
         showInfo(vars,romsgridpath,climName,initName,bryName,start_year,end_year,start_julianday,end_julianday)

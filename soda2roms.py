@@ -129,7 +129,6 @@ def HorizontalInterpolation(var,grdROMS,grdMODEL,data,show_progress):
     if grdMODEL.grdType=='regular':
         if var=='temperature':
             array1 = interp2D.doHorInterpolationRegularGrid(var,grdROMS,grdMODEL,data,show_progress)
-    
         if var=='salinity':
             array1 = interp2D.doHorInterpolationRegularGrid(var,grdROMS,grdMODEL,data,show_progress)
         if var=='ssh':
@@ -138,8 +137,6 @@ def HorizontalInterpolation(var,grdROMS,grdMODEL,data,show_progress):
             array1 = interp2D.doHorInterpolationRegularGrid(var,grdROMS,grdMODEL,data,show_progress)
         if var=='vvel':
             array1 = interp2D.doHorInterpolationRegularGrid(var,grdROMS,grdMODEL,data,show_progress)
-    
-        
     
     if grdMODEL.grdType=='irregular':
         if var=='temperature':
@@ -345,6 +342,7 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
     """
     grdMODEL = grd.grdClass(fileNameIn,type)
     grdROMS = grd.grdClass(romsgridpath,"ROMS")
+    grdROMS.vars = vars
     
     """Now we want to subset the data to avoid storing more information than we need.
     We do this by finding the indices of maximum and minimum latitude and longitude in the matrixes"""

@@ -9,7 +9,6 @@ def writeClimFile(grdROMS,ntime,outfilename,var,data1=None,data2=None,data3=None
         
      if grdROMS.ioClimInitialized is False:
         grdROMS.ioClimInitialized=True
-        
         if os.path.exists(outfilename):
             os.remove(outfilename)
         
@@ -20,7 +19,6 @@ def writeClimFile(grdROMS,ntime,outfilename,var,data1=None,data2=None,data3=None
         f1.history     ="Created " + time.ctime(time.time())
         f1.source      = "Trond Kristiansen (trond.kristiansen@imr.no)"
         f1.type        ="File in NetCDF4 format created using SODA2ROMS"
-     
         
         """Define dimensions"""   
         f1.createDimension('xi_rho',  grdROMS.xi_rho)
@@ -202,30 +200,9 @@ def writeClimFile(grdROMS,ntime,outfilename,var,data1=None,data2=None,data3=None
         
         v_time = f1.createVariable('ocean_time', 'd', ('ocean_time',))
         v_time.long_name = 'seconds since 1948-01-01 00:00:00'
-        v_time.units = 'seconds'
+        v_time.units = 'seconds since 1948-01-01 00:00:00'
         v_time.field = 'time, scalar, series'
         v_time.calendar='standard'
-        
-        v_temp=f1.createVariable('temp', 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho',))
-        v_temp.long_name = "potential temperature"
-        v_temp.units = "Celsius"
-        v_temp.time = "ocean_time"
-        v_temp.field="temperature, scalar, series"
-        v_temp.FillValue = grdROMS.fill_value
-        
-        v_salt=f1.createVariable('salt', 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho',))
-        v_salt.long_name = "salinity"
-        v_salt.units = "PSU"
-        v_salt.time = "ocean_time"
-        v_salt.field="salinity, scalar, series"
-        v_salt.FillValue = grdROMS.fill_value
-        
-        v_ssh=f1.createVariable('zeta','f',('ocean_time','eta_rho', 'xi_rho',))
-        v_ssh.long_name = "sea level"
-        v_ssh.units = "meter"
-        v_ssh.time = "ocean_time"
-        v_ssh.field="sea level, scalar, series"
-        v_ssh.FillValue = grdROMS.fill_value
         
         v_u=f1.createVariable('u', 'f', ('ocean_time', 's_rho', 'eta_u', 'xi_u',))
         v_u.long_name = "u-momentum component"
@@ -241,13 +218,27 @@ def writeClimFile(grdROMS,ntime,outfilename,var,data1=None,data2=None,data3=None
         v_v.field= "v-velocity, scalar, series"
         v_v.FillValue = grdROMS.fill_value
         
-        v_vbar=f1.createVariable('vbar', 'f', ('ocean_time', 'eta_v','xi_v',))
-        v_vbar.long_name = "v-2D momentum"
-        v_vbar.units = "meter second-1"
-        v_vbar.time = "ocean_time"
-        v_vbar.field= "v2-D velocity, scalar, series"
-        v_vbar.FillValue = grdROMS.fill_value
-     
+        v_salt=f1.createVariable('salt', 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho',))
+        v_salt.long_name = "salinity"
+        v_salt.units = "nondimensional"
+        v_salt.time = "ocean_time"
+        v_salt.field="salinity, scalar, series"
+        v_salt.FillValue = grdROMS.fill_value
+        
+        v_temp=f1.createVariable('temp', 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho',))
+        v_temp.long_name = "potential temperature"
+        v_temp.units = "Celsius"
+        v_temp.time = "ocean_time"
+        v_temp.field="temperature, scalar, series"
+        v_temp.FillValue = grdROMS.fill_value
+        
+        v_ssh=f1.createVariable('zeta','f',('ocean_time','eta_rho', 'xi_rho',))
+        v_ssh.long_name = "sea level"
+        v_ssh.units = "meter"
+        v_ssh.time = "ocean_time"
+        v_ssh.field="sea level, scalar, series"
+        v_ssh.FillValue = grdROMS.fill_value
+        
         v_ubar=f1.createVariable('ubar', 'f', ('ocean_time', 'eta_u', 'xi_u',))
         v_ubar.long_name = "u-2D momentum"
         v_ubar.units = "meter second-1"
@@ -255,13 +246,23 @@ def writeClimFile(grdROMS,ntime,outfilename,var,data1=None,data2=None,data3=None
         v_ubar.field= "u2-D velocity, scalar, series"
         v_ubar.FillValue = grdROMS.fill_value
         
+        v_vbar=f1.createVariable('vbar', 'f', ('ocean_time', 'eta_v','xi_v',))
+        v_vbar.long_name = "v-2D momentum"
+        v_vbar.units = "meter second-1"
+        v_vbar.time = "ocean_time"
+        v_vbar.field= "v2-D velocity, scalar, series"
+        v_vbar.FillValue = grdROMS.fill_value
+     
+     
      else:
-        f1 = Dataset(outfilename, mode='a', format='NETCDF4', zlib=True)
+        f1 = Dataset(outfilename, mode='a', format='NETCDF3_CLASSIC')
     
-     f1.variables['ocean_time'][ntime]   = grdROMS.time * 86400.0
+     if var==grdROMS.vars[0]:
+          f1.variables['ocean_time'][ntime]   = grdROMS.time * 86400.0
+     
      d= num2date(grdROMS.time*86400.0,units=f1.variables['ocean_time'].long_name,calendar=f1.variables['ocean_time'].calendar)
      grdROMS.message=d
-     print 'shape of data %s to file %s'%(var,data1.shape)
+     
      if var=='temperature':
         f1.variables['temp'][ntime,:,:,:]  = data1
      if var=='salinity':

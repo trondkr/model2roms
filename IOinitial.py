@@ -173,7 +173,7 @@ def createInitFile(grdROMS,ntime,outfilename,var,data1=None,data2=None,data3=Non
           
           v_time = f1.createVariable('ocean_time', 'd', ('ocean_time',))
           v_time.long_name = 'seconds since 1948-01-01 00:00:00'
-          v_time.units = 'seconds'
+          v_time.units = 'seconds since 1948-01-01 00:00:00'
           v_time.field = 'time, scalar, series'
           v_time.calendar='standard'
           
@@ -185,7 +185,7 @@ def createInitFile(grdROMS,ntime,outfilename,var,data1=None,data2=None,data3=Non
           
           v_salt=f1.createVariable('salt', 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho',))
           v_salt.long_name = "salinity"
-          v_salt.units = "PSU"
+          v_salt.units = "nondimensional"
           v_salt.time = "ocean_time"
           v_salt.FillValue = grdROMS.fill_value
           
@@ -219,7 +219,7 @@ def createInitFile(grdROMS,ntime,outfilename,var,data1=None,data2=None,data3=Non
           v_ubar.time = "ocean_time"
           v_ubar.FillValue = grdROMS.fill_value
               
-          d= num2date(grdROMS.time,units=v_time.long_name,calendar=v_time.calendar)
+          d= num2date(grdROMS.time * 86400.0,units=v_time.long_name,calendar=v_time.calendar)
           print '\n'
           print '========================================================================='
           print 'Created INIT file'
@@ -231,7 +231,7 @@ def createInitFile(grdROMS,ntime,outfilename,var,data1=None,data2=None,data3=Non
           print '\n'
      
      else:
-        f1 = Dataset(outfilename, mode='a', format='NETCDF4', zlib=True)
+        f1 = Dataset(outfilename, mode='a', format='NETCDF3_CLASSIC')
         
      ntime=0
      f1.variables['ocean_time'][ntime]   = grdROMS.time * 86400.0

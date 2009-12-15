@@ -154,6 +154,7 @@ class grdClass:
             self.theta_b=3.0
             self.Tcline=10.0
             self.hc=10.0
+            self.vars=[]
             
             """Set initTime to 1 if you dont want the first timestep to be
             the initial field (no ubar and vbar if time=0)"""

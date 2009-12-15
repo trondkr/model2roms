@@ -182,7 +182,7 @@ def createBryFile(grdROMS,outfilename):
      
      v_time = f1.createVariable('ocean_time', 'd', ('ocean_time',))
      v_time.long_name = 'seconds since 1948-01-01 00:00:00'
-     v_time.units = 'seconds'
+     v_time.units = 'seconds since 1948-01-01 00:00:00'
      v_time.field = 'time, scalar, series'
      v_time.calendar='standard'
      
@@ -216,28 +216,28 @@ def createBryFile(grdROMS,outfilename):
      
      v_salt_west=f1.createVariable('salt_west', 'f', ('ocean_time', 's_rho', 'eta_rho',))
      v_salt_west.long_name = "salinity western boundary condition"
-     v_salt_west.units = "PSU"
+     v_salt_west.units = "nondimensional"
      v_salt_west.field = "salt_west, scalar, series"
      v_salt_west.FillValue = grdROMS.fill_value
      v_salt_west.time = "ocean_time"
      
      v_salt_east=f1.createVariable('salt_east', 'f', ('ocean_time', 's_rho', 'eta_rho',))
      v_salt_east.long_name = "salinity eastern boundary condition"
-     v_salt_east.units = "PSU"
+     v_salt_east.units = "nondimensional"
      v_salt_east.field = "salt_east, scalar, series"
      v_salt_east.FillValue = grdROMS.fill_value
      v_salt_east.time = "ocean_time"
      
      v_salt_south=f1.createVariable('salt_south', 'f', ('ocean_time', 's_rho', 'xi_rho',))
      v_salt_south.long_name = "salinity southern boundary condition"
-     v_salt_south.units = "PSU"
+     v_salt_south.units = "nondimensional"
      v_salt_south.field = "salt_south, scalar, series"
      v_salt_south.FillValue = grdROMS.fill_value
      v_salt_south.time = "ocean_time"
      
      v_salt_north=f1.createVariable('salt_north', 'f', ('ocean_time', 's_rho', 'xi_rho',))
      v_salt_north.long_name = "salinity northern boundary condition"
-     v_salt_north.units = "PSU"
+     v_salt_north.units = "nondimensional"
      v_salt_north.field = "salt_north, scalar, series"
      v_salt_north.FillValue = grdROMS.fill_value
      v_salt_north.time = "ocean_time"
