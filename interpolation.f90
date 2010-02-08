@@ -66,7 +66,6 @@ Module interpolation
             do jc=1,JJ
               do ic=1,II
                   do kc=1,Nroms
-                      
                       ! CASE 1: ROMS deeper than SODA. This part searches for deepest good value if ROMS depth is deeper
                       ! than SODA. This means that if no value, or only fill_value, is available from SODA where ROMS is
                       ! deepest, the closest value from SODA is found by looping upward in the water column.

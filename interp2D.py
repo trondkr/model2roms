@@ -70,7 +70,7 @@ def doHorInterpolationIrregularGrid(var,grdROMS,grdMODEL,data):
         elif var=='vvel':
             grdROMS.v[k,:,:]=Zg
            
-        plotData.contourMap(grdROMS,grdMODEL,Zg,k,var)
+      #  plotData.contourMap(grdROMS,grdMODEL,Zg,k,var)
                   
                       
 def doHorInterpolationRegularGrid(var,grdROMS,grdMODEL,data,show_progress):
@@ -127,10 +127,7 @@ def doHorInterpolationRegularGrid(var,grdROMS,grdMODEL,data,show_progress):
             p=int( ((k+1*1.0)/(1.0*grdMODEL.Nlevels))*100.)
         
             progress.render(p)
-        
-        
-      
-   
+    
     return array1
     
     
@@ -172,7 +169,7 @@ def doHorInterpolationSSHRegularGrid(var,grdROMS,grdMODEL,data):
         
    
     array1[0,:,:]=Zin*grdROMS.mask_rho
-    plotData.contourMap(grdROMS,grdMODEL,np.squeeze(array1[0,:,:]),1,var)
+    #plotData.contourMap(grdROMS,grdMODEL,np.squeeze(array1[0,:,:]),1,var)
     
     return array1
 

@@ -52,38 +52,50 @@ def main():
     """Create river runoff file based on NCEP-NCAR CORE data"""
     createRiverRunoff=False
     
-    """Define the paths to the CORE data (only river file), and the SODA/HYCOM data"""
-    corepath="/Users/trond/Projects/arcwarm/CORE/"
-    sodapath="/Volumes/HankRaid/SODA/"
-    sodapath="/Volumes/MacintoshHD2/Datasets/SODA/"
-    sodapath="/Volumes/MacintoshHD2/Datasets/SODAMonthly/"
-    #sodapath="/Users/trond/Projects/arcwarm/SODAmonthly/"
-    hycompath="/Users/trond/Projects/arcwarm/SODA/HYCOM/"
+    """Set the input data MODEL type: Current options are SODA or HYCOM"""
+    type='HYCOM' 
+    type='SODA'
+    type='SODAMONTHLY'
     
+    """Define the paths to the CORE data (only river file)"""
+    corepath="/Users/trond/Projects/arcwarm/CORE/"
+    
+    """Define the paths to the SODA/HYCOM data"""
+    if type=='SODA':
+        sodapath="/Volumes/HankRaid/SODA/"
+        sodapath="/Volumes/MacintoshHD2/Datasets/SODA/"
+    if type=='SODAMONTHLY':
+        sodapath="/Volumes/MacintoshHD2/Datasets/SODAMonthly/"
+    if type=='HYCOM':
+        hycompath="/Users/trond/Projects/arcwarm/SODA/HYCOM/"
+    
+    """Define the path to the grid file"""
     romsgridpath="/Volumes/HankRaid/ROMS/GoM/grid/gom_grd.nc"
-    romsgridpath="/Users/trond/Projects/Roms/GOMsmall/Inputs/gom_grd_small.nc"
-    #romsgridpath="/Users/trond/Projects/Roms/GOMfull/Inputs/gom_grd.nc"
-    #romsgridpath="/Users/trond/Projects/arcwarm/nordic/imr_nordic_4km.nc"
-    #romsgridpath="/Users/trond/Projects/arcwarm/SODA/soda2roms/imr_nordic_8km.nc"
+    #romsgridpath="/Users/trond/Projects/Roms/GOMsmall/Inputs/gom_grd_small.nc"
+    #romsgridpath="/Users/trond/Projects/Roms/GOMsmall/Inputs/ns8_grd.nc"
+    # CONTAINS NAN romsgridpath="/Users/trond/Projects/Roms/GOMfull/Inputs/gom_grd.nc"
+    #romsgridpath="/Users/trond/Projects/Roms/Nordic/Inputs/imr_nordic_4km.nc"
+    #romsgridpath="/Users/trond/Projects/Roms/Nordic/Inputs/imr_nordic_8km.nc"
+    #romsgridpath="/Users/trond/Projects/Roms/Julia/NATLC/Data/natl_40km.nc"
     
     start_year      =1960
     end_year        =1961
     start_julianday =0
-    end_julianday   =95
+    end_julianday   =135
+    
+    """Subset the input data. The more you subset the less memory is needed for calculations
+    and the faster the process is performed. The subset is initially performed in IOsubset.py"""
+    # TODO: Check if outputdomain is not overlapping input domain.
+    minLat=30; maxLat=60; minLon=-90; maxLon=-10
+    subset=np.zeros(4); subset[0]=minLat; subset[1]=maxLat; subset[2]=minLon; subset[3]=maxLon
     
     """Name of output files for CLIM, BRY, and INIT files"""
     climName='gom_clim_'+str(start_year)+'.nc'
     initName='gom_init_'+str(start_year)+'.nc'
     bryName='gom_bry_'+str(start_year)+'.nc'
     
-    """Set the input data MODEL type: Current options are SODA or HYCOM"""
-    type='HYCOM' 
-    type='SODA'
-    type='SODAMONTHLY'
-    
     """Define what variables to include in the forcing files"""
     vars=['temperature','salinity','ssh','uvel','vvel']
-   # vars=['ssh','uvel','vvel']
     
     """5 day or 30 day average files for SODA"""
     if type=='SODA': aveDays=5.0
@@ -94,6 +106,10 @@ def main():
     stationNames=['NorthSea','Iceland','EastandWestGreenland','Lofoten', 'Georges Bank']
     lonlist=[ 2.4301, -22.6001, -47.0801,  13.3801, -67.2001]
     latlist=[54.5601, 63.7010,  60.4201,  67.5001,  41.6423]
+    
+    stationNames=['NorthSea','Iceland','Lofoten', 'Georges Bank']
+    lonlist=[ 2.4301, -22.6001, 13.3801, -67.2001]
+    latlist=[54.5601, 63.7010, 67.5001,  41.6423]
     
         
     """" NO EDIT BELOW ========================================================="""
@@ -121,9 +137,9 @@ def main():
         showInfo(vars,romsgridpath,climName,initName,bryName,start_year,end_year,start_julianday,end_julianday)
         
         if type=='SODA' or type=='SODAMONTHLY':
-            soda2roms.convertMODEL2ROMS(years,IDS,climName,initName,sodapath,romsgridpath,vars,show_progress,type)
+            soda2roms.convertMODEL2ROMS(years,IDS,climName,initName,sodapath,romsgridpath,vars,show_progress,type,subset)
         elif type=='HYCOM':
-            soda2roms.convertMODEL2ROMS([1],[1,2,3],climName,initName,hycompath,romsgridpath,vars,show_progress,type)
+            soda2roms.convertMODEL2ROMS([1],[1,2,3],climName,initName,hycompath,romsgridpath,vars,show_progress,type,subset)
     
         clim2bry.writeBry(grdROMS,start_year,bryName,climName)
     
@@ -144,13 +160,13 @@ def main():
 
 if __name__ == "__main__":
     
-    try:
-        import psyco
-        psyco.log()
-        psyco.full(memory=100)
-        psyco.profile(0.05, memory=100)
-        psyco.profile(0.2)
-    except ImportError:
-        pass
+    #try:
+    #    import psyco
+    #    psyco.log()
+    #    psyco.full(memory=100)
+    #    psyco.profile(0.05, memory=100)
+    #    psyco.profile(0.2)
+    #except ImportError:
+    #    pass
 
     main()

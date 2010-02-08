@@ -34,11 +34,24 @@ def contourMap(grdROMS,grdMODEL,data,depthlevel,var):
                       resolution='l',area_thresh=100.,projection='npstere')
         levels = np.arange(-2.0, 15.0, 0.1)
         
+    if grdROMS.grdName=='NorthSea':
+        map = Basemap(llcrnrlon=grdROMS.lon_rho[0,:].min()-15.25,
+                      llcrnrlat=grdROMS.lat_rho[:,0].min()-2.25,
+                      urcrnrlon=grdROMS.lon_rho[0,:].max()+5.25,
+                      urcrnrlat=grdROMS.lat_rho[:,0].max()+5.25,
+                      resolution='i',projection='tmerc',lon_0=0,lat_0=50,area_thresh=10.)
+        levels = np.arange(2.0, 15.0, 0.5)
+        
     if grdROMS.grdName=='NA':
         map = Basemap(lon_0=25,boundinglat=0,
                 resolution='l',area_thresh=2000.,projection='npstere')
         levels = np.arange(-2.0, 25.0, 0.5)
-    
+        
+    if grdROMS.grdName=='NATL':
+        map = Basemap(lon_0=2,boundinglat=0,
+                resolution='l',area_thresh=2000.,projection='npstere')
+        levels = np.arange(-2.0, 30.0, 0.5)
+        
     if grdROMS.grdName=='NA_Nathan':
         map = Basemap(lon_0=25,boundinglat=0,
                 resolution='l',area_thresh=2000.,projection='npstere')
@@ -63,7 +76,8 @@ def contourMap(grdROMS,grdMODEL,data,depthlevel,var):
     #map.drawparallels(np.arange(0,90,5))
 
     temp = np.ma.masked_values(temp,grdROMS.fill_value)
-    
+    if var=='salinity':
+        levels = np.arange(15.0, 40.0, 0.3)
     if var=='runoff':
         levels = np.arange(1e-4, 1e-8, 1e-10)
     if var=='ssh':
@@ -87,5 +101,5 @@ def contourMap(grdROMS,grdMODEL,data,depthlevel,var):
     #plt.title('Variabel %s at depth %s'%(var,depthlevel))
     plotfile='uvel_'+str(depthlevel)+'.png'
     plt.savefig(plotfile)
-    #plt.show()
+    plt.show()
    

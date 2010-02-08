@@ -40,7 +40,7 @@ class grdClass:
         
         if grdfilename=="/Users/trond/Projects/arcwarm/nordic/AA_10km_grid.nc":
             self.grdName='NA'
-        elif grdfilename=="/Users/trond/Projects/arcwarm/nordic/imr_nordic_4km.nc":
+        elif grdfilename=="/Users/trond/Projects/Roms/Nordic/Inputs/imr_nordic_4km.nc":
             self.grdName='Nordic'
         elif grdfilename=='/Users/trond/Projects/Nathan/NoMed47_GRID_Global.nc':
             self.grdName='NA_Nathan'
@@ -48,6 +48,11 @@ class grdClass:
             self.grdName='GOM_Nathan'
         elif grdfilename=='/Users/trond/Projects/arcwarm/SODA/soda2roms/imr_nordic_8km.nc':
             self.grdName='Nordic2'
+        elif grdfilename=='/Users/trond/Projects/Roms/GOMsmall/Inputs/ns8_grd.nc':
+            self.grdName='NorthSea'
+        elif grdfilename=='/Users/trond/Projects/Roms/Julia/NATLC/Data/natl_40km.nc':
+            self.grdName='NATL'
+            
         else:
             self.grdName='GOM'
             
@@ -179,6 +184,7 @@ class grdClass:
             self.lon_rho  = self.cdf.variables["lon_rho"][:,:]
             self.lat_rho  = self.cdf.variables["lat_rho"][:,:]
             self.depth    = self.cdf.variables["h"][:,:]
+          
             self.mask_rho = self.cdf.variables["mask_rho"][:,:]
             # Nathan fixes
             # Need to convert all longitude values in grid that are less than 360 and larger than 180 to negative values.
