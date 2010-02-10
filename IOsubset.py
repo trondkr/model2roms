@@ -141,8 +141,6 @@ def organizeSplit(grdMODEL,grdROMS,type,vars,cdf):
 
         print "Subset extracted for domain from West (%s) to East (%s)\n"%(grdMODEL.lon.min(),grdMODEL.lon.max())
     else:
-        print grdMODEL.lon.min(),grdMODEL.lon.max()
-        print grdMODEL.indices
         grdMODEL.lon=grdMODEL.lon[int(grdMODEL.indices[0,2]):int(grdMODEL.indices[0,3]),int(grdMODEL.indices[0,0]):int(grdMODEL.indices[0,1])]
         grdMODEL.lat=grdMODEL.lat[int(grdMODEL.indices[0,2]):int(grdMODEL.indices[0,3]),int(grdMODEL.indices[0,0]):int(grdMODEL.indices[0,1])]
                     

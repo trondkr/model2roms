@@ -8,7 +8,7 @@ import date
 from netCDF4 import Dataset
 from netCDF4 import num2date
 import os, time
-import plotStation
+import plotData
 from progressBar import progressBar
 
 __author__   = 'Trond Kristiansen'
@@ -227,7 +227,7 @@ def getStationData(years,IDS,sodapath,latlist,lonlist,stationNames):
                 
         
         print 'Total time steps saved to file %s for station %s'%(time,station)
-        #plotStation.contourData(stTemp,stTime,stDate,-grdMODEL.depth[0:deepest],stationNames[station])
+        #plotData.contourStationData(stTemp,stTime,stDate,-grdMODEL.depth[0:deepest],stationNames[station])
         
         outfilename='station_'+str(stationNames[station])+'.nc'
         print 'Results saved to file %s'%(outfilename)

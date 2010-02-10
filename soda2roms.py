@@ -4,7 +4,6 @@ import numpy as np
 import interp2D
 from datetime import datetime, timedelta
 from netCDF4 import num2date, date2num
-import printObject
 import interpolation as interp
 import IOwrite
 import plotData

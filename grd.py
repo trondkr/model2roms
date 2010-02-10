@@ -11,7 +11,6 @@ from netCDF4 import Dataset
 import numpy as np
 
 import IOverticalGrid
-import printObject
 
 __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'

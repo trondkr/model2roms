@@ -1,10 +1,7 @@
-# -*- coding: utf-8 -*-
 import numpy as np
 import datetime
-#from griddata import griddata
 import plotData
 import mpl_toolkits.basemap as mp
-import geoProjection
 import sys
 import cl
 import time
@@ -16,61 +13,6 @@ __modified__ = datetime.datetime(2008, 12, 18)
 __modified__ = datetime.datetime(2009, 3, 25)
 __version__  = "1.3"
 __status__   = "Development"
-
-     
-def doHorInterpolationIrregularGrid(var,grdROMS,grdMODEL,data):
-
-    Lp=grdROMS.xi_rho
-    Mp=grdROMS.eta_rho
-
-    map=geoProjection.stereographic_wedge(-65.0,52.0,-71.0,47.2,0.15)
-         
-
-    tx, ty = map.ll2grid(np.asarray(grdMODEL.lon), np.asarray(grdMODEL.lat))
-    tx = np.asarray(tx)
-    ty = np.asarray(ty)
-
-    Xg, Yg = np.meshgrid(np.arange(Lp), np.arange(Mp))
-    
-    for k in xrange(grdMODEL.Nlevels):
-        print 'Interpolation level %s'%(k)
-
-        xlist = []
-        ylist = []
-        zlist = []
-
-        for i in xrange(len(grdMODEL.lon[1,:])):
-            for j in xrange(len(grdMODEL.lat[:,1])):
-                x = tx[j,i]
-                y = ty[j,i]
-                
-                """
-                Find positions in or near the grid
-                """
-                
-                if ( -20 < x < Lp+10 ) and (-20 < y < Mp+10 ):
-                    
-                    if data[k,j,i]>-9.98e+33:
-                        
-                        xlist.append(x)
-                        ylist.append(y)
-                        zlist.append(data[k,j,i])
-                        #print i,j, data[t,k,j,i]
-       #else:
-                   #     print 'skipping value %s at %s,%s'%(data[t,k,j,i],y,x)
-        
-        Zg = griddata(np.array(xlist), np.array(ylist), np.array(zlist), Xg, Yg)
-
-        if var=='temperature':    
-            grdROMS.t[k,:,:]=Zg
-        elif var=='salinity':
-            grdROMS.s[k,:,:]=Zg
-        elif var=='uvel':
-            grdROMS.u[k,:,:]=Zg
-        elif var=='vvel':
-            grdROMS.v[k,:,:]=Zg
-           
-      #  plotData.contourMap(grdROMS,grdMODEL,Zg,k,var)
                   
                       
 def doHorInterpolationRegularGrid(var,grdROMS,grdMODEL,data,show_progress):
@@ -172,39 +114,3 @@ def doHorInterpolationSSHRegularGrid(var,grdROMS,grdMODEL,data):
     #plotData.contourMap(grdROMS,grdMODEL,np.squeeze(array1[0,:,:]),1,var)
     
     return array1
-
-def doHorInterpolationSSHIrregularGrid(var,grdROMS,grdMODEL,data):
-    
-    Lp=grdROMS.xi_rho
-    Mp=grdROMS.eta_rho
-  
-    tx, ty = map.ll2grid(np.asarray(grdMODEL.lon), np.asarray(grdMODEL.lat))
-    
-    tx = np.asarray(tx)
-    ty = np.asarray(ty)
-
-    Xg, Yg = np.meshgrid(np.arange(Lp), np.arange(Mp))
-
-    xlist = []
-    ylist = []
-    zlist = []
-
-    for i in xrange(len(grdMODEL.lon[1,:])):
-        for j in xrange(len(grdMODEL.lat[:,1])):
-            x = tx[j,i]
-            y = ty[j,i]
-        
-            if ( -20 < x < Lp+10 ) and (-20 < y < Mp+10 ):
-                
-                if data[j,i]>-9.98e+33:
-                    
-                    xlist.append(x)
-                    ylist.append(y)
-                    zlist.append(data[j,i])
-
-    Zg = griddata(np.array(xlist), np.array(ylist), np.array(zlist), Xg, Yg)
-
-    grdROMS.ssh[:,:]=Zg
- 
-    #plotData.contourMap(grdROMS,grdMODEL,Zg,"1",var)
-            
