@@ -240,7 +240,6 @@ def createInitFile(grdROMS,ntime,outfilename,var,data1=None,data2=None,data3=Non
      f1.variables['ocean_time'][ntime]   = grdROMS.time * 86400.0
        
      if var.lower()=='temperature':
-        print data1
         f1.variables['temp'][ntime,:,:,:]  = data1
      if var.lower()=='salinity':
         f1.variables['salt'][ntime,:,:,:]  = data1
