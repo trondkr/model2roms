@@ -71,6 +71,8 @@ def main():
     
     """Define the path to the grid file"""
     romsgridpath="/Volumes/HankRaid/ROMS/GoM/grid/gom_grd.nc"
+    romsgridpath="/Users/trond/Projects/Roms/GOMfull/Inputs/gom_grd11022010.nc"
+    romsgridpath="/Users/trond/Projects/Roms/GOMfull/SmoothTopo/gom_grdSmoothed.nc"
     #romsgridpath="/Users/trond/Projects/Roms/GOMsmall/Inputs/gom_grd_small.nc"
     #romsgridpath="/Users/trond/Projects/Roms/GOMsmall/Inputs/ns8_grd.nc"
     # CONTAINS NAN romsgridpath="/Users/trond/Projects/Roms/GOMfull/Inputs/gom_grd.nc"
@@ -79,14 +81,13 @@ def main():
     #romsgridpath="/Users/trond/Projects/Roms/Julia/NATLC/Data/natl_40km.nc"
     
     start_year      =1960
-    end_year        =1961
+    end_year        =1964
     start_julianday =0
-    end_julianday   =135
+    end_julianday   =365
     
     """Subset the input data. The more you subset the less memory is needed for calculations
     and the faster the process is performed. The subset is initially performed in IOsubset.py"""
-    # TODO: Check if outputdomain is not overlapping input domain.
-    minLat=30; maxLat=60; minLon=-90; maxLon=-10
+    minLat=30; maxLat=55; minLon=-90; maxLon=-50
     subset=np.zeros(4); subset[0]=minLat; subset[1]=maxLat; subset[2]=minLon; subset[3]=maxLon
     
     """Name of output files for CLIM, BRY, and INIT files"""
@@ -160,13 +161,13 @@ def main():
 
 if __name__ == "__main__":
     
-    #try:
-    #    import psyco
-    #    psyco.log()
-    #    psyco.full(memory=100)
-    #    psyco.profile(0.05, memory=100)
-    #    psyco.profile(0.2)
-    #except ImportError:
-    #    pass
+    try:
+        import psyco
+        psyco.log()
+        psyco.full(memory=100)
+        psyco.profile(0.05, memory=100)
+        psyco.profile(0.2)
+    except ImportError:
+        pass
 
     main()

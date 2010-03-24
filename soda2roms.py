@@ -314,10 +314,8 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
     print '\n--------------------------'
     
     time=0
-    
+    firstRun = True 
     for year in years:
-        
-        firstRun = True ;
         
         for ID in IDS:
            

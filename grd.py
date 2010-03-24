@@ -79,6 +79,20 @@ class grdClass:
         
         Trond Kristiansen, 18.11.2009.
         """
+        if self.type=='AVERAGE':
+            """Average file is a self made climatology file foe the North Atlantic (created with averageSoda.py)
+            and used in individual-based modeling (ibm.py)"""
+            self.grdType  = 'regular'
+            print '---> Assuming %s grid type for %s'%(self.grdType,self.type)
+            self.lon = self.cdf.variables["lon"][:]
+            self.lat = self.cdf.variables["lat"][:]
+            self.depth = self.cdf.variables["depth"][:]
+            self.Nlevels = len(self.depth)
+            self.fill_value=-9.99e+33
+            
+            if np.rank(self.lon)==1:
+                    self.lon, self.lat = np.meshgrid(self.lon,self.lat)
+            
         if self.type=='SODA':
             self.grdType  = 'regular'
             print '---> Assuming %s grid type for %s'%(self.grdType,self.type)
@@ -247,7 +261,7 @@ class grdClass:
         if self.type=="ROMS":
             self.Lp=len(self.lat_rho[1,:])
             self.Mp=len(self.lat_rho[:,1])
-        if self.type=="SODA" or self.type=='SODAMONTHLY':
+        if self.type=="SODA" or self.type=='SODAMONTHLY' or self.type=='AVERAGE':
             self.Lp=len(self.lat[1,:])
             self.Mp=len(self.lat[:,1])
         if self.type=="HYCOM":
@@ -255,4 +269,5 @@ class grdClass:
             self.Mp=len(self.lat[:,1])
         self.M =self.Mp-1
         self.L =self.Lp-1
+     
         

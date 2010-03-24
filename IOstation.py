@@ -9,6 +9,7 @@ from netCDF4 import Dataset
 from netCDF4 import num2date
 import os, time
 import plotData
+import string
 from progressBar import progressBar
 
 __author__   = 'Trond Kristiansen'
@@ -19,14 +20,15 @@ __modified__ = datetime.datetime(2009, 1, 22)
 __version__  = "1.0"
 __status__   = "Development"
 
-def getAverage(ID,gridIndexes,validIndex,validDis):
+def getAverage(yyyymmdd,gridIndexes,validIndex,validDis):
     """The input file for this routine is created by making an average of all the SODA files from 1961-1990.
-    This is done using the script soda2average/average_soda_v2.py"""
-    
-    averageFile='../soda2average/clim/average_SODA_1961-1990_'+str(ID)+'.nc'
+    This is done using the script soda2average/averageSODA.py"""
+    """First get month of interest:"""
+    d = string.split(yyyymmdd,'/'); month=int(d[1])
+    averageFile='../soda2average/clim/averageSODA1961-1990.nc'
     if os.path.exists(averageFile):
         print '======================================================================='
-        print 'Average file %s exists so clim values written to file for day %s, '%(averageFile,ID*5)   
+        print 'Average file %s exists so clim values written to file'%(averageFile)  
         print '======================================================================='
         ave = Dataset(averageFile,'r')
         
@@ -36,8 +38,6 @@ def getAverage(ID,gridIndexes,validIndex,validDis):
         aveSalt=np.zeros((index),np.float64)
         aveUvel=np.zeros((index),np.float64)
         aveVvel=np.zeros((index),np.float64)
-    
-        aveTime=ID
         
         for i in validIndex:
             wgt=float(validDis[i])/sum(validDis)
@@ -47,19 +47,19 @@ def getAverage(ID,gridIndexes,validIndex,validDis):
             """The values at a station is calculated by interpolating from the
             numberOfPoints around the station uysing weights (wgt)
             """
-                
-            aveTemp[:] = aveTemp[:]  + (ave.variables["temp"][:,latindex,lonindex])*wgt
-            aveSalt[:] = aveSalt[:]  + (ave.variables["salt"][:,latindex,lonindex])*wgt
-            aveUvel[:] = aveUvel[:]  + (ave.variables["uvel"][:,latindex,lonindex])*wgt
-            aveVvel[:] = aveVvel[:]  + (ave.variables["vvel"][:,latindex,lonindex])*wgt
+            print "test",i, month, latindex,lonindex, ave.variables["temp"].shape
+            aveTemp[:] = aveTemp[:]  + (ave.variables["temp"][:,latindex,lonindex,month-1])*wgt
+            aveSalt[:] = aveSalt[:]  + (ave.variables["salt"][:,latindex,lonindex,month-1])*wgt
+            aveUvel[:] = aveUvel[:]  + (ave.variables["uvel"][:,latindex,lonindex,month-1])*wgt
+            aveVvel[:] = aveVvel[:]  + (ave.variables["vvel"][:,latindex,lonindex,month-1])*wgt
          
         ave.close()
-        
+        print aveTemp, aveSalt, aveUvel, aveVvel
     else:
         average=False
         aveTemp=None; aveSalt=None; aveUvel=None; aveVvel=None; aveTime=None
         
-    return aveTemp,aveSalt,aveUvel,aveVvel,aveTime,average
+    return aveTemp,aveSalt,aveUvel,aveVvel,average
 
 def getStationTime(grdMODEL,year,ID):
     """
@@ -200,7 +200,7 @@ def getStationData(years,IDS,sodapath,latlist,lonlist,stationNames):
                     validIndex, validDis = testValidStation(cdf,dis,numberOfPoints, gridIndexes)
                     deepest              = testValidDepth(cdf,numberOfPoints, gridIndexes,grdMODEL.depth)
                     stTemp, stSalt, stSSH, stUvel, stVvel, stTauX, stTauY = initArrays(years,IDS,deepest,stationNames[station],lon,lat)
-                     
+                
                 for i in validIndex:
                     wgt=float(validDis[i])/sum(validDis)
                     latindex=int(gridIndexes[i][0])
@@ -245,9 +245,11 @@ def getStationIndices(grdObject,st_lon,st_lat,type,numberOfPoints):
     if st_lon<0: st_lon=st_lon+360.0; NEG=True
     else: NEG=False
     
-    if type=='SODA':
+    if type=='SODA' or type=='AVERAGE':
         longitude=grdObject.lon
         latitude =grdObject.lat
+        """Input longitude should go from 0-360"""
+        longitude=np.where(longitude<0,longitude+360,longitude)
     if type=='ROMS':
         longitude=grdObject.lon_rho
         latitude =grdObject.lat_rho 
