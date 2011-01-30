@@ -52,7 +52,7 @@ def VerticalInterpolation(var,array1,array2,grdROMS,grdMODEL):
             
     #if var in ['temperature','salinity']:
     #    for k in range(grdROMS.Nlevels):
-    #        plotData.contourMap(grdROMS,grdMODEL,np.squeeze(outdata[k,:,:]),k,var)
+        plotData.contourMap(grdROMS,grdMODEL,np.squeeze(outdata[34,:,:]),34,var)
         return outdata
         
         

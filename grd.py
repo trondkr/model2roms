@@ -41,6 +41,8 @@ class grdClass:
             self.grdName='NA'
         elif grdfilename=="/Users/trond/Projects/Roms/Nordic/Inputs/imr_nordic_4km.nc":
             self.grdName='Nordic'
+        elif grdfilename=="tromsN_800m_grid.nc":
+            self.grdName='Troms'
         elif grdfilename=='/Users/trond/Projects/Nathan/NoMed47_GRID_Global.nc':
             self.grdName='NA_Nathan'
         elif grdfilename=='/Users/trond/Projects/Nathan/GOM_GRID_Global.nc':
@@ -187,8 +189,8 @@ class grdClass:
             
             self.maxval=1000
             self.minDistPoints=5
-            self.maxDistHorisontal=50
-            self.maxDistVertical=50
+            self.maxDistHorisontal=40
+            self.maxDistVertical=40
             
             self.message  = None  # Used to store the date for printing to screen (IOwrite.py)
             self.time     = 0

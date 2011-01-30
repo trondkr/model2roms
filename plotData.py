@@ -33,6 +33,11 @@ def contourMap(grdROMS,grdMODEL,data,depthlevel,var):
         map = Basemap(lon_0=25,boundinglat=50,
                       resolution='l',area_thresh=100.,projection='npstere')
         levels = np.arange(-2.0, 15.0, 0.1)
+    
+    if grdROMS.grdName=='Troms':
+        map = Basemap(projection='merc',llcrnrlat=68,urcrnrlat=72,\
+            llcrnrlon=15,urcrnrlon=24,lat_ts=70,resolution='h',area_thresh=0.)
+        levels = np.arange(-2.0, 8.0, 0.25)
         
     if grdROMS.grdName=='NorthSea':
         map = Basemap(llcrnrlon=grdROMS.lon_rho[0,:].min()-15.25,
@@ -72,8 +77,8 @@ def contourMap(grdROMS,grdMODEL,data,depthlevel,var):
     map.drawcountries()
     #map.drawmapboundary()
 
-    #map.drawmeridians(np.arange(0,360,5))
-    #map.drawparallels(np.arange(0,90,5))
+    #map.drawmeridians(np.arange(0,360,1))
+    #map.drawparallels(np.arange(0,90,1))
 
     temp = np.ma.masked_values(temp,grdROMS.fill_value)
     if var=='salinity':
@@ -91,7 +96,7 @@ def contourMap(grdROMS,grdMODEL,data,depthlevel,var):
         plt.colorbar(orientation='horizontal')  
     else:
         CS1 = map.contourf(x,y,temp,levels,cmap=cm.get_cmap('jet',len(levels)-1) )#,alpha=0.5)
-
+        plt.colorbar(CS1,orientation='vertical',extend='both', shrink=0.5)
         #plt.colorbar(orientation='horizontal')     
     #CS2 = contour(x,y,temp,CS1.levels[::2],
     #                    colors = 'k',
