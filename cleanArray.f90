@@ -1,14 +1,14 @@
-        
+
 Module cleanArray
 
         implicit none
-                
+
         contains
-  
- 
- 
+
+
+
  subroutine sweep(bathymetry,sodadepth,maxpoints,FILL,KK,VV,datain,dataout,mask,II,JJ)
-       
+
             ! ------------------------------------------------------------------
             ! Program : sweep
             !
@@ -44,33 +44,33 @@ Module cleanArray
             ! import cl
             ! Zin = cl.cleanArray.sweep(Zin,Zout, maskarray,i,j,k)
             !
-            !                 (I,J+1)                                                               
-            !   |----------------O----------------|                                                                        
-            !   |                |                |                                                
-            !   |                |                |                                                  
+            !                 (I,J+1)
+            !   |----------------O----------------|
+            !   |                |                |
+            !   |                |                |
             !  (I-1,J)        X (I,J)          (I+1,J)
-            !   |                |                |   
-            !   |                |                |                                                  
-            !   |----------------O----------------|                                                  
-            !                 (I,J-1)                                           
+            !   |                |                |
+            !   |                |                |
+            !   |----------------O----------------|
+            !                 (I,J-1)
             !
             ! From each of these 6 points (5 unique) we move up and down VV points,
             ! and KK points horisontally. A maximum of "maxpoints" are stored in each direction (foundData array)
-            ! together with the distance from the missing value point (foundWeight array) 
-    
+            ! together with the distance from the missing value point (foundWeight array)
+
             ! ------------------------------------------------------------------
-          
-           
+
+
             integer maxpoints, II, JJ, KK, VV, ic, jc, jcc, icc, fill, kc, ff, total
             integer pointsHpos, pointsHneg, pointsVpos, pointsVneg, points, INCREASED, orgVV, orgKK, TRIES
 
             double precision, dimension(JJ,II) :: dataout,datain
             double precision, dimension(JJ,II) :: mask
             double precision, dimension(4,3,maxpoints)  :: foundWeight, foundData
-             
+
             double precision counter, hori, vert, sumweights, distance, sodadepth, weight
             double precision, dimension(JJ,II) :: bathymetry
-            
+
 !f2py intent(in,out,overwrite) dataout
 !f2py intent(in,overwrite) datain, mask, bathymetry
 !f2py intent(in) maxpoints, II, JJ, FILL, KK, VV, sodadepth
@@ -78,12 +78,12 @@ Module cleanArray
 !f2py intent(hide) foundWeight, foundData, sumweights, distance, weight
 !f2py intent(hide) pointsHpos, pointsHneg, pointsVpos, pointsVneg, points, INCREASED
 !f2py intent(hide) orgVV, orgKK, TRIES
-            
+
            ! print*,'---> Started cleaning of array with box size of',KK,VV
-            total   = 0    
+            total   = 0
             orgVV=VV
             orgKK=KK
-            
+
             do jc=1,JJ
                 do ic=1,II
                     TRIES=1
@@ -92,29 +92,29 @@ Module cleanArray
                     pointsVpos  = 1
                     pointsHneg  = 1
                     pointsVneg  = 1
-                    
+
                     if (abs(datain(jc,ic)) > FILL .AND. mask(jc,ic)==1 .AND. sodadepth >= -(bathymetry(jc,ic))) THEN
                         ! Have to check only grid cells that are deeper than the sodadepth. If not, we will fill in all
                         ! values toward the coast for each iteration (sodadepth >= -(bathymetry(jc,ic)))).
                         total=total+1
                         foundWeight(:,:,:)=0
                         foundData(:,:,:)=0
-                        
+
 50                      continue
 
                         do ff=-1,1,1
                         do kc=1,KK
-                        
+
                             hori=ic+kc
-                            
+
                             if (hori .LE. 1 ) then
                                 hori=1
                             else if (hori .GE. II) then
                                 hori=II
                             end if
-                         
+
                             vert=jc+ff
-                            
+
                             if (vert .LE. 1 ) then
                                 vert=1
                             else if (vert .GE. JJ) then
@@ -128,14 +128,14 @@ Module cleanArray
                                 foundWeight(1,ff+2,pointsHneg)=sqrt(((hori) - ic)**2.0 + ((vert) - jc)**2.0)
                                 pointsHneg=pointsHneg+1
                             end if
-                            
+
                             hori=ic+kc*(-1)
                             if (hori .LE. 1 ) then
                                 hori=1
                             else if (hori .GE. II) then
                                 hori=II
                             end if
-                            
+
                             if (abs(datain(vert,hori)) < FILL .AND. mask(vert,hori)==1 .AND. &
                             & foundWeight(3,ff+2,pointsHpos) .EQ. 0 .AND. pointsHpos .LE. maxpoints) THEN
                                 counter = counter + 1
@@ -145,27 +145,27 @@ Module cleanArray
                             end if
                         end do
                         end do
-                        
+
                         do ff=-1,1,1
                         do kc=1,VV
                              ! Vertically find values around problem value
-                      
+
                             vert=jc+kc
-                            
+
                             if (vert .LE. 1 ) then
                                 vert=1
                             else if (vert .GE. JJ) then
                                 vert=JJ
                             end if
-                            
+
                             hori=ic+ff
-                            
+
                              if (hori .LE. 1 ) then
                                 hori=1
                             else if (hori .GE. II) then
                                 hori=II
                             end if
-                            
+
                             if (abs(datain(vert,hori)) < FILL .AND. mask(vert,hori)==1 &
                             & .AND. foundWeight(2,ff+2, pointsVneg) .EQ. 0 .AND. pointsVneg .LE. maxpoints) THEN
                                 counter = counter + 1
@@ -173,17 +173,17 @@ Module cleanArray
                                 foundWeight(2,ff+2, pointsVneg)=sqrt(((hori) - ic)**2.0 + ((vert) - jc)**2.0)
                                 pointsVneg=pointsVneg+1
                             end if
-                       
-                       
+
+
                             vert=jc+kc*(-1)
-                            
+
                             if (vert .LE. 1 ) then
                                 vert=1
                             else if (vert .GE. JJ) then
                                 vert=JJ
                             end if
-                            
-                           
+
+
                              if (abs(datain(vert,hori)) < FILL .AND. mask(vert,hori)==1 &
                             & .AND. foundWeight(4,ff+2, pointsVpos) .EQ. 0 .AND. pointsVpos .LE. maxpoints) THEN
                                 counter = counter + 1
@@ -192,21 +192,21 @@ Module cleanArray
                                 pointsVpos=pointsVpos+1
                             end if
                         end do
-                        end do   
-                      
+                        end do
+
                         ! Assign the final value to data array using weights
                         if (counter > 0) then
-                            
+
                             distance = sum(abs(foundWeight))
                             sumweights=0.0
                             !print*,'total number of points',counter
-                            
+
                             dataout(jc,ic)=0.0
                             do kc=1,4
                             do ff=1,3
                             do points=1,maxpoints
                                 if (foundWeight(kc,ff,points) .NE. 0) then
-                                    
+
                                     if (counter > 1) then
                                         weight=((1.0-(abs(foundWeight(kc,ff,points)))/distance)/(counter-1.0)*1.0)
                                         sumweights=sumweights + ((1.0-(abs(foundWeight(kc,ff,points)))/distance)/(counter-1.0)*1.0)
@@ -215,7 +215,7 @@ Module cleanArray
                                         sumweights=sumweights + 1.0
                                     end if
                                     dataout(jc,ic) = dataout(jc,ic) + foundData(kc,ff,points)*weight
-                                    
+
                                     !print*,foundData(kc,ff,points), distance, abs(foundWeight(kc,ff,points))/distance
                                     !print*,'total',sumweights, distance, 1-(abs(foundWeight(kc,ff,points))
                                 end if
@@ -246,28 +246,16 @@ Module cleanArray
                             VV=orgVV
                             !print*,'reduced distances', jc, ic, KK, VV
                         end if
-                       
+
                     end if
-                    
-100                 continue                 
+
+100                 continue
                 end do
             end do
-           
+
             !print*,'Number of points filled', total
             ! ----
-           
+
         end subroutine sweep
-        
+
     end module cleanArray
-                            
-                            
-                            
-                            
-                            
-                            
-                            
-                            
-                            
-                            
-                            
-                            

@@ -1,11 +1,11 @@
-       
+
 Module velocity
         implicit none
-                
+
         contains
-  
+
             subroutine ubar(dat,outdat,z_w,z_wu,Nroms,II,JJ,xi_rho,eta_rho)
-            
+
             ! ----------------------------------
             ! Program : ubar
             !
@@ -15,7 +15,7 @@ Module velocity
             !
             ! USAGE: Compile this routine using Intel Fortran compiler and create
             ! a python module using the command:
-            ! f2py-64 --verbose --fcompiler=intelem -c -m barotropic barotropic.f90
+            ! f2py --verbose --fcompiler=intelem -c -m barotropic barotropic.f90
             ! or
             ! f2py --verbose --fcompiler=intelem -c -m barotropic barotropic.f90
             ! The resulting module is imported to python using:
@@ -24,7 +24,7 @@ Module velocity
             ! barotropic.ubar(dat,outdat,zr,zw,Nroms,II,JJ)
             !
             ! where: dat is the data such as temperature (3D structure (z,y,x))
-            !      
+            !
             !        outdat is a 3D output array with the correct size (Nroms,JJ,II)
             !        zr is the depth matrix for the output grid (Nroms,JJ,II)
             !        zs is the 1D SODA depth-matrix (e.g. zs=[5,10,20,30])
@@ -32,14 +32,14 @@ Module velocity
             !        JJ is the total grid points in eta direction
             !        II is the total grid points in xi direction
             ! -------------------------------------------------------------------------------------------------------
-            
+
             double precision rz2, rz1
             integer eta_rho, xi_rho, II, JJ, ic, jc, kc, kT, Nroms
             double precision, dimension(Nroms,JJ,II) :: dat
             double precision, dimension(JJ,II) :: outdat
             double precision, dimension(Nroms+1,eta_rho,xi_rho) ::  z_w
             double precision, dimension(Nroms+1,JJ,II) ::  z_wu
-            
+
 !f2py intent(in,overwrite) dat,z_w,z_wu,Nroms, JJ, II, xi_rho, eta_rho
 !f2py intent(in,out,overwrite) outdat
 !f2py intent(hide) ic,jc,kc,kT,rz1,rz2
@@ -53,7 +53,7 @@ Module velocity
                   end do
                end do
             end do
-           
+
             do jc=1,JJ
               do ic=1,II
                  outdat(jc,ic)=0.0
@@ -67,15 +67,15 @@ Module velocity
                   end if
               end do
             end do
-        
+
             end subroutine ubar
-            
+
             subroutine vbar(dat,outdat,z_w,z_wv,Nroms,II,JJ,xi_rho,eta_rho)
-            
+
             ! ----------------------------------
             ! Program : vbar
             !
-          
+
             !
             ! Trond Kristiansen, March 04 2009, bug fix 09.11.2009
             ! Rutgers University, NJ.
@@ -92,7 +92,7 @@ Module velocity
             ! barotropic.ubar(dat,bathymetry,outdat,zr,zw,Nroms,II,JJ)
             !
             ! where: dat is the data such as temperature (3D structure (z,y,x))
-            !       
+            !
             !        outdat is a 3D output array with the correct size (Nroms,JJ,II)
             !        zr is the depth matrix for the output grid (Nroms,JJ,II)
             !        zs is the 1D SODA depth-matrix (e.g. zs=[5,10,20,30])
@@ -100,18 +100,18 @@ Module velocity
             !        JJ is the total grid points in eta direction
             !        II is the total grid points in xi direction
             ! -------------------------------------------------------------------------------------------------------
-            
+
             double precision rz2, rz1
-            integer eta_rho, xi_rho, II, JJ, ic, jc, kc, kT, Nroms  
+            integer eta_rho, xi_rho, II, JJ, ic, jc, kc, kT, Nroms
             double precision, dimension(Nroms,JJ,II) :: dat
             double precision, dimension(JJ,II) :: outdat
             double precision, dimension(Nroms+1,eta_rho,xi_rho) ::    z_w
             double precision, dimension(Nroms+1,JJ,II) ::  z_wv
-            
+
 !f2py intent(in,overwrite) dat, z_w, z_wv, Nroms, JJ, II, xi_rho, eta_rho
 !f2py intent(in,out,overwrite) outdat
 !f2py intent(hide) ic,jc,kc,kT,rz1,rz2
-            
+
             print*,'--->Started vbar calculations'
             do jc=2,JJ+1
               do ic=1,II
@@ -120,25 +120,25 @@ Module velocity
                   end do
                end do
             end do
-        
+
             do jc=1,JJ
               do ic=1,II
-                 
+
                  outdat(jc,ic)=0.0
-                
+
                   do kc=1,Nroms
                         outdat(jc,ic) = outdat(jc,ic) + dat(kc,jc,ic)*abs(z_wv(kc+1,jc,ic) - z_wv(kc,jc,ic))
                   end do
-                  
+
                   if (abs(z_wv(Nroms,jc,ic)) > 0.0) then
                     outdat(jc,ic) = outdat(jc,ic)/abs(z_wv(Nroms,jc,ic))
                   else
                     outdat(jc,ic) = 0.0
                   end if
-                 
+
               end do
             end do
-        
+
             end subroutine vbar
-            
+
      end module velocity

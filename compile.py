@@ -6,44 +6,54 @@ import os
 __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
 __created__  = datetime(2009, 11, 11)
-__modified__ = datetime(2009, 11, 11)
+__modified__ = datetime(2012, 5, 31)
 __version__  = "1.0"
-__status__   = "Development"
+__status__   = "Development, 11.11.2009, 14.3.2012, 31.5.2012"
 
 def help():
-    
+
     """
     @compile This is a simple script to call for automatic compiling of all
     fortran files necessary to run the soda2roms package. This is turned on in
     main.py with the compileAll=True
+
+    Call this from command line using python compile.py
     """
-    
+
 def compileAll():
     logfile="compile.log"
     if os.path.exists(logfile): os.remove(logfile)
     log=open(logfile,'a')
     """Start the processes"""
     print "\n"
-    print "Compiling interpolation.f90 to create ==> interpolation.so"
-    proc = subprocess.Popen('f2py --verbose --fcompiler=intelem -c -m interpolation interpolation.f90',
+
+    print "Compiling barotropic.f90 to create ==> barotropic.so"
+    proc = subprocess.Popen('f2py --verbose --fcompiler=intelem -c -m barotropic barotropic.f90 --f90flags="-no-heap-arrays"',
                            shell=True, stdout=subprocess.PIPE,)
     stdout_value = proc.communicate()
     log.writelines(repr(stdout_value))
-    
-    print "Compiling cleanArray.f90 to create ==> cl.so"
-    proc = subprocess.Popen('f2py --verbose --fcompiler=intelem -c -m cl cleanArray.f90',
+
+    print "Compiling cleanArray.f90 to create ==> clean.so"
+    proc = subprocess.Popen('f2py --verbose --fcompiler=intelem -c -m clean cleanArray.f90 --f90flags="-no-heap-arrays"',
                            shell=True, stdout=subprocess.PIPE,)
     stdout_value = proc.communicate()[0]
     log.writelines(repr(stdout_value))
-    
-    print "Compiling barotropic.f90 to create ==> barotropic.so"
-    proc = subprocess.Popen('f2py --verbose --fcompiler=intelem -c -m barotropic barotropic.f90',
+
+    print "Compiling interpolation.f90 to create ==> interpolation.so"
+    proc = subprocess.Popen('f2py --verbose --fcompiler=intelem -c -m interpolation interpolation.f90 --f90flags="-no-heap-arrays"',
                            shell=True, stdout=subprocess.PIPE,)
     stdout_value = proc.communicate()[0]
     log.writelines(repr(stdout_value))
-    
+
+    print "Compiling fill.f90 to create ==> extrapolate.so"
+    proc = subprocess.Popen('f2py --verbose --fcompiler=intelem -c -m extrapolate fill.f90 --f90flags="-no-heap-arrays"',
+                           shell=True, stdout=subprocess.PIPE,)
+    stdout_value = proc.communicate()[0]
+    log.writelines(repr(stdout_value))
+
     log.close()
-   
+
     print "Compilation finished and results written to file => %s"%(logfile)
     print "\n==================================================================="
 
+compileAll()

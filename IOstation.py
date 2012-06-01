@@ -3,7 +3,7 @@ import os, sys, datetime
 import numpy as np
 import grd
 import IOverticalGrid
-import soda2roms
+#import soda2roms
 import date
 from netCDF4 import Dataset
 from netCDF4 import num2date
