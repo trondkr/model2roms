@@ -5,9 +5,9 @@ import sys
 __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
 __created__  = datetime(2010, 1, 7)
-__modified__ = datetime(2010, 1, 7)
+__modified__ = datetime(2013, 7, 1)
 __version__  = "0.1"
-__status__   = "Development, modified on 07.01.2010"
+__status__   = "Development, modified on 07.01.2010, 01.07.2013"
 
 def findSubsetIndices(grdMODEL,min_lat,max_lat,min_lon,max_lon):
    
@@ -26,7 +26,7 @@ def findSubsetIndices(grdMODEL,min_lat,max_lat,min_lon,max_lon):
     Returns: list of indices, boolean value that is True of splitting occurs (crosses 0 long)
     Indices are returned so that the Westernomst comes first
     
-    Trond Kristiansen, 22.07.2009, 08.01.2010
+    Trond Kristiansen, 22.07.2009, 08.01.2010, 01.07.2013
     """
     if min_lon<0 and max_lon>0:
         splitExtract = True;  Turns=2
@@ -106,8 +106,8 @@ def checkDomain(grdMODEL,grdROMS):
         latCHECK=True
         
     print "\n--------------------------"
-    print "---> Area output: (longitude=%3.2f,latitude=%3.2f) to (longitude=%3.2f,latitude=%3.2f)"%(grdROMS.lon_rho.min(),grdROMS.lat_rho.min(),grdROMS.lon_rho.max(),grdROMS.lat_rho.max())
-    print "---> Area input : (longitude=%3.2f,latitude=%3.2f) to (longitude=%3.2f,latitude=%3.2f)"%(grdMODEL.lon.min(),grdMODEL.lat.min(),grdMODEL.lon.max(),grdMODEL.lat.max())
+    print "---> Area output files  : (longitude=%3.2f,latitude=%3.2f) to (longitude=%3.2f,latitude=%3.2f)"%(grdROMS.lon_rho.min(),grdROMS.lat_rho.min(),grdROMS.lon_rho.max(),grdROMS.lat_rho.max())
+    print "---> Area forcing files : (longitude=%3.2f,latitude=%3.2f) to (longitude=%3.2f,latitude=%3.2f)"%(grdMODEL.lon.min(),grdMODEL.lat.min(),grdMODEL.lon.max(),grdMODEL.lat.max())
         
     if latCHECK is True and lonCHECK is True:
         print "Domain check passed: Input domain data covers output domain" 

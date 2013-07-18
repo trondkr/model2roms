@@ -16,7 +16,7 @@ def get_z_levels(self):
     """
     Get a list of all the variables contained in netCDF file "filename"
     """
-    if self.type=='SODA' or self.type=='SODAMONTHLY':
+    if self.type in ['SODA','SODAMONTHLY','GLORYS2V1']:
             self.z_r=-self.depth
     if self.type=='HYCOM':
             self.z_r=-self.depth
@@ -60,7 +60,10 @@ def calculate_z_w(self):
                 Cs_w[k]=(1-self.theta_b)*Ptheta+self.theta_b*Rtheta
             else:
                 Cs_w[k]=sc_w[k]
-
+            
+            if k==0:
+                Cs_w[k]=0
+            
         if self.vstretching==2:
             """
             A. Shchepetkin new vertical stretching function.
@@ -91,10 +94,11 @@ def calculate_z_w(self):
     for k in xrange(len(sc_w)):
         if self.vstretching==1:
             z_w[k,:,:] =np.multiply(sc_w[k],hc) + np.subtract(h,hc)*Cs_w[k]
-
+           
+            
         if self.vstretching==2:
             z_w[k,:,:] =np.multiply(sc_w[k],hc) + np.subtract(h,hc)*Cs_w[k]
-
+    
     self.z_w = z_w * self.mask_rho
     self.Cs_w=Cs_w
     self.s_w=sc_w
@@ -116,8 +120,7 @@ def calculate_z_r(self):
     h =self.depth
 
     hc=h.min() #np.min(h.min(),self.Tcline)
-    cff=1.0/float(self.Nlevels)
-
+    
     for k in xrange(self.Nlevels):
         """
         Original vertical strectching function, Song and Haidvogel (1994).
@@ -126,16 +129,19 @@ def calculate_z_r(self):
 
              b * [-0.5 + 0.5 * TANH(a * (s + 0.5)) / TANH(0.5 * a)]
         """
-        sc_r[k]=-1.0+(self.Nlevels-k-0.5)*cff
-
+        sc_r[k]=-1.0+(self.Nlevels-k-0.5)/self.Nlevels
+        
         if self.vstretching==1:
             Ptheta=np.sinh(self.theta_s*sc_r[k])/np.sinh(self.theta_s)
-            Rtheta=np.tanh(self.theta_s*(sc_r[k]+0.5))/(2.0*np.tanh(0.5*self.theta_s))-0.5
+            Rtheta=(np.tanh(self.theta_s*(sc_r[k]+0.5))/(2.0*np.tanh(0.5*self.theta_s)))-0.5
 
             if self.theta_s != 0.0:
                 Cs_r[k]=(1-self.theta_b)*Ptheta+self.theta_b*Rtheta
             else:
                 Cs_r[k]=sc_r[k]
+                
+            if k==0:
+                Cs_r[k]=0
 
         if self.vstretching==2:
             """
@@ -169,7 +175,7 @@ def calculate_z_r(self):
     for k in xrange(len(sc_r)):
         if self.vstretching==1:
             z_r[k,:,:] =np.multiply(sc_r[k],hc) + np.subtract(h,hc)*Cs_r[k]
-
+        
         if self.vstretching==2:
             z_r[k,:,:] =np.multiply(sc_r[k],hc) + np.subtract(h,hc)*Cs_r[k]
 

@@ -1,17 +1,14 @@
-
 import os, sys, time
 from datetime import datetime
 import soda2roms, IOstation
 import clim2bry, DecimateGrid
 import grd
 import numpy as np
-import ncarRiver
-#import ncarSSS
 
 __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
 __created__  = datetime(2009, 1,30)
-__modified__ = datetime(2009,11,13)
+__modified__ = datetime(2013,1,7)
 __version__  = "1.3"
 __status__   = "Development"
 
@@ -56,18 +53,18 @@ def main():
     type='HYCOM'
     type='SODA'
     type='SODAMONTHLY'
-
+    type='GLORYS2V1'
+    
     """Define the paths to the CORE data (only river file)"""
     corepath="/Users/trond/Projects/arcwarm/CORE/"
 
     """Define the paths to the SODA/HYCOM data"""
     if type=='SODA':
-        sodapath="/Volumes/HankRaid/SODA/"
         sodapath="/Volumes/MacintoshHD2/Datasets/SODA/"
     if type=='SODAMONTHLY':
         sodapath="/Volumes/MacintoshHD2/Datasets/SODAMonthly/"
-       # sodapath="/Users/trond/Projects/arcwarm/SODAmonthly/"
-       # sodapath="/Users/trond/Projects/arcwarm/SODAmonthly/"
+    if type=='GLORYS2V1':
+        sodapath="/Volumes/MacintoshHD2/Datasets/GLOBAL_REANALYSIS_PHYS_001_009/"
     if type=='HYCOM':
         hycompath="/Users/trond/Projects/arcwarm/SODA/HYCOM/"
 
@@ -75,17 +72,13 @@ def main():
     #romsgridpath="/Volumes/HankRaid/ROMS/GoM/grid/gom_grd.nc"
     #romsgridpath="/Users/trond/Projects/Roms/GOMfull/Inputs/gom_grd11022010.nc"
     romsgridpath="/Users/trond/Projects/Roms/GOMfull/SmoothTopo/gom_grdSmoothed.nc"
-    romsgridpath="/Users/trond/Projects/is4dvar/NS8km/nordsjoen_8km_grid.nc"
+    romsgridpath="/Users/trond/Projects/is4dvar/NS8km/nordsjoen_8km_grid_hmax20m_v3.nc"
     #romsgridpath="tromsN_800m_grid.nc"
     #romsgridpath="/Users/trond/Projects/Roms/GOMsmall/Inputs/gom_grd_small.nc"
     #romsgridpath="/Users/trond/Projects/Roms/GOMsmall/Inputs/ns8_grd.nc"
-    # CONTAINS NAN romsgridpath="/Users/trond/Projects/Roms/GOMfull/Inputs/gom_grd.nc"
-    #romsgridpath="/Users/trond/Projects/Roms/Nordic/Inputs/imr_nordic_4km.nc"
-    #romsgridpath="/Users/trond/Projects/Roms/Nordic/Inputs/imr_nordic_8km.nc"
-    #romsgridpath="/Users/trond/Projects/Roms/Julia/NATLC/Data/natl_40km.nc"
-
-    start_year      =1989
-    end_year        =1993
+   
+    start_year      =1996
+    end_year        =1998
     start_julianday =0
     end_julianday   =365
 
@@ -95,16 +88,16 @@ def main():
     subset=np.zeros(4); subset[0]=minLat; subset[1]=maxLat; subset[2]=minLon; subset[3]=maxLon
 
     """Name of output files for CLIM, BRY, and INIT files"""
-    climName='nordsjoen_8km_clim_'+str(start_year)+'.nc'
-    initName='nordsjoen_8km_init_'+str(start_year)+'.nc'
-    bryName='nordsjoen_8km_bry_'+str(start_year)+'.nc'
+    climName='nordsjoen_8km_clim_'+str(type)+'_'+str(start_year)+'_to_'+str(end_year)+'.nc'
+    initName='nordsjoen_8km_init_'+str(type)+'_'+str(start_year)+'_to_'+str(end_year)+'.nc'
+    bryName='nordsjoen_8km_bry_'+str(type)+'_'+str(start_year)+'_to_'+str(end_year)+'.nc'
 
     """Define what variables to include in the forcing files"""
     vars=['temperature','salinity','ssh','uvel','vvel']
-   # vars=['salinity']
+  
     """5 day or 30 day average files for SODA"""
     if type=='SODA': aveDays=5.0
-    if type=='SODAMONTHLY': aveDays=30.0
+    if type in ['SODAMONTHLY','GLORYS2V1']: aveDays=30.0
 
     """Define a set of longitude/latitude positions with names to extract into
     station files (using extractStations)"""
@@ -141,7 +134,7 @@ def main():
 
         showInfo(vars,romsgridpath,climName,initName,bryName,start_year,end_year,start_julianday,end_julianday)
 
-        if type=='SODA' or type=='SODAMONTHLY':
+        if type in ['SODA','SODAMONTHLY','GLORYS2V1']:
             soda2roms.convertMODEL2ROMS(years,IDS,climName,initName,sodapath,romsgridpath,vars,show_progress,type,subset)
         elif type=='HYCOM':
             soda2roms.convertMODEL2ROMS([1],[1,2,3],climName,initName,hycompath,romsgridpath,vars,show_progress,type,subset)

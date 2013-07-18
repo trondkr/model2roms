@@ -15,7 +15,7 @@ import IOverticalGrid
 __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
 __created__  = datetime(2008, 12, 9)
-__modified__ = datetime(2009, 3, 10)
+__modified__ = datetime(2013, 7, 1)
 __version__  = "1.1"
 __status__   = "Development"
 
@@ -53,7 +53,7 @@ class grdClass:
             self.grdName='NorthSea'
         elif grdfilename=='/Users/trond/Projects/Roms/Julia/NATLC/Data/natl_40km.nc':
             self.grdName='NATL'
-        elif grdfilename=='/Users/trond/Projects/is4dvar/NS8km/nordsjoen_8km_grid.nc':
+        elif grdfilename=='/Users/trond/Projects/is4dvar/NS8km/nordsjoen_8km_grid_hmax20m_v3.nc':
             self.grdName="NorthSea"
 
         else:
@@ -124,7 +124,23 @@ class grdClass:
                     self.lon, self.lat = np.meshgrid(self.lon,self.lat)
 
             IOverticalGrid.get_z_levels(self)
+            
+        if self.type=='GLORYS2V1':
+            #Native grid GLORYS2V1 monthly average
+            self.grdType  = 'regular'
+            print '---> Assuming %s grid type for %s'%(self.grdType,self.type)
+            self.lon = self.cdf.variables["lon"][:]
+            self.lat = self.cdf.variables["lat"][:]
+            #NOTE spelling error for depth in netcdf files
+            self.depth = self.cdf.variables["deptht"][:]
+            self.Nlevels = len(self.depth)
+            self.fill_value=-32767
 
+            if np.rank(self.lon)==1:
+                    self.lon, self.lat = np.meshgrid(self.lon,self.lat)
+
+            IOverticalGrid.get_z_levels(self)
+            
         if self.type=='HYCOM':
             self.grdType  = 'regular'
             print '---> Assuming %s grid type for %s'%(self.grdType,self.type)
@@ -185,8 +201,8 @@ class grdClass:
             self.Nlevels=35
             self.theta_s=5.0
             self.theta_b=0.4
-            self.Tcline=10.0
-            self.hc=10.0
+            self.Tcline=20.0
+            self.hc=20.0
             self.vars=[]
 
             """Set initTime to 1 if you dont want the first timestep to be
@@ -214,16 +230,6 @@ class grdClass:
             self.depth    = self.cdf.variables["h"][:,:]
 
             self.mask_rho = self.cdf.variables["mask_rho"][:,:]
-            # Nathan fixes
-            # Need to convert all longitude values in grid that are less than 360 and larger than 180 to negative values.
-            #self.lon_rho=self.lon_rho-360
-            # Cannot have undefined values in depth matrix. This messes up the z_r calculautions. Therefore,
-            # convert all depth values that are not valid (e.g. >10000 m) to 0 and set the shallowest depth to self.hc.
-            # Do this in the gird file and remove from here.
-
-            #self.depth[:,:]=np.where(self.depth[:,:]>9000,self.hc,self.depth[:,:])
-            #self.depth[:,:]=np.where(self.depth[:,:]<self.hc,self.hc,self.depth[:,:])
-
 
             self.lon_u  = self.cdf.variables["lon_u"][:,:]
             self.lat_u  = self.cdf.variables["lat_u"][:,:]
@@ -276,7 +282,7 @@ class grdClass:
         if self.type=="ROMS":
             self.Lp=len(self.lat_rho[1,:])
             self.Mp=len(self.lat_rho[:,1])
-        if self.type=="SODA" or self.type=='SODAMONTHLY' or self.type=='AVERAGE':
+        if self.type=="SODA" or self.type=='SODAMONTHLY' or self.type=='AVERAGE' or self.type=="GLORYS2V1":
             self.Lp=len(self.lat[1,:])
             self.Mp=len(self.lat[:,1])
         if self.type=="HYCOM":

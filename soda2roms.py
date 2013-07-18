@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 from netCDF4 import num2date, date2num
 import interpolation as interp
 import IOwrite
-import plotData
 
 import date
 import grd
@@ -50,7 +49,7 @@ def VerticalInterpolation(var,array1,array2,grdROMS,grdMODEL):
                                                        int(grdROMS.eta_rho))
 
 
-    #    for k in range(grdROMS.Nlevels):
+        #for k in range(grdROMS.Nlevels):
         plotData.contourMap(grdROMS,grdMODEL,np.squeeze(outdata[34,:,:]),34,var)
 
         return outdata
@@ -104,7 +103,7 @@ def VerticalInterpolation(var,array1,array2,grdROMS,grdMODEL):
                                                 grdROMS.xi_rho,
                                                 grdROMS.eta_rho)
 
-       # plotData.contourMap(grdROMS,grdMODEL,outdataUBAR,"1","ubar")
+        plotData.contourMap(grdROMS,grdMODEL,outdataUBAR,"1","ubar")
 
 
         outdataVBAR  = barotropic.velocity.vbar(np.asarray(outdataV,order='Fortran'),
@@ -117,7 +116,7 @@ def VerticalInterpolation(var,array1,array2,grdROMS,grdMODEL):
                                                 grdROMS.xi_rho,
                                                 grdROMS.eta_rho)
 
-        #plotData.contourMap(grdROMS,grdMODEL,outdataVBAR,"1","vbar")
+        plotData.contourMap(grdROMS,grdMODEL,outdataVBAR,"1","vbar")
 
         return outdataU,outdataV,outdataUBAR,outdataVBAR
 
@@ -275,14 +274,45 @@ def getTime(cdf,grdROMS,grdMODEL,year,ID,type):
         grdROMS.reftime=jdref
 
         print '\nCurrent time of SODAMONTHLY file : %s/%s/%s'%(soda_date.year,soda_date.month,soda_date.day)
+    
+    if type=='GLORYS2V1':
+        """
+        Find the day and month that the SODAMONTHLY file respresents based on the year and ID number.
+        Each SODA file represents a 1 month average.
+        """
+        month=ID
+        day=15
 
+        glorys_date = date.Date()
+        glorys_date.day=day
+        glorys_date.month=month
+        glorys_date.year=year
+        jdglorys=glorys_date.ToJDNumber()
+
+        grdROMS.time=(jdglorys-jdref)
+        grdROMS.reftime=jdref
+
+        print '\nCurrent time of GLORYS2V1 file : %s/%s/%s'%(glorys_date.year,glorys_date.month,glorys_date.day)
+
+def getGLORYS2V1filename(year,ID,myvar,dataPath):
+    # Month indicates month
+    # myvar:S,T,U,V
+    if ID <  10: filename=dataPath+'global-reanalysis-phys-001-009-ran-fr-glorys2-grid'+str(myvar.lower())+'/REGRID/GLORYS2V1_ORCA025_'+str(year)+'0'+str(ID)+'15_R20110216_grid'+str(myvar.upper())+'_regrid.nc'
+    if ID >= 10: filename=dataPath+'global-reanalysis-phys-001-009-ran-fr-glorys2-grid'+str(myvar.lower())+'/REGRID/GLORYS2V1_ORCA025_'+str(year)+str(ID)+'15_R20110216_grid'+str(myvar.upper())+'_regrid.nc'
+    print filename
+    return filename      
+          
 def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,show_progress,type,subset):
 
     if type=='SODA':
         fileNameIn=dataPath+'SODA_2.0.2_'+str(years[0])+'_'+str(IDS[0])+'.cdf'
     if type=='SODAMONTHLY':
         fileNameIn=dataPath+'SODA_2.0.2_'+str(years[0])+'0'+str(IDS[0])+'.cdf'
-
+    
+    if type=='GLORYS2V1':
+        """First opening of input file is just for initialization of grid"""
+        fileNameIn=dataPath+'global-reanalysis-phys-001-009-ran-fr-glorys2-grids/REGRID/GLORYS2V1_ORCA025_'+str(years[0])+'0115_R20110216_gridS_regrid.nc'
+        print fileNameIn
     if type=='HYCOM':
        fileNameIn=dataPath+'archv.2003_307_00_3zt.nc'
 
@@ -297,18 +327,8 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
 
     """Now we want to subset the data to avoid storing more information than we need.
     We do this by finding the indices of maximum and minimum latitude and longitude in the matrixes"""
-    if type=='SODA' or type=='SODAMONTHLY':
+    if type=='SODA' or type=='SODAMONTHLY' or type=="GLORYS2V1":
         IOsubset.findSubsetIndices(grdMODEL,min_lat=subset[0], max_lat=subset[1], min_lon=subset[2], max_lon=subset[3])
-
-    if type=='HYCOM':
-        grdMODEL.minJ=1900
-        grdMODEL.maxJ=2400
-        grdMODEL.minI=2575
-        grdMODEL.maxI=2875
-
-
-    #grdMODEL.lat=grdMODEL.lat[int(grdMODEL.indices[0,2]):int(grdMODEL.indices[0,3]),int(grdMODEL.indices[0,0]):int(grdMODEL.indices[0,1])]
-    #grdMODEL.lon=grdMODEL.lon[int(grdMODEL.indices[0,2]):int(grdMODEL.indices[0,3]),int(grdMODEL.indices[0,0]):int(grdMODEL.indices[0,1])]
 
     print 'Initializing done'
     print '\n--------------------------'
@@ -325,25 +345,33 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
                 varNames=['TEMP','SALT','SSH','U','V']
 
             if type=='SODAMONTHLY':
-                if ID <  10: filename=dataPath+'SODA_2.0.2_'+str(years[0])+'0'+str(ID)+'.cdf'
-                if ID >= 10: filename=dataPath+'SODA_2.0.2_'+str(years[0])+str(ID)+'.cdf'
+                if ID <  10: filename=dataPath+'SODA_2.0.2_'+str(year)+'0'+str(ID)+'.cdf'
+                if ID >= 10: filename=dataPath+'SODA_2.0.2_'+str(year)+str(ID)+'.cdf'
                 varNames=['temp','salt','ssh','u','v']
+
+            if type=='GLORYS2V1':
+                filename=getGLORYS2V1filename(year,ID,"S",dataPath)
+                varNames=['votemper','vosaline','sossheig','vozocrtx','vomecrty']
+             
 
             if type=='HYCOM':
                 filename=dataPath+'archv.2003_307_00_3zt.nc'
-                varNames=['temperature','salinity','SSH','U','V'] # NATHAN FIXME; give correct name of hycom variables
+                varNames=['temperature','salinity','SSH','U','V'] 
 
             """Now open the input file"""
             cdf = Dataset(filename)
-
+                
             getTime(cdf,grdROMS,grdMODEL,year,ID,type)
 
             """Each MODEL file consist only of one time step. Get the subset data selected, and
             store that time step in a new array:"""
 
             if firstRun is True:
+                print "NOTICE!!: Make sure that these two arrays are in sequential order:"
+                print "vars:     %s"%(vars)
+                print "varnames: %s\n"%(varNames)
                 firstRun = False
-                if type=='SODA' or type=='SODAMONTHLY':
+                if type=='SODA' or type=='SODAMONTHLY' or type=="GLORYS2V1":
                     """The first iteration we want to organize the subset indices we want to extract
                     from the input data to get the interpolation correct and to function fast"""
                     IOsubset.organizeSplit(grdMODEL,grdROMS,type,varNames,cdf)
@@ -370,6 +398,9 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
                     if var=='uvel':        varN=3; Udata = np.zeros((indexROMS_S_U),dtype=np.float64)
                     if var=='vvel':        varN=4; Vdata = np.zeros((indexROMS_S_V),dtype=np.float64)
 
+    
+                    """The variable splitExtract is defined in IOsubset.py and depends on the orientation
+                    and type of grid (-180-180 or 0-360). Assumes regular grid."""
                     if grdMODEL.splitExtract is True:
                         if type=="SODA":
                             data1 = cdf.variables[varNames[varN]][0,:,
@@ -383,6 +414,20 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
                                                     int(grdMODEL.indices[0,0]):int(grdMODEL.indices[0,1])]
                             data2 = cdf.variables[str(varNames[varN])][:,int(grdMODEL.indices[1,2]):int(grdMODEL.indices[1,3]),
                                                     int(grdMODEL.indices[1,0]):int(grdMODEL.indices[1,1])]
+                            
+                        if type=="GLORYS2V1":
+                            if var=='temperature': cdf=Dataset(getGLORYS2V1filename(year,ID,'T',dataPath))
+                            if var=='salinity': cdf=Dataset(getGLORYS2V1filename(year,ID,'S',dataPath))
+                            if var=='uvel': cdf=Dataset(getGLORYS2V1filename(year,ID,'U',dataPath))
+                            if var=='vvel': cdf=Dataset(getGLORYS2V1filename(year,ID,'V',dataPath))
+                            
+                            data1 = np.squeeze(cdf.variables[str(varNames[varN])][0,:,int(grdMODEL.indices[0,2]):int(grdMODEL.indices[0,3]),
+                                                    int(grdMODEL.indices[0,0]):int(grdMODEL.indices[0,1])])
+                            data2 = np.squeeze(cdf.variables[str(varNames[varN])][0,:,int(grdMODEL.indices[1,2]):int(grdMODEL.indices[1,3]),
+                                                    int(grdMODEL.indices[1,0]):int(grdMODEL.indices[1,1])])
+                            
+                            cdf.close()
+                            
                         data = np.concatenate((data1,data2),axis=2)
 
                     else:
@@ -393,7 +438,19 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
                         if type=="SODAMONTHLY":
                             data = cdf.variables[str(varNames[varN])][:,int(grdMODEL.indices[0,2]):int(grdMODEL.indices[0,3]),
                                                     int(grdMODEL.indices[0,0]):int(grdMODEL.indices[0,1])]
-
+                            
+                        if type=="GLORYS2V1":
+                            if var=='temperature': cdf=Dataset(getGLORYS2V1filename(year,ID,'T',dataPath))
+                            if var=='salinity': cdf=Dataset(getGLORYS2V1filename(year,ID,'S',dataPath))
+                            if var=='uvel': cdf=Dataset(getGLORYS2V1filename(year,ID,'U',dataPath))
+                            if var=='vvel': cdf=Dataset(getGLORYS2V1filename(year,ID,'V',dataPath))
+                            
+                            data = np.squeeze(cdf.variables[str(varNames[varN])][0,:,int(grdMODEL.indices[0,2]):int(grdMODEL.indices[0,3]),
+                                                    int(grdMODEL.indices[0,0]):int(grdMODEL.indices[0,1])])
+                            
+                            
+                            cdf.close()
+                
                 if time==0 and var==vars[0]:
                     tmp=np.squeeze(data[0,:,:])
                     grdMODEL.mask = np.zeros((grdMODEL.lon.shape),dtype=np.float64)
@@ -403,6 +460,7 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
                 """2D varibles"""
                 if var=='ssh':
                     varN=2
+                    print "TEST",var
                     SSHdata = np.zeros((indexROMS_SSH),dtype=np.float64)
                     if grdMODEL.splitExtract is True:
                         if type=="SODA":
@@ -417,6 +475,17 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
                                                     int(grdMODEL.indices[0,0]):int(grdMODEL.indices[0,1])]
                             data2 = cdf.variables[str(varNames[varN])][int(grdMODEL.indices[1,2]):int(grdMODEL.indices[1,3]),
                                                     int(grdMODEL.indices[1,0]):int(grdMODEL.indices[1,1])]
+                            
+                        if type=="GLORYS2V1":
+                            cdf=Dataset(getGLORYS2V1filename(year,ID,'T',dataPath))
+                           
+                            data1 = np.squeeze(cdf.variables[str(varNames[varN])][0,int(grdMODEL.indices[0,2]):int(grdMODEL.indices[0,3]),
+                                                    int(grdMODEL.indices[0,0]):int(grdMODEL.indices[0,1])])
+                            data2 = np.squeeze(cdf.variables[str(varNames[varN])][0,int(grdMODEL.indices[1,2]):int(grdMODEL.indices[1,3]),
+                                                    int(grdMODEL.indices[1,0]):int(grdMODEL.indices[1,1])])
+                            
+                            cdf.close()
+                            
                         data = np.concatenate((data1,data2),axis=1)
 
                     else:
@@ -428,18 +497,33 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
                             data = cdf.variables[str(varNames[varN])][int(grdMODEL.indices[0,2]):int(grdMODEL.indices[0,3]),
                                                     int(grdMODEL.indices[0,0]):int(grdMODEL.indices[0,1])]
 
+                        if type=="GLORYS2V1":
+                            cdf=Dataset(getGLORYS2V1filename(year,ID,'T',dataPath))
+    
+                            data = np.squeeze(cdf.variables[str(varNames[varN])][0,int(grdMODEL.indices[0,2]):int(grdMODEL.indices[0,3]),
+                                                    int(grdMODEL.indices[0,0]):int(grdMODEL.indices[0,1])])
+                            
+                            cdf.close()
+                if type=="GLORYS2V1":
+                    
+                    data=np.where(data<=-32.7,grdROMS.fill_value,data)
+                    data=np.ma.masked_where(data<=grdROMS.fill_value,data)
+                    
                 """Take the input data and horizontally interpolate to your grid."""
                 array1 = HorizontalInterpolation(var,grdROMS,grdMODEL,data,show_progress)
-
+                   
                 if var in ['temperature','salinity']:
                     STdata = VerticalInterpolation(var,array1,array1,grdROMS,grdMODEL)
-
+                    print "Data range of %s after interpolation: %3.3f to %3.3f"%(varNames[varN],STdata.min(),STdata.max())
+               
                     IOwrite.writeClimFile(grdROMS,time,climName,var,STdata)
                     if time==grdROMS.initTime and grdROMS.write_init is True:
                         IOinitial.createInitFile(grdROMS,time,initName,var,STdata)
 
                 if var=='ssh':
                     SSHdata=array1[0,:,:]
+                    print "Data range of %s after interpolation: %3.3f to %3.3f"%(varNames[varN],SSHdata.min(),SSHdata.max())
+               
                     IOwrite.writeClimFile(grdROMS,time,climName,var,SSHdata)
                     if time==grdROMS.initTime:
                         IOinitial.createInitFile(grdROMS,time,initName,var,SSHdata)
@@ -459,12 +543,14 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
                     Udata,Vdata,UBARdata,VBARdata = VerticalInterpolation(var,u,v,grdROMS,grdMODEL)
 
                 if var=='vvel':
+                    print "Data range of U after interpolation: %3.3f to %3.3f - V after scaling: %3.3f to %3.3f"%(Udata.min(),Udata.max(),Vdata.min(),Vdata.max())
+               
                     IOwrite.writeClimFile(grdROMS,time,climName,var,Udata,Vdata,UBARdata,VBARdata)
                     if time==grdROMS.initTime:
                         """We print time=initTime to init file so that we have values for ubar and vbar (not present at time=1)"""
                         IOinitial.createInitFile(grdROMS,time,initName,var,Udata,Vdata,UBARdata,VBARdata)
-
-            cdf.close()
+            if type!='GLORYS2V1':
+                cdf.close()
             if show_progress is True:
                 from progressBar import progressBar
                 # find unicode characters here: http://en.wikipedia.org/wiki/List_of_Unicode_characters#Block_elements
@@ -476,5 +562,5 @@ def convertMODEL2ROMS(years,IDS,climName,initName,dataPath,romsgridpath,vars,sho
                 progress.render(100,message)
             else:
                 message='Finished conversions for time %s'%(grdROMS.message)
-                print message
+                
             time+=1

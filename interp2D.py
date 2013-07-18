@@ -64,26 +64,13 @@ def doHorInterpolationRegularGrid(var,grdROMS,grdMODEL,data,show_progress):
                                int(grdROMS.xi_rho),
                                int(grdROMS.eta_rho))
 
-    #    Zin=Zg
-   #     Zin = clean.cleanarray.sweep(np.asarray(grdROMS.depth,order='Fortran'),
-   #                               float(grdMODEL.z_r[k]),
-   #                               int(grdROMS.minDistPoints),
-   #                               int(grdROMS.maxval),
-   #                               int(grdROMS.maxDistHorisontal),
-   #                               int(grdROMS.maxDistVertical),
-   #                               np.asarray(Zg,order='Fortran'),
-   #                               np.asarray(Zin,order='Fortran'),
-   #                               np.asarray(grdROMS.mask_rho,order='Fortran'),
-   #                               int(grdROMS.xi_rho),
-   #                               int(grdROMS.eta_rho))
-
+   
         field=field*grdROMS.mask_rho
 
         array1[k,:,:]=field
-
-     #   plotData.contourMap(grdROMS,grdMODEL,field,k,var)
-     #   plotData.contourMap(grdROMS,grdMODEL,Zg,"test",var)
-
+       # if k==grdMODEL.Nlevels-1:
+       #     plotData.contourMap(grdROMS,grdMODEL,field,k,var)
+    
         if show_progress is True:
             p=int( ((k+1*1.0)/(1.0*grdMODEL.Nlevels))*100.)
 
@@ -133,6 +120,7 @@ def doHorInterpolationSSHRegularGrid(var,grdROMS,grdMODEL,data):
 
     field=field*grdROMS.mask_rho
     array1[0,:,:]=field
+    
     #plotData.contourMap(grdROMS,grdMODEL,np.squeeze(array1[0,:,:]),1,var)
 
     return array1

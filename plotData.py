@@ -44,7 +44,7 @@ def contourMap(grdROMS,grdMODEL,data,depthlevel,var):
                       llcrnrlat=43.5,
                       urcrnrlon=32.5,
                       urcrnrlat=67.7,
-                      resolution='l',projection='tmerc',lon_0=0,lat_0=50,area_thresh=200.)
+                      resolution='i',projection='tmerc',lon_0=0,lat_0=50,area_thresh=20.)
         levels = np.arange(-2.0, 20.0, 0.5)
 
     if grdROMS.grdName=='NA':
@@ -56,19 +56,6 @@ def contourMap(grdROMS,grdMODEL,data,depthlevel,var):
         map = Basemap(lon_0=2,boundinglat=0,
                 resolution='l',area_thresh=2000.,projection='npstere')
         levels = np.arange(-2.0, 30.0, 0.5)
-
-    if grdROMS.grdName=='NA_Nathan':
-        map = Basemap(lon_0=25,boundinglat=0,
-                resolution='l',area_thresh=2000.,projection='npstere')
-        levels = np.arange(2.0, 32.0, 0.5)
-
-    if grdROMS.grdName=='GOM_Nathan':
-        map = Basemap(llcrnrlon=grdROMS.lon_rho[0,:].min()-0.25,
-                      llcrnrlat=grdROMS.lat_rho[:,0].min()-2.25,
-                      urcrnrlon=grdROMS.lon_rho[0,:].max()+5.25,
-                      urcrnrlat=grdROMS.lat_rho[:,0].max()+0.25,
-                      resolution='i',projection='tmerc',lon_0=-80,lat_0=0,area_thresh=10.)
-        levels = np.arange(2.0, 40.0, 0.5)
 
     x, y = map(tlon,tlat)
 
@@ -101,8 +88,7 @@ def contourMap(grdROMS,grdMODEL,data,depthlevel,var):
     #CS2 = contour(x,y,temp,CS1.levels[::2],
     #                    colors = 'k',
     #                    hold='on')
-
-
+   
     plt.title('Var:%s - depth:%s - time:%s'%(var,depthlevel,grdROMS.time))
     plotfile='figures/'+str(var)+'_depth_fill90_'+str(depthlevel)+'_time_'+str(grdROMS.time)+'.png'
     plt.savefig(plotfile)
