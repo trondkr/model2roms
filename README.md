@@ -7,15 +7,18 @@ grid structure.
 
 <h2>Background</h2>
 
-For the last year I have been working on this toolbox that I used to call soda2roms, but which is now 
-renamed to model2roms as it has become more generic over the years. This program is a collection of python 
+For the last few years I have been working on this toolbox model2roms. This toolbox is a collection of Python
 and Fortran modules that can be used to create climatology (CLIM), initial (INIT), and boundary (BRY) files 
-necessary to run the ROMS model. Currently, the program takes rectangular gridded forcing filesinput at 
-Z-levels. These data are interpolated to the ROMS grid at Z-levels. Then the Z-levels are interpolated 
-vertically to the sigma layers. For U, and V velocities, the interpolation is done at RHO points, and then 
-interpolated to U and V points. All interpolated values are written to netCDF4 files, where the result is one 
-file for each CLIM, INIT, and BRY files. UBAR and VBAR are calculated from U and V. Time is stored as julian 
-day from 01/01/1948 (see soda2roms.py).
+necessary to run the <a href="www.myroms.org">ROMS</a> model. Currently, the program takes rectangular gridded
+forcing files at Z-levels as input. These data are first interpolated to the ROMS grid at Z-levels.
+Next the Z-levels are interpolated vertically to the sigma layers
+(<a href="https://www.myroms.org/wiki/index.php/Vertical_S-coordinate">S-coordinates</a>.
+For U and V velocities, the interpolation is done at RHO points, and then
+interpolated to U and V points ((eta_u,xi_u), and (eta_v, xi_v)).
+All interpolated values are written to netCDF4 files using compression (zlib) to minimize file size. The result of
+running model2roms is one file for each CLIM, INIT, and BRY files.
+UBAR and VBAR (barotropic flow) are calculated from U and V velocities. Time is stored as julian
+day from 01/01/1948 (see model2roms.py). Make sure to edit the main.py file before you run the toolbox using:
 
 ```html
 python main.py
