@@ -12,7 +12,7 @@ and Fortran modules that can be used to create climatology (CLIM), initial (INIT
 necessary to run the <a href="www.myroms.org">ROMS</a> model. Currently, the program takes rectangular gridded
 forcing files at Z-levels as input. These data are first interpolated to the ROMS grid at Z-levels.
 Next the Z-levels are interpolated vertically to the sigma layers
-(<a href="https://www.myroms.org/wiki/index.php/Vertical_S-coordinate">S-coordinates</a>.
+(<a href="https://www.myroms.org/wiki/index.php/Vertical_S-coordinate">S-coordinates</a>).
 For U and V velocities, the interpolation is done at RHO points, and then
 interpolated to U and V points ((eta_u,xi_u), and (eta_v, xi_v)).
 All interpolated values are written to netCDF4 files using compression (zlib) to minimize file size. The result of
