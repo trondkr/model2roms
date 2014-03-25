@@ -18,18 +18,7 @@ file for each CLIM, INIT, and BRY files. UBAR and VBAR are calculated from U and
 day from 01/01/1948 (see soda2roms.py).
 
 ```html
-<h2>Run the program</h2>
-
-<pre>
-    <div class="container">
-        <div class="example">
-            <h2>Run model2roms</h2>
-            <div class="wrap">
-            python main.py
-            </div>
-        </div>
-    </div>
-</pre>
+python main.py
 ```
 
 <h2>Contact</h2>
