@@ -1,28 +1,35 @@
-import os, sys, time
+import time
 from datetime import datetime
-import soda2roms, IOstation
-import clim2bry, DecimateGrid
+import model2roms
+import IOstation
+import clim2bry
+import DecimateGrid
 import grd
 import numpy as np
 
-__author__   = 'Trond Kristiansen'
-__email__    = 'trond.kristiansen@imr.no'
-__created__  = datetime(2009, 1,30)
-__modified__ = datetime(2013,1,7)
-__version__  = "1.3"
-__status__   = "Development"
+__author__ = 'Trond Kristiansen'
+__email__ = 'trond.kristiansen@imr.no'
+__created__ = datetime(2009, 1, 30)
+__modified__ = datetime(2014, 3, 11)
+__version__ = "1.3"
+__status__ = "Development"
 
-def help():
+
+def myhelp():
     """
     This program is run by typing: python main.py in the command window.
     """
 
-def showInfo(vars,romsgridpath,climName,initName,bryName,start_year,end_year,start_julianday,end_julianday):
-    print 'Conversions run from day %s in %s to day %s in year %s'%(start_julianday,start_year,end_julianday,end_year)
+
+def showInfo(myvars, romsgridpath, climName, initName, bryName, start_year, end_year, isClimatology):
+    if isClimatology:
+        print 'Conversions run for climatological months'
+    else:
+        print 'Conversions run from %s to year %s' % (start_year, end_year)
     print 'The following variables will be converted:'
-    for var in vars:
-        print '---> %s'%(var)
-    print '\nOutput grid file is: %s'%(romsgridpath)
+    for myvar in myvars:
+        print '---> %s' % myvar
+    print '\nOutput grid file is: %s' % romsgridpath
     print '\nInitializing'
 
 
@@ -30,132 +37,160 @@ def main():
     print '\n--------------------------\n'
     print 'Started ' + time.ctime(time.time())
 
-    """ EDIT ==================================================================="""
+    # EDIT ===================================================================
+    # Set show_progress to "False" if you do not want to see the progress
+    # indicator for horizontal interpolation.
+    show_progress = True
+    # Set compileAll to True if you want automatic re-compilation of all the
+    # fortran files necessary to run soda2roms. You need to edit compile.py for this
+    compileAll = False
+    # Extract time-series of data for given longitude/latitude
+    extractStations = False
+    # Create the bry, init, and clim files for a given grid and input data
+    createForcing = True
+    # Create a smaller resolution grid based on your original. Decimates every second for
+    # each time run
+    decimateGrid = False
 
-    """Set show_progress to "False" if you do not want to see the progress
-    indicator for horizontal interpolation. This requires the two modules:
-    terminal.py and progressBar.py"""
-    show_progress=True
-    """Set compileAll to True if you want automatic re-compilation of all the
-    fortran files necessary to run soda2roms. You need to edit compile.py for this"""
-    compileAll=False
-    """Extract time-series of data for given longitude/latitude"""
-    extractStations=False
-    """Create the bry, init, and clim files for a given grid and input data"""
-    createForcing=True
-    """Create a smaller resolution grid based on your original. Decimates every second for
-    each time run"""
-    decimateGrid=False
-    """Create river runoff file based on NCEP-NCAR CORE data"""
-    createRiverRunoff=False
+    # Set the input data MODEL mytype
+    mytype = 'SODA'
+    mytype = 'SODAMONTHLY'
+    mytype = 'GLORYS2V1'
+    mytype = 'WOAMONTHLY'
+    #mytype = 'NORESM'
 
-    """Set the input data MODEL type: Current options are SODA or HYCOM"""
-    type='HYCOM'
-    type='SODA'
-    type='SODAMONTHLY'
-    type='GLORYS2V1'
-    
-    """Define the paths to the CORE data (only river file)"""
-    corepath="/Users/trond/Projects/arcwarm/CORE/"
+    # Define what grid type you wnat to interpolate to:
+    gridtype = "NS8KM"
+    gridtype = "REGSCEN"
 
-    """Define the paths to the SODA/HYCOM data"""
-    if type=='SODA':
-        sodapath="/Volumes/MacintoshHD2/Datasets/SODA/"
-    if type=='SODAMONTHLY':
-        sodapath="/Volumes/MacintoshHD2/Datasets/SODAMonthly/"
-    if type=='GLORYS2V1':
-        sodapath="/Volumes/MacintoshHD2/Datasets/GLOBAL_REANALYSIS_PHYS_001_009/"
-    if type=='HYCOM':
-        hycompath="/Users/trond/Projects/arcwarm/SODA/HYCOM/"
+    # Define the paths to the input data
+    if mytype == 'SODA':
+        modelpath = "/Volumes/MacintoshHD2/Datasets/SODA/"
+    if mytype == 'SODAMONTHLY':
+        modelpath = "/Volumes/MacintoshHD2/Datasets/SODAMonthly/"
+    if mytype == 'GLORYS2V1':
+        modelpath = "/Volumes/MacintoshHD2/Datasets/GLOBAL_REANALYSIS_PHYS_001_009/"
+    if mytype == 'NORESM':
+        modelpath = "/Users/trondkr/Projects/RegScen/NorESM/RCP85/"
+    if mytype == 'WOAMONTHLY':
+        modelpath = "/Users/trondkr/Projects/is4dvar/createSSS/"
 
-    """Define the path to the grid file"""
-    #romsgridpath="/Volumes/HankRaid/ROMS/GoM/grid/gom_grd.nc"
-    #romsgridpath="/Users/trond/Projects/Roms/GOMfull/Inputs/gom_grd11022010.nc"
-    romsgridpath="/Users/trond/Projects/Roms/GOMfull/SmoothTopo/gom_grdSmoothed.nc"
-    romsgridpath="/Users/trond/Projects/is4dvar/NS8km/nordsjoen_8km_grid_hmax20m_v3.nc"
-    #romsgridpath="tromsN_800m_grid.nc"
-    #romsgridpath="/Users/trond/Projects/Roms/GOMsmall/Inputs/gom_grd_small.nc"
-    #romsgridpath="/Users/trond/Projects/Roms/GOMsmall/Inputs/ns8_grd.nc"
-   
-    start_year      =1996
-    end_year        =1998
-    start_julianday =0
-    end_julianday   =365
+    # Define the path to the grid file
+    if gridtype == "NS8KM":
+        romsgridpath = "/Users/trondkr/Projects/is4dvar/Grid/nordsjoen_8km_grid_hmax20m_v3.nc"
+    if gridtype == "REGSCEN":
+        romsgridpath = "/Users/trondkr/Projects/RegScen/Grid/AA_10km_grid.nc"
 
-    """Subset the input data. The more you subset the less memory is needed for calculations
-    and the faster the process is performed. The subset is initially performed in IOsubset.py"""
-    minLat=40; maxLat=70; minLon=-20; maxLon=40
-    subset=np.zeros(4); subset[0]=minLat; subset[1]=maxLat; subset[2]=minLon; subset[3]=maxLon
+    if mytype == 'WOAMONTHLY': isClimatology = True
+    else: isClimatology = False
 
-    """Name of output files for CLIM, BRY, and INIT files"""
-    climName='nordsjoen_8km_clim_'+str(type)+'_'+str(start_year)+'_to_'+str(end_year)+'.nc'
-    initName='nordsjoen_8km_init_'+str(type)+'_'+str(start_year)+'_to_'+str(end_year)+'.nc'
-    bryName='nordsjoen_8km_bry_'+str(type)+'_'+str(start_year)+'_to_'+str(end_year)+'.nc'
+    start_year  = 1992
+    end_year    = 1994
+    start_month = 2
+    end_month   = 10
 
-    """Define what variables to include in the forcing files"""
-    vars=['temperature','salinity','ssh','uvel','vvel']
-  
-    """5 day or 30 day average files for SODA"""
-    if type=='SODA': aveDays=5.0
-    if type in ['SODAMONTHLY','GLORYS2V1']: aveDays=30.0
+    writeIce = False
 
-    """Define a set of longitude/latitude positions with names to extract into
-    station files (using extractStations)"""
-    stationNames=['NorthSea','Iceland','EastandWestGreenland','Lofoten', 'Georges Bank']
-    lonlist=[ 2.4301, -22.6001, -47.0801,  13.3801, -67.2001]
-    latlist=[54.5601, 63.7010,  60.4201,  67.5001,  41.6423]
+    startdate = datetime(start_year, start_month, 1)
+    enddate   = datetime(end_year, end_month, 1)
 
-    stationNames=['NorthSea','Iceland','Lofoten', 'Georges Bank']
-    lonlist=[ 2.4301, -22.6001, 13.3801, -67.2001]
-    latlist=[54.5601, 63.7010, 67.5001,  41.6423]
+    # Subset the input data. The more you subset the less memory is needed for calculations
+    # and the faster the process is performed. The subset is initially performed in IOsubset.py
+    if gridtype == "NS8KM":
+        abbreviation = "nordsjoen_8km"
+        minLat = 40
+        maxLat = 70
+        minLon = -20
+        maxLon = 40
 
+    if gridtype == "REGSCEN":
+        abbreviation = "regscen"
+        minLat = -50
+        maxLat = 89.5
+        minLon = -179
+        maxLon = 180
 
-    """" NO EDIT BELOW ========================================================="""
+    subset = np.zeros(4)
+    subset[0] = minLat
+    subset[1] = maxLat
+    subset[2] = minLon
+    subset[3] = maxLon
+
+    # Name of output files for CLIM, BRY, and INIT files
+    climName = abbreviation + '_clim_' + str(mytype) + '_' + str(start_year) + '_to_' + str(end_year) + '.nc'
+    initName = abbreviation + '_init_' + str(mytype) + '_' + str(start_year) + '_to_' + str(end_year) + '.nc'
+    bryName = abbreviation + '_bry_' + str(mytype) + '_' + str(start_year) + '_to_' + str(end_year) + '.nc'
+    if isClimatology is True:
+        climName=abbreviation + '_' + str(mytype) + '_climatology.nc'
+
+    # Define what variables to include in the forcing files
+    myvars = ['temperature', 'salinity', 'ssh', 'uvel', 'vvel']
+    if mytype=="NORESM":
+        myvars=['ageice','uice','sim','vice','sim2','iceconcentration','icethickness','snowdepth']
+
+    # WOA only currently contains salinity and temperature
+    if isClimatology==True:
+        myvars = ['temperature','salinity']
+
+    # 5 day or 30 day average files for model input files
+    if mytype == 'SODA':
+        aveDays = 5.0
+
+    if mytype in ['SODAMONTHLY', 'GLORYS2V1', 'NORESM','WOAMONTHLY']:
+        aveDays = 30.0
+
+    # Define a set of longitude/latitude positions with names to extract into
+    # station files (using extractStations)
+    stationNames = ['NorthSea', 'Iceland', 'EastandWestGreenland', 'Lofoten', 'Georges Bank']
+    lonlist = [2.4301, -22.6001, -47.0801, 13.3801, -67.2001]
+    latlist = [54.5601, 63.7010, 60.4201, 67.5001, 41.6423]
+
+    # NO EDIT BELOW =========================================================
     if compileAll is True:
+        # Compile the Fortran 90 files to Python modules
         import compile
         compile.compileAll()
 
-    start_day_in_start_year=np.round(start_julianday/aveDays)
-    end_day_in_end_year=round(end_julianday/aveDays)
+    start_day_in_start_year = np.round(((startdate - datetime(startdate.year, 1, 1)).days  + 1) / aveDays)
+    end_day_in_end_year = np.round(((enddate - datetime(enddate.year, 1, 1)).days + 1) / aveDays)
 
-    years=[(int(start_year)+kk) for kk in range(int(end_year)-int(start_year))]
+    years = [(int(startdate.year) + kk) for kk in range(int(enddate.year) - int(startdate.year))]
+    loop = int(end_day_in_end_year) - int(start_day_in_start_year)
 
-    loop=int(end_day_in_end_year)-int(start_day_in_start_year)
-
-    if int(start_day_in_start_year)==int(end_day_in_end_year):
-        IDS=[int(start_day_in_start_year)]
+    if int(start_day_in_start_year) == int(end_day_in_end_year):
+        IDS = [int(start_day_in_start_year)]
     else:
-        IDS=[(i+1+int(start_day_in_start_year)) for i in range(loop)]
+        IDS = [(i + int(start_day_in_start_year)) for i in range(loop + 1)]
 
-    """Create the grid object for the output grid"""
-    grdROMS = grd.grdClass(romsgridpath,"ROMS")
+    # FIXME: this only gives the option of running all months of the year and not subset.
+    IDS=[i  + 1 for i in range(12)]
 
-    if createForcing==True:
+    if isClimatology==True:
+        IDS=[i+1 for i in xrange(12)]
+        print "Will create climatology for months: %s"%(IDS)
 
-        showInfo(vars,romsgridpath,climName,initName,bryName,start_year,end_year,start_julianday,end_julianday)
+    # Create the grid object for the output grid
+    grdROMS = grd.grdClass(romsgridpath, "ROMS")
+    grdROMS.vars=myvars
 
-        if type in ['SODA','SODAMONTHLY','GLORYS2V1']:
-            soda2roms.convertMODEL2ROMS(years,IDS,climName,initName,sodapath,romsgridpath,vars,show_progress,type,subset)
-        elif type=='HYCOM':
-            soda2roms.convertMODEL2ROMS([1],[1,2,3],climName,initName,hycompath,romsgridpath,vars,show_progress,type,subset)
+    if createForcing:
 
-        clim2bry.writeBry(grdROMS,start_year,bryName,climName)
+        showInfo(myvars, romsgridpath, climName, initName, bryName, start_year, end_year, isClimatology)
 
-    if createRiverRunoff is True:
-        ncarRiver.runoff(grdROMS,corepath)
+        model2roms.convertMODEL2ROMS(years, IDS, climName, initName, modelpath, romsgridpath, myvars, show_progress,
+                                         mytype, subset, isClimatology, writeIce)
 
+        clim2bry.writeBry(grdROMS, start_year, bryName, climName)
 
-    if decimateGrid==True:
-        DecimateGrid.createGrid(grdROMS,'/Users/trond/Projects/arcwarm/SODA/soda2roms/imr_nordic_8km.nc',2)
+    if decimateGrid:
+        DecimateGrid.createGrid(grdROMS, '/Users/trond/Projects/arcwarm/SODA/soda2roms/imr_nordic_8km.nc', 2)
 
-
-    if extractStations is True:
+    if extractStations:
         print "Running in station mode and extracting pre-defined station locations"
-        IOstation.getStationData(years,IDS,sodapath,latlist,lonlist,stationNames)
+        IOstation.getStationData(years, IDS, modelpath, latlist, lonlist, stationNames)
 
     print 'Finished ' + time.ctime(time.time())
 
 
 if __name__ == "__main__":
-
     main()

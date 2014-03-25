@@ -5,7 +5,6 @@ This class creates an object based on the input file structure. Currently the cl
 two types of structures as input: SODA or ROMS
 """
 
-import os, sys
 from datetime import datetime
 from netCDF4 import Dataset
 import numpy as np
@@ -53,8 +52,10 @@ class grdClass:
             self.grdName='NorthSea'
         elif grdfilename=='/Users/trond/Projects/Roms/Julia/NATLC/Data/natl_40km.nc':
             self.grdName='NATL'
-        elif grdfilename=='/Users/trond/Projects/is4dvar/NS8km/nordsjoen_8km_grid_hmax20m_v3.nc':
+        elif grdfilename=='/Users/trondkr/Projects/is4dvar/Grid/nordsjoen_8km_grid_hmax20m_v3.nc':
             self.grdName="NorthSea"
+        elif grdfilename=='/Users/trondkr/Projects/RegScen/Grid/AA_10km_grid.nc':
+            self.grdName="REGSCEN"
 
         else:
             self.grdName='GOM'
@@ -84,8 +85,8 @@ class grdClass:
         Trond Kristiansen, 18.11.2009.
         """
         if self.type=='AVERAGE':
-            """Average file is a self made climatology file foe the North Atlantic (created with averageSoda.py)
-            and used in individual-based modeling (ibm.py)"""
+            # Average file is a self made climatology file foe the North Atlantic (created with averageSoda.py)
+            # and used in individual-based modeling (ibm.py)
             self.grdType  = 'regular'
             print '---> Assuming %s grid type for %s'%(self.grdType,self.type)
             self.lon = self.cdf.variables["lon"][:]
@@ -96,6 +97,20 @@ class grdClass:
 
             if np.rank(self.lon)==1:
                     self.lon, self.lat = np.meshgrid(self.lon,self.lat)
+
+        if self.type=='WOAMONTHLY':
+            self.grdType  = 'regular'
+            print '---> Assuming %s grid type for %s'%(self.grdType,self.type)
+            self.lon = self.cdf.variables["lon"][:]
+            self.lat = self.cdf.variables["lat"][:]
+            self.depth = self.cdf.variables["depth"][:]
+            self.Nlevels = len(self.depth)
+            self.fill_value=9.96921e+36
+
+            if np.rank(self.lon)==1:
+                    self.lon, self.lat = np.meshgrid(self.lon,self.lat)
+
+            IOverticalGrid.get_z_levels(self)
 
         if self.type=='SODA':
             self.grdType  = 'regular'
@@ -126,7 +141,6 @@ class grdClass:
             IOverticalGrid.get_z_levels(self)
             
         if self.type=='GLORYS2V1':
-            #Native grid GLORYS2V1 monthly average
             self.grdType  = 'regular'
             print '---> Assuming %s grid type for %s'%(self.grdType,self.type)
             self.lon = self.cdf.variables["lon"][:]
@@ -135,6 +149,20 @@ class grdClass:
             self.depth = self.cdf.variables["deptht"][:]
             self.Nlevels = len(self.depth)
             self.fill_value=-32767
+
+            if np.rank(self.lon)==1:
+                    self.lon, self.lat = np.meshgrid(self.lon,self.lat)
+
+            IOverticalGrid.get_z_levels(self)
+
+        if self.type=='NORESM':
+            self.grdType  = 'regular'
+            print '---> Assuming %s grid type for %s'%(self.grdType,self.type)
+            self.lon = self.cdf.variables["lon"][:]
+            self.lat = self.cdf.variables["lat"][:]
+            self.depth = self.cdf.variables["lev"][:]
+            self.Nlevels = len(self.depth)
+            self.fill_value=1.e+20
 
             if np.rank(self.lon)==1:
                     self.lon, self.lat = np.meshgrid(self.lon,self.lat)
@@ -282,11 +310,9 @@ class grdClass:
         if self.type=="ROMS":
             self.Lp=len(self.lat_rho[1,:])
             self.Mp=len(self.lat_rho[:,1])
-        if self.type=="SODA" or self.type=='SODAMONTHLY' or self.type=='AVERAGE' or self.type=="GLORYS2V1":
+        if self.type in ['SODA','SODAMONTHLY','AVERAGE','GLORYS2V1','NORESM','WOAMONTHLY']:
             self.Lp=len(self.lat[1,:])
             self.Mp=len(self.lat[:,1])
-        if self.type=="HYCOM":
-            self.Lp=len(self.lat[1,:])
-            self.Mp=len(self.lat[:,1])
+
         self.M =self.Mp-1
         self.L =self.Lp-1

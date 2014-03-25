@@ -6,7 +6,6 @@ import numpy as np
 __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
 __created__  = datetime(2008, 8, 15)
-__modified__ = datetime(2008, 8, 19)
 __modified__ = datetime(2009, 11, 11)
 __version__  = "1.3"
 __status__   = "Development"
@@ -16,10 +15,8 @@ def get_z_levels(self):
     """
     Get a list of all the variables contained in netCDF file "filename"
     """
-    if self.type in ['SODA','SODAMONTHLY','GLORYS2V1']:
-            self.z_r=-self.depth
-    if self.type=='HYCOM':
-            self.z_r=-self.depth
+    self.z_r=-self.depth
+
     if len(self.z_r)==0:
         print "No depth matrix found in file %s"%(self.selffilename)
 

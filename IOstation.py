@@ -3,14 +3,10 @@ import os, sys, datetime
 import numpy as np
 import grd
 import IOverticalGrid
-#import soda2roms
 import date
 from netCDF4 import Dataset
-from netCDF4 import num2date
 import os, time
-import plotData
 import string
-from progressBar import progressBar
 
 __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
@@ -160,9 +156,7 @@ def initArrays(years,IDS,deepest,name,lon,lat):
     return stTemp, stSalt, stSSH, stUvel, stVvel, stTauX, stTauY
 
 def getStationData(years,IDS,sodapath,latlist,lonlist,stationNames):
-    empty  =u'\u25FD'; filled =u'\u25FE'
-    progress  = progressBar(color='red',width=30, block=filled.encode('UTF-8'), empty=empty.encode('UTF-8'))
-    
+
     fileNameIn=sodapath+'SODA_2.0.2_'+str(years[0])+'_'+str(IDS[0])+'.cdf'
     
     """First time in loop, get the essential old grid information"""
@@ -182,6 +176,9 @@ def getStationData(years,IDS,sodapath,latlist,lonlist,stationNames):
     
         stTime=[]; stDate=[]; time=0; counter=0; t=0
         total=float(len(years)*len(IDS))
+        import progressbar
+        progress = progressbar.ProgressBar(widgets=[Percentage(), Bar()], maxval=total).start()
+
         for year in years:
             for ID in IDS:
                 file="SODA_2.0.2_"+str(year)+"_"+str(ID)+".cdf"
@@ -219,12 +216,10 @@ def getStationData(years,IDS,sodapath,latlist,lonlist,stationNames):
                  
                 cdf.close()
                 counter+=1
-                
-                """Show progress bar"""
-                p=int( ((time*1.0+1)/(1.0*total))*100.)
-                progress.render(p,message)
+
+                progress.update(time)
                 time+=1
-                
+
         
         print 'Total time steps saved to file %s for station %s'%(time,station)
         #plotData.contourStationData(stTemp,stTime,stDate,-grdMODEL.depth[0:deepest],stationNames[station])

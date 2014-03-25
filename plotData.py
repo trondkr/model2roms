@@ -1,26 +1,11 @@
-from matplotlib import rcParams
-import numpy.ma as ma
-import numpy as np
-import matplotlib.pyplot as plt
+import os
 from mpl_toolkits.basemap import Basemap
 from pylab import *
 
-def contourMap(grdROMS,grdMODEL,data,depthlevel,var):
-
-
-    tlat      = np.array(grdROMS.lat_rho)
-    tlon      = np.array(grdROMS.lon_rho)
-
-    if var in ['vrot','vbar','vvel']:
-        tlat      = np.array(grdROMS.lat_v)
-        tlon      = np.array(grdROMS.lon_v)
-    if var in ['urot','ubar','uvel']:
-        tlat      = np.array(grdROMS.lat_u)
-        tlon      = np.array(grdROMS.lon_u)
-
-    temp      = data
+def contourMap(grdROMS, tlon, tlat, mydata, depthlevel, var):
 
     plt.figure(figsize=(10,10), frameon=False)
+    #mydata = np.ma.masked_where(mydata==grdROMS.fill_value,mydata)
 
     if grdROMS.grdName=='GOM':
     # Plot the Georges Bank region
@@ -29,7 +14,6 @@ def contourMap(grdROMS,grdMODEL,data,depthlevel,var):
         levels = np.arange(0.0, 26.0, 0.5)
 
     if grdROMS.grdName=='Nordic' or grdROMS.grdName=='Nordic2':
-    # Plot the Nordic region (Greenland, Nordic Seas, and the Barents Sea)
         map = Basemap(lon_0=25,boundinglat=50,
                       resolution='l',area_thresh=100.,projection='npstere')
         levels = np.arange(-2.0, 20.0, 0.1)
@@ -57,17 +41,17 @@ def contourMap(grdROMS,grdMODEL,data,depthlevel,var):
                 resolution='l',area_thresh=2000.,projection='npstere')
         levels = np.arange(-2.0, 30.0, 0.5)
 
+    if grdROMS.grdName=='REGSCEN':
+
+        map = Basemap(projection='ortho',lon_0=-20,lat_0=25, resolution='c', area_thresh=10000)
+        levels = np.arange(-2.0, 30.0, 0.5)
+
     x, y = map(tlon,tlat)
 
     map.drawcoastlines()
     map.fillcontinents(color='grey')
     map.drawcountries()
-    #map.drawmapboundary()
 
-    #map.drawmeridians(np.arange(0,360,1))
-    #map.drawparallels(np.arange(0,90,1))
-
-    temp = np.ma.masked_values(temp,grdROMS.fill_value)
     if var=='salinity':
         levels = np.arange(15.0, 40.0, 0.3)
     if var=='runoff':
@@ -79,20 +63,19 @@ def contourMap(grdROMS,grdMODEL,data,depthlevel,var):
     if var=='sodamask':
         levels=np.arange(0,1,1)
     if var =='runoff':
-        CS1 = map.contourf(x,y,temp)#,alpha=0.5)
+        CS1 = map.contourf(x, y, mydata)#,alpha=0.5)
         plt.colorbar(orientation='horizontal')
     else:
-        CS1 = map.contourf(x,y,temp,levels,cmap=cm.get_cmap('jet',len(levels)-1) )#,alpha=0.5)
-        plt.colorbar(CS1,orientation='vertical',extend='both', shrink=0.5)
-        #plt.colorbar(orientation='horizontal')
-    #CS2 = contour(x,y,temp,CS1.levels[::2],
-    #                    colors = 'k',
-    #                    hold='on')
+        CS1 = map.contourf(x, y, mydata, levels, cmap=cm.get_cmap('RdYlBu_r',len(levels)-1) )#,alpha=0.5)
+        plt.colorbar(CS1, orientation='vertical', extend='both', shrink=0.5)
+
    
     plt.title('Var:%s - depth:%s - time:%s'%(var,depthlevel,grdROMS.time))
     plotfile='figures/'+str(var)+'_depth_fill90_'+str(depthlevel)+'_time_'+str(grdROMS.time)+'.png'
+    if not os.path.exists('figures'):
+        os.makedirs('figure')
     plt.savefig(plotfile)
-  #  plt.show()
+    plt.show()
 
 def contourStationData(data,timedata,datedata,depthdata,stationName):
 
