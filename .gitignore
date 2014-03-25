@@ -1,3 +1,9 @@
 debug
 figures
-.idea
+*.idea
+*.pyc
+*.so
+*.log
+*.nc
+*.txt
+*.csv

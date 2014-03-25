@@ -57,7 +57,7 @@ def main():
     mytype = 'SODAMONTHLY'
     mytype = 'GLORYS2V1'
     mytype = 'WOAMONTHLY'
-    #mytype = 'NORESM'
+    mytype = 'NORESM'
 
     # Define what grid type you wnat to interpolate to:
     gridtype = "NS8KM"
@@ -84,8 +84,8 @@ def main():
     if mytype == 'WOAMONTHLY': isClimatology = True
     else: isClimatology = False
 
-    start_year  = 1992
-    end_year    = 1994
+    start_year  = 2006
+    end_year    = 2009
     start_month = 2
     end_month   = 10
 

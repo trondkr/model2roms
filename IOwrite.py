@@ -442,8 +442,14 @@ def writeClimFile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, d
             f1.variables['sig11'][ntime, :, :] = 0.
             f1.variables['sig12'][ntime, :, :] = 0.
             f1.variables['sig22'][ntime, :, :] = 0.
-        if myvar in ['uice','vice','iceconcentration','icethickness','snowdepth']:
+        if myvar in ['uice','vice']:
             f1.variables[myvar][ntime, :, :] = data1
+        if myvar=='iceconcentration':
+            f1.variables['aice'][ntime, :, :] = data1
+        if myvar=='icethickness':
+            f1.variables['hice'][ntime, :, :] = data1
+        if myvar=='snowdepth':
+            f1.variables['snow_thick'][ntime, :, :] = data1
 
     if isClimatology is True:
         # Climatological time starts at the 15th of each month
