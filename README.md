@@ -2,7 +2,7 @@
 
 This project is a Python toolbox for creating the necessary climatology, boundary, and initial files 
 required to run the ROMS (Regional Ocean Modeling System) model. As a first version this toolkit focuses on
-converting the NORESM (ESM climcate model), SODA, HYCOM, World Ocean Atlas (WOA), or GLORYS (Mercator Ocean) model
+converting the NORESM (ESM climate model), SODA, HYCOM, World Ocean Atlas (WOA), or GLORYS (Mercator Ocean) model
 runs to a set of forcing files for a given ROMS grid structure.
 
 <h2>Background</h2>
