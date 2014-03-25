@@ -1,11 +1,11 @@
-Model2roms
+<h1>Model2roms</h1>
 
 This project is a Python toolbox for creating the necessary climatology, boundary, and initial files 
 required to run the ROMS (Regional Ocean Modeling System) model. As a first version this toolkit focus on 
 converting the SODA, HYCOM, or GLORYS (Mercator Ocean) model runs to a set of forcing files for a given ROMS 
 grid structure.
 
-Background
+<h2>Background</h2>
 
 For the last year I have been working on this toolbox that I used to call soda2roms, but which is now 
 renamed to model2roms as it has become more generic over the years. This program is a collection of python 
@@ -17,5 +17,6 @@ interpolated to U and V points. All interpolated values are written to netCDF4 f
 file for each CLIM, INIT, and BRY files. UBAR and VBAR are calculated from U and V. Time is stored as julian 
 day from 01/01/1948 (see soda2roms.py).
 
-Please send a comment on suggestions, questions, or modifications and improvements you would like to make. 
-I would very much like to see this project go much further so that it can be useful for a variety of purposes.
+Please send a comment on suggestions, questions, or modifications and improvements you would like to
+make to me @ trondkristiansen.com. I would very much like to see this project go much further so that it can be
+useful for a variety of purposes.
