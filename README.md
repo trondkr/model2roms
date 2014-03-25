@@ -17,6 +17,31 @@ interpolated to U and V points. All interpolated values are written to netCDF4 f
 file for each CLIM, INIT, and BRY files. UBAR and VBAR are calculated from U and V. Time is stored as julian 
 day from 01/01/1948 (see soda2roms.py).
 
+```html
+<h2>Run the program</h2>
+
+<pre>
+    <div class="container">
+        <div class="example">
+            <h2>Run model2roms</h2>
+            <div class="wrap">
+            python main.py
+            </div>
+        </div>
+    </div>
+</pre>
+```
+
+<h2>Contact</h2>
+<ul>
+<li>me @ trondkristiansen.com</li>
+<li>http://github.com/trondkr</li>
+<li>www.trondkristiansen.com</li>
+</ul>
 Please send a comment on suggestions, questions, or modifications and improvements you would like to
 make to me @ trondkristiansen.com. I would very much like to see this project go much further so that it can be
 useful for a variety of purposes.
+
+<h2>License</h2>
+
+Model2roms is available under the MIT license. See the LICENSE file for more info.
