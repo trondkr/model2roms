@@ -55,19 +55,21 @@ def main():
     # Set the input data MODEL mytype
     mytype = 'SODA'
     mytype = 'SODAMONTHLY'
-    mytype = 'GLORYS2V1'
-    mytype = 'WOAMONTHLY'
-    mytype = 'NORESM'
+    #mytype = 'GLORYS2V1'
+    #mytype = 'WOAMONTHLY'
+    #mytype = 'NORESM'
 
     # Define what grid type you wnat to interpolate to:
     gridtype = "NS8KM"
-    gridtype = "REGSCEN"
+    #gridtype = "REGSCEN"
 
     # Define the paths to the input data
     if mytype == 'SODA':
         modelpath = "/Volumes/MacintoshHD2/Datasets/SODA/"
     if mytype == 'SODAMONTHLY':
         modelpath = "/Volumes/MacintoshHD2/Datasets/SODAMonthly/"
+        #FIXME - test modelpath
+        modelpath = "/Users/trondkr/Projects/RegScen/model2roms/testdata/"
     if mytype == 'GLORYS2V1':
         modelpath = "/Volumes/MacintoshHD2/Datasets/GLOBAL_REANALYSIS_PHYS_001_009/"
     if mytype == 'NORESM':
@@ -84,10 +86,10 @@ def main():
     if mytype == 'WOAMONTHLY': isClimatology = True
     else: isClimatology = False
 
-    start_year  = 2006
-    end_year    = 2009
-    start_month = 2
-    end_month   = 10
+    start_year  = 2001
+    end_year    = 2002
+    start_month = 1
+    end_month   = 3
 
     writeIce = False
 
