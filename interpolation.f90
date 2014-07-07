@@ -15,7 +15,7 @@ Module interpolation
             ! remember if one wants to compare input index wtih output index in fortran and python.
             !
             ! This routine assumes that the two depth matrixes zr (ROMS) and zs (SODA) are arranged from shallowest
-            ! (index=1) to deepest (index=N+1). The depth matrizes must also be begative (if positive, reverse all
+            ! (index=1) to deepest (index=N+1). The depth matrizes must also be negative (if positive, reverse all
             ! comparison signs (e.g. LT, GT) in the program or multiply with minus 1). The input data are arranged with
             ! deepest values at highest index (N+1 e.g. dat(N+1)==bottom, dat(1)==surface). This is done so because
             ! it is the way SODA data are organized (bottom at highest index). However, ROMS output files are organized vice versa, so

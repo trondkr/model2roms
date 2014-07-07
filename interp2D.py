@@ -3,6 +3,12 @@ import datetime
 import mpl_toolkits.basemap as mp
 import extrapolate as ex
 
+try:
+    import ESMF
+except ImportError:
+    print "Could not find module ESMF"
+    pass
+
 __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
 __created__  = datetime.datetime(2008, 12, 4)
@@ -13,6 +19,7 @@ __status__   = "Development"
 
 def doHorInterpolationRegularGrid(myvar, grdROMS, grdMODEL, mydata, show_progress):
 
+
     if show_progress is True:
         import progressbar
         #http://progressbar-2.readthedocs.org/en/latest/examples.html
@@ -21,54 +28,66 @@ def doHorInterpolationRegularGrid(myvar, grdROMS, grdMODEL, mydata, show_progres
 
     indexROMS_Z_ST = (grdMODEL.Nlevels, grdROMS.eta_rho, grdROMS.xi_rho)
     array1=np.zeros((indexROMS_Z_ST), dtype=np.float64)
+    print "Range",mydata.min(), mydata.max()
 
     for k in xrange(grdMODEL.Nlevels):
 
-        i0 = np.argmin(np.fabs(grdMODEL.lon[0,:]-180))
+        if (grdMODEL.useESMF):
 
-        mydataout = np.ma.zeros(np.squeeze(mydata[k,:,:]).shape,mydata.dtype)
-        lonsout = np.ma.zeros((len(grdMODEL.lon[0,:])),grdMODEL.lon.dtype)
+            grdMODEL.fieldSrc[:,:]=np.flipud(np.rot90(np.squeeze(mydata[k,:,:])))
 
-        lonsout[0:len(grdMODEL.lon[0,:])-i0] = grdMODEL.lon[0,i0:]-360
+            # Get the actual regridded array
+            field = grdMODEL.regridSrc2Dst_rho(grdMODEL.fieldSrc, grdMODEL.fieldDst_rho)
 
-        lonsout[len(grdMODEL.lon[0,:])-i0:] = grdMODEL.lon[0,1:i0+1]
+            # Since ESMF uses coordinates (x,y) we need to rotate and flip to get back to (y,x) order.
+            field = np.fliplr(np.rot90(field,3))
 
-        mydataout[:,0:len(grdMODEL.lon[0,:])-i0]  = mydata[k,:,i0:]
-        mydataout[:,len(grdMODEL.lon[0,:])-i0:] = mydata[k,:,1:i0+1]
+            #import plotData
+            #plotData.contourMap(grdROMS,grdROMS.lon_rho,grdROMS.lat_rho, field, k, myvar)
+        else:
+            i0 = np.argmin(np.fabs(grdMODEL.lon[0,:]-180))
 
-        Zg = mp.interp(mydataout,lonsout,grdMODEL.lat[:,0],grdROMS.lon_rho,grdROMS.lat_rho,
-                       checkbounds=False, masked=False, order=1)
-      #  Zg=np.ma.masked_where(Zg==grdROMS.fill_value,Zg)
+            mydataout = np.ma.zeros(np.squeeze(mydata[k,:,:]).shape,mydata.dtype)
+            lonsout = np.ma.zeros((len(grdMODEL.lon[0,:])),grdMODEL.lon.dtype)
 
-        undef=2.0e+35 #grdROMS.fill_value
-        tx=0.9*undef
-        critx=0.01
-        cor=1.6
-        mxs=100
+            lonsout[0:len(grdMODEL.lon[0,:])-i0] = grdMODEL.lon[0,i0:]-360
 
-        field = Zg
-        field=np.where(abs(field) > 50 ,undef,field)
+            lonsout[len(grdMODEL.lon[0,:])-i0:] = grdMODEL.lon[0,1:i0+1]
 
-        field=ex.extrapolate.fill(int(1),int(grdROMS.xi_rho),
-                                int(1),int(grdROMS.eta_rho),
-                                float(tx), float(critx), float(cor), float(mxs),
-                                np.asarray(field, order='Fortran'),
-                                int(grdROMS.xi_rho),
-                                int(grdROMS.eta_rho))
+            mydataout[:,0:len(grdMODEL.lon[0,:])-i0]  = mydata[k,:,i0:]
+            mydataout[:,len(grdMODEL.lon[0,:])-i0:] = mydata[k,:,1:i0+1]
 
+            Zg = mp.interp(mydataout,lonsout,grdMODEL.lat[:,0],grdROMS.lon_rho,grdROMS.lat_rho,
+                           checkbounds=False, masked=False, order=1)
+            #  Zg=np.ma.masked_where(Zg==grdROMS.fill_value,Zg)
 
+            undef=2.0e+35 #grdROMS.fill_value
+            tx=0.9*undef
+            critx=0.01
+            cor=1.6
+            mxs=100
+
+            field = Zg
+            field=np.where(abs(field) > 50 ,undef,field)
+
+            field=ex.extrapolate.fill(int(1),int(grdROMS.xi_rho),
+                                          int(1),int(grdROMS.eta_rho),
+                                          float(tx), float(critx), float(cor), float(mxs),
+                                          np.asarray(field, order='Fortran'),
+                                          int(grdROMS.xi_rho),
+                                          int(grdROMS.eta_rho))
         field=field*grdROMS.mask_rho
         array1[k,:,:]=field
 
         #import plotmydata
-        #if k==34:
+        #if k==20:
         #    import plotData
-        #    plotData.contourMap(grdROMS, grdROMS.lon_rho, grdROMS.lat_rho, field, k, myvar)
-       # if __debug__:
-       #     print "Data range after horisontal interpolation: ", field.min(), field.max()
+        #    plotData.contourMap(grdROMS, grdROMS.lon_rho, grdROMS.lat_rho, field, str(k)+'_fill90', myvar)
+        # if __debug__:
+        #     print "Data range after horisontal interpolation: ", field.min(), field.max()
 
         if show_progress is True:
-           progress.update(k)
+            progress.update(k)
 
     return array1
 
@@ -76,12 +95,12 @@ def doHorInterpolationRegularGrid(myvar, grdROMS, grdMODEL, mydata, show_progres
 
 def doHorInterpolationSSHRegularGrid(myvar,grdROMS,grdMODEL,mydata):
 
-    if myvar in ["uice","sim"]:
+    if myvar in ["uice"]:
         indexROMS_Z_ST = (grdMODEL.Nlevels,grdROMS.eta_u, grdROMS.xi_u)
         tolon = grdROMS.lon_u; tolat=grdROMS.lat_u
         toxi = grdROMS.xi_u; toeta=grdROMS.eta_u;
         mymask = grdROMS.mask_u
-    elif myvar in ["vice","sim2"]:
+    elif myvar in ["vice"]:
         indexROMS_Z_ST = (grdMODEL.Nlevels,grdROMS.eta_v, grdROMS.xi_v)
         tolon = grdROMS.lon_v; tolat=grdROMS.lat_v
         toxi = grdROMS.xi_v; toeta=grdROMS.eta_v;
@@ -94,38 +113,55 @@ def doHorInterpolationSSHRegularGrid(myvar,grdROMS,grdMODEL,mydata):
 
     array1=np.zeros((indexROMS_Z_ST),dtype=np.float64)
 
-    i0 = np.argmin(np.fabs(grdMODEL.lon[0,:]-180))
+    if (grdMODEL.useESMF):
 
-    mydataout = np.zeros(np.squeeze(mydata[:,:]).shape,mydata.dtype)
-    lonsout = np.zeros((len(grdMODEL.lon[0,:])),grdMODEL.lon.dtype)
+            grdMODEL.fieldSrc[:,:]=np.flipud(np.rot90(np.squeeze(mydata[:,:])))
 
-    lonsout[0:len(grdMODEL.lon[0,:])-i0] = grdMODEL.lon[0,i0:]-360
+            if myvar in ["uice"]:
+                field = grdMODEL.regridSrc2Dst_u(grdMODEL.fieldSrc, grdMODEL.fieldDst_u)
+            elif myvar in ["vice"]:
+                field = grdMODEL.regridSrc2Dst_v(grdMODEL.fieldSrc, grdMODEL.fieldDst_v)
+            else:
+                field = grdMODEL.regridSrc2Dst_rho(grdMODEL.fieldSrc, grdMODEL.fieldDst_rho)
 
-    lonsout[len(grdMODEL.lon[0,:])-i0:] = grdMODEL.lon[0,1:i0+1]
+            field = np.fliplr(np.rot90(field,3))
+            #if myvar=="hice":
+            #    import plotData
+            #    plotData.contourMap(grdROMS,grdROMS.lon_rho,grdROMS.lat_rho, field, "surface", myvar)
 
-    mydataout[:,0:len(grdMODEL.lon[0,:])-i0]  = mydata[:,i0:]
-    mydataout[:,len(grdMODEL.lon[0,:])-i0:] = mydata[:,1:i0+1]
+    else:
+        i0 = np.argmin(np.fabs(grdMODEL.lon[0,:]-180))
 
-    Zg = mp.interp(mydataout,lonsout,grdMODEL.lat[:,0], tolon, tolat,
-                   checkbounds=False, masked=False, order=1)
+        mydataout = np.zeros(np.squeeze(mydata[:,:]).shape,mydata.dtype)
+        lonsout = np.zeros((len(grdMODEL.lon[0,:])),grdMODEL.lon.dtype)
 
-    undef=2.0e+35
-    tx=0.9*undef
-    critx=0.01
-    cor=1.6
-    mxs=100
+        lonsout[0:len(grdMODEL.lon[0,:])-i0] = grdMODEL.lon[0,i0:]-360
 
-    field = Zg
-    field=np.where(abs(field)>100000,undef,field)
+        lonsout[len(grdMODEL.lon[0,:])-i0:] = grdMODEL.lon[0,1:i0+1]
 
-    field=ex.extrapolate.fill(int(1),int(toxi),
-                           int(1),int(toeta),
-                           float(tx), float(critx), float(cor), float(mxs),
-                           np.asarray(field, order='Fortran'),
-                           int(toxi),
-                           int(toeta))
+        mydataout[:,0:len(grdMODEL.lon[0,:])-i0]  = mydata[:,i0:]
+        mydataout[:,len(grdMODEL.lon[0,:])-i0:] = mydata[:,1:i0+1]
 
-    field=field*mymask
+        Zg = mp.interp(mydataout,lonsout,grdMODEL.lat[:,0], tolon, tolat,
+                       checkbounds=False, masked=False, order=1)
+
+        undef=2.0e+35
+        tx=0.9*undef
+        critx=0.01
+        cor=1.6
+        mxs=100
+
+        field = Zg
+        field=np.where(abs(field)>100000,undef,field)
+
+        field=ex.extrapolate.fill(int(1),int(toxi),
+                                  int(1),int(toeta),
+                                  float(tx), float(critx), float(cor), float(mxs),
+                                  np.asarray(field, order='Fortran'),
+                                  int(toxi),
+                                  int(toeta))
+
+        field=field*mymask
     array1[0,:,:]=field
 
     #import plotData

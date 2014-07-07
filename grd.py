@@ -10,6 +10,11 @@ from netCDF4 import Dataset
 import numpy as np
 
 import IOverticalGrid
+try:
+    import ESMF
+except ImportError:
+    print "Could not find module ESMF"
+    pass
 
 __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
@@ -21,7 +26,7 @@ __status__   = "Development"
 
 class grdClass:
 
-    def __init__(self,grdfilename,type):
+    def __init__(self,grdfilename,type,useESMF):
         """
         The object is initialised and created through the __init__ method
         As an example of how to use, these lines return a grid object called grdTEST:
@@ -31,34 +36,12 @@ class grdClass:
 
         self.grdfilename= grdfilename
         self.type=type
+        self.grdName=type
+        self.useESMF=useESMF
 
         self.openNetCDF()
         self.createObject()
         self.getDims()
-
-        if grdfilename=="/Users/trond/Projects/arcwarm/nordic/AA_10km_grid.nc":
-            self.grdName='NA'
-        elif grdfilename=="/Users/trond/Projects/Roms/Nordic/Inputs/imr_nordic_4km.nc":
-            self.grdName='Nordic'
-        elif grdfilename=="tromsN_800m_grid.nc":
-            self.grdName='Troms'
-        elif grdfilename=='/Users/trond/Projects/Nathan/NoMed47_GRID_Global.nc':
-            self.grdName='NA_Nathan'
-        elif grdfilename=='/Users/trond/Projects/Nathan/GOM_GRID_Global.nc':
-            self.grdName='GOM_Nathan'
-        elif grdfilename=='/Users/trond/Projects/arcwarm/SODA/soda2roms/imr_nordic_8km.nc':
-            self.grdName='Nordic2'
-        elif grdfilename=='/Users/trond/Projects/Roms/GOMsmall/Inputs/ns8_grd.nc':
-            self.grdName='NorthSea'
-        elif grdfilename=='/Users/trond/Projects/Roms/Julia/NATLC/Data/natl_40km.nc':
-            self.grdName='NATL'
-        elif grdfilename=='/Users/trondkr/Projects/is4dvar/Grid/nordsjoen_8km_grid_hmax20m_v3.nc':
-            self.grdName="NorthSea"
-        elif grdfilename=='/Users/trondkr/Projects/RegScen/Grid/AA_10km_grid.nc':
-            self.grdName="REGSCEN"
-
-        else:
-            self.grdName='GOM'
 
         print '---> Generated GRD object for grid type %s'%(self.type)
 
@@ -67,6 +50,7 @@ class grdClass:
         """Open the netCDF file and store the contents in arrays associated with variable names"""
         try:
             self.cdf = Dataset(self.grdfilename,"r")
+
         except IOError:
             print 'Could not open file %s'%(self.grdfilename)
             print 'Exception caught in: openNetCDF(grdfilename)'
@@ -91,6 +75,8 @@ class grdClass:
             print '---> Assuming %s grid type for %s'%(self.grdType,self.type)
             self.lon = self.cdf.variables["lon"][:]
             self.lat = self.cdf.variables["lat"][:]
+            self.lonName='lon'
+            self.latName='lat'
             self.depth = self.cdf.variables["depth"][:]
             self.Nlevels = len(self.depth)
             self.fill_value=-9.99e+33
@@ -103,6 +89,8 @@ class grdClass:
             print '---> Assuming %s grid type for %s'%(self.grdType,self.type)
             self.lon = self.cdf.variables["lon"][:]
             self.lat = self.cdf.variables["lat"][:]
+            self.lonName='lon'
+            self.latName='lat'
             self.depth = self.cdf.variables["depth"][:]
             self.Nlevels = len(self.depth)
             self.fill_value=9.96921e+36
@@ -117,6 +105,8 @@ class grdClass:
             print '---> Assuming %s grid type for %s'%(self.grdType,self.type)
             self.lon = self.cdf.variables["LON"][:]
             self.lat = self.cdf.variables["LAT"][:]
+            self.lonName='LON'
+            self.latName='LAT'
             self.depth = self.cdf.variables["DEPTH"][:]
             self.Nlevels = len(self.depth)
             self.fill_value=-9.99e+33
@@ -131,6 +121,8 @@ class grdClass:
             print '---> Assuming %s grid type for %s'%(self.grdType,self.type)
             self.lon = self.cdf.variables["lon"][:]
             self.lat = self.cdf.variables["lat"][:]
+            self.lonName='lon'
+            self.latName='lat'
             self.depth = self.cdf.variables["depth"][:]
             self.Nlevels = len(self.depth)
             self.fill_value=-9.99e+33
@@ -145,6 +137,8 @@ class grdClass:
             print '---> Assuming %s grid type for %s'%(self.grdType,self.type)
             self.lon = self.cdf.variables["lon"][:]
             self.lat = self.cdf.variables["lat"][:]
+            self.lonName='lon'
+            self.latName='lat'
             #NOTE spelling error for depth in netcdf files
             self.depth = self.cdf.variables["deptht"][:]
             self.Nlevels = len(self.depth)
@@ -158,9 +152,23 @@ class grdClass:
         if self.type=='NORESM':
             self.grdType  = 'regular'
             print '---> Assuming %s grid type for %s'%(self.grdType,self.type)
-            self.lon = self.cdf.variables["lon"][:]
-            self.lat = self.cdf.variables["lat"][:]
-            self.depth = self.cdf.variables["lev"][:]
+            self.lon = self.cdf.variables["plon"][:]
+            self.lat = self.cdf.variables["plat"][:]
+            self.lonName='plon'
+            self.latName='plat'
+            self.fieldSrc='NaN'
+            self.fieldDst_rho='NaN'
+            self.fieldDst_u='NaN'
+            self.fieldDst_v='NaN'
+
+           # self.depth = self.cdf.variables["depth"][:]
+            self.depth=np.asarray([0, 5, 10, 15, 20, 25, 30, 40, 50, 62.5, 75, 87.5, 100, 112.5, 125,
+    137.5, 150, 175, 200, 225, 250, 275, 300, 350, 400, 450, 500, 550, 600,
+    650, 700, 750, 800, 850, 900, 950, 1000, 1050, 1100, 1150, 1200, 1250,
+    1300, 1350, 1400, 1450, 1500, 1625, 1750, 1875, 2000, 2250, 2500, 2750,
+    3000, 3250, 3500, 3750, 4000, 4250, 4500, 4750, 5000, 5250, 5500, 5750,
+    6000, 6250, 6500, 6750])
+
             self.Nlevels = len(self.depth)
             self.fill_value=1.e+20
 
@@ -232,6 +240,8 @@ class grdClass:
             self.Tcline=20.0
             self.hc=20.0
             self.vars=[]
+            self.lonName='lon_rho'
+            self.latName='lat_rho'
 
             """Set initTime to 1 if you dont want the first timestep to be
             the initial field (no ubar and vbar if time=0)"""
@@ -255,6 +265,7 @@ class grdClass:
             self.grdType  = 'regular'
             self.lon_rho  = self.cdf.variables["lon_rho"][:,:]
             self.lat_rho  = self.cdf.variables["lat_rho"][:,:]
+
             self.depth    = self.cdf.variables["h"][:,:]
 
             self.mask_rho = self.cdf.variables["mask_rho"][:,:]
@@ -305,6 +316,20 @@ class grdClass:
             IOverticalGrid.calculate_z_r(self)
 
             IOverticalGrid.calculate_z_w(self)
+
+            if (self.useESMF):
+                print self.grdfilename
+                self.esmfgrid_u = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
+                                      is_sphere=True, coord_names=['lon_u','lat_u'], add_mask=True)
+                self.esmfgrid_v = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
+                                      is_sphere=True, coord_names=['lon_v','lat_v'], add_mask=True)
+
+        # Create grid for ESMF interpolation
+        if (self.useESMF):
+            self.esmfgrid = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
+                                      is_sphere=True, coord_names=[self.lonName, self.latName], add_mask=True)
+
+
 
     def getDims(self):
         if self.type=="ROMS":

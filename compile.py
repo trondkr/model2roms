@@ -18,9 +18,15 @@ def help():
     main.py with the compileAll=True
 
     Call this from command line using python compile.py
+
+    NOTE!
+    To run this on Hecxagon do this first:
+    module swap PrgEnv-pgi PrgEnv-gnu
+    module unload notur
+    Then remove the -fcompiler=intelem command
     """
 
-def compileAll():
+def compileAllIFORT():
     logfile="compile.log"
     if os.path.exists(logfile): os.remove(logfile)
     log=open(logfile,'a')
@@ -56,4 +62,54 @@ def compileAll():
     print "Compilation finished and results written to file => %s"%(logfile)
     print "\n==================================================================="
 
-compileAll()
+
+def compileAllGFORTRAN():
+    logfile="compile.log"
+    if os.path.exists(logfile): os.remove(logfile)
+    log=open(logfile,'a')
+    """Start the processes"""
+    print "\n"
+
+    proc = subprocess.Popen('module swap PrgEnv-pgi PrgEnv-gnu',shell=True, stdout=subprocess.PIPE,)
+    stdout_value = proc.communicate()
+    log.writelines(repr(stdout_value))
+
+    proc = subprocess.Popen('module unload notur',shell=True, stdout=subprocess.PIPE,)
+    stdout_value = proc.communicate()
+    log.writelines(repr(stdout_value))
+
+    print "Compiling barotropic.f90 to create ==> barotropic.so"
+    proc = subprocess.Popen('f2py --verbose -c -m barotropic barotropic.f90',
+                           shell=True, stdout=subprocess.PIPE,)
+    stdout_value = proc.communicate()
+    log.writelines(repr(stdout_value))
+
+    print "Compiling cleanArray.f90 to create ==> clean.so"
+    proc = subprocess.Popen('f2py --verbose -c -m clean cleanArray.f90',
+                           shell=True, stdout=subprocess.PIPE,)
+    stdout_value = proc.communicate()[0]
+    log.writelines(repr(stdout_value))
+
+    print "Compiling interpolation.f90 to create ==> interpolation.so"
+    proc = subprocess.Popen('f2py --verbose  -c -m interpolation interpolation.f90',
+                           shell=True, stdout=subprocess.PIPE,)
+    stdout_value = proc.communicate()[0]
+    log.writelines(repr(stdout_value))
+
+    print "Compiling fill.f90 to create ==> extrapolate.so"
+    proc = subprocess.Popen('f2py --verbose -c -m extrapolate fill.f90',
+                           shell=True, stdout=subprocess.PIPE,)
+    stdout_value = proc.communicate()[0]
+    log.writelines(repr(stdout_value))
+
+    log.close()
+
+    print "Compilation finished and results written to file => %s"%(logfile)
+    print "\n==================================================================="
+
+compiler="ifort"
+compiler="gfortran" # Hexagon
+if compiler=="gfortran":
+    compileAllGFORTRAN()
+else:
+    compileAllIFORT()

@@ -25,28 +25,28 @@ def help ():
      Edited by Trond Kristiansen, 16.3.2009, 11.11.2009, 20.11.2009
      """
 
-def createInitFile(grdROMS,ntime,outfilename,var,data1=None,data2=None,data3=None,data4=None):
+def createInitFile(grdROMS, ntime, outfilename, var, writeIce, data1=None, data2=None, data3=None, data4=None):
 
      # Create initial file for use with ROMS. This is the same as extracting time 0 from
      # the climatology file.
 
      myzlib=True
-
+     myformat='NETCDF4'
      if grdROMS.ioInitInitialized is False:
           grdROMS.ioInitInitialized=True
           if os.path.exists(outfilename):
                os.remove(outfilename)
 
-          f1 = Dataset(outfilename, mode='w', format='NETCDF4')
+          f1 = Dataset(outfilename, mode='w', format=myformat)
           f1.title       ="Initial forcing file (INIT) used for foring of the ROMS model"
           f1.description ="Created for the %s grid file"%(grdROMS.grdName)
           f1.grd_file    ="Gridfile: %s"%(grdROMS.grdfilename)
           f1.history     ="Created " + time.ctime(time.time())
           f1.source      ="Trond Kristiansen (trond.kristiansen@imr.no)"
-          f1.type        ="File in NetCDF4 format created using SODA2ROMS"
+          f1.type        ="File in NetCDF4 format created using MODEL2ROMS"
           f1.Conventions = "CF-1.0"
 
-          """Define dimensions"""
+          # Define dimensions
           f1.createDimension('xi_rho',  grdROMS.xi_rho)
           f1.createDimension('eta_rho', grdROMS.eta_rho)
           f1.createDimension('xi_u',    grdROMS.xi_u)
@@ -223,6 +223,111 @@ def createInitFile(grdROMS,ntime,outfilename,var,data1=None,data2=None,data3=Non
           v_ubar.time = "ocean_time"
           v_ubar.missing_value = grdROMS.fill_value
 
+          if writeIce:
+                ageice = f1.createVariable('ageice', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
+                                       fill_value=grdROMS.fill_value)
+                ageice.long_name = "time-averaged age of the ice"
+                ageice.units = "years"
+                ageice.time = "ocean_time"
+                ageice.field = "ice age, scalar, series"
+                ageice.missing_value = grdROMS.fill_value
+
+                uice = f1.createVariable('uice', 'f', ('ocean_time', 'eta_u', 'xi_u',), zlib=myzlib,
+                                       fill_value=grdROMS.fill_value)
+                uice.long_name = "time-averaged u-component of ice velocity"
+                uice.units = "meter second-1"
+                uice.time = "ocean_time"
+                uice.field = "u-component of ice velocity, scalar, series"
+                uice.missing_value = grdROMS.fill_value
+
+                vice = f1.createVariable('vice', 'f', ('ocean_time', 'eta_v', 'xi_v',), zlib=myzlib,
+                                       fill_value=grdROMS.fill_value)
+
+                vice.long_name = "time-averaged v-component of ice velocity"
+                vice.units = "meter second-1"
+                vice.time = "ocean_time"
+                vice.field = "v-component of ice velocity, scalar, series"
+                vice.missing_value = grdROMS.fill_value
+
+                aice = f1.createVariable('aice', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
+                                       fill_value=grdROMS.fill_value)
+
+                aice.long_name = "time-averaged fraction of cell covered by ice"
+                aice.time = "ocean_time"
+                aice.field = "ice concentration, scalar, series"
+                aice.missing_value = grdROMS.fill_value
+
+                hice = f1.createVariable('hice', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
+                                       fill_value=grdROMS.fill_value)
+                hice.long_name = "time-averaged average ice thickness in cell"
+                hice.units = "meter"
+                hice.time = "ocean_time"
+                hice.field = "ice thickness, scalar, series"
+                hice.missing_value = grdROMS.fill_value
+
+                snow_thick = f1.createVariable('snow_thick', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
+                                       fill_value=grdROMS.fill_value)
+
+                snow_thick.long_name = "time-averaged thickness of snow cover"
+                snow_thick.units = "meter"
+                snow_thick.time = "ocean_time"
+                snow_thick.field = "snow thickness, scalar, series"
+                snow_thick.missing_value = grdROMS.fill_value
+
+                ti = f1.createVariable('ti', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
+                                       fill_value=grdROMS.fill_value)
+
+                ti.long_name = "time-averaged interior ice temperature"
+                ti.units = "degrees Celcius"
+                ti.time = "ocean_time"
+                ti.field = "interior temperature, scalar, series"
+                ti.missing_value = grdROMS.fill_value
+
+                sfwat = f1.createVariable('sfwat', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
+                                       fill_value=grdROMS.fill_value)
+
+                sfwat.long_name = "time-averaged surface melt water thickness on ice"
+                sfwat.units = "meter"
+                sfwat.time = "ocean_time"
+                sfwat.field = "melt water thickness, scalar, series"
+                sfwat.missing_value = grdROMS.fill_value
+
+                tisrf = f1.createVariable('tisrf', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
+                                       fill_value=grdROMS.fill_value)
+                tisrf.long_name = "time-averaged temperature of ice surface"
+                tisrf.units = "degrees Celcius"
+                tisrf.time = "ocean_time"
+                tisrf.field = "surface temperature, scalar, series"
+                tisrf.missing_value = grdROMS.fill_value
+
+
+                sig11 = f1.createVariable('sig11', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
+                                       fill_value=grdROMS.fill_value)
+
+                sig11.long_name = "time-averaged internal ice stress 11 component"
+                sig11.units = "Newton meter-1"
+                sig11.time = "ocean_time"
+                sig11.field = "ice stress 11, scalar, series"
+                sig11.missing_value = grdROMS.fill_value
+
+                sig12 = f1.createVariable('sig12', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
+                                       fill_value=grdROMS.fill_value)
+
+                sig12.long_name = "time-averaged internal ice stress 12 component"
+                sig12.units = "Newton meter-1"
+                sig12.time = "ocean_time"
+                sig12.field = "ice stress 12, scalar, series"
+                sig12.missing_value = grdROMS.fill_value
+
+                sig22 = f1.createVariable('sig22', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
+                                       fill_value=grdROMS.fill_value)
+
+                sig22.long_name = "time-averaged internal ice stress 22 component"
+                sig22.units = "Newton meter-1"
+                sig22.time = "ocean_time"
+                sig22.field = "ice stress 22, scalar, series"
+                sig22.missing_value = grdROMS.fill_value
+
           d= num2date(grdROMS.time * 86400.0,units=v_time.long_name,calendar=v_time.calendar)
           print '\n'
           print '========================================================================='
@@ -235,7 +340,7 @@ def createInitFile(grdROMS,ntime,outfilename,var,data1=None,data2=None,data3=Non
           print '\n'
      
      else:
-        f1 = Dataset(outfilename, mode='a', format='NETCDF4')
+        f1 = Dataset(outfilename, mode='a', format=myformat)
 
      ntime=0
      f1.variables['ocean_time'][ntime]   = grdROMS.time * 86400.0
@@ -251,5 +356,23 @@ def createInitFile(grdROMS,ntime,outfilename,var,data1=None,data2=None,data3=Non
         f1.variables['v'][ntime,:,:,:]     = data2
         f1.variables['ubar'][ntime,:,:]    = data3
         f1.variables['vbar'][ntime,:,:]    = data4
+
+     if writeIce:
+        if var.lower() == "ageice":
+            f1.variables['ageice'][ntime, :, :] = data1
+            f1.variables['sfwat'][ntime, :, :] = -10.
+            f1.variables['tisrf'][ntime, :, :] = 0.
+            f1.variables['ti'][ntime, :, :] = 0.
+            f1.variables['sig11'][ntime, :, :] = 0.
+            f1.variables['sig12'][ntime, :, :] = 0.
+            f1.variables['sig22'][ntime, :, :] = 0.
+        if var.lower() in ['uice','vice']:
+            f1.variables[var.lower()][ntime, :, :] = data1
+        if var.lower() == 'aice':
+            f1.variables['aice'][ntime, :, :] = data1
+        if var.lower() == 'hice':
+            f1.variables['hice'][ntime, :, :] = data1
+        if var.lower() == 'snow_thick':
+            f1.variables['snow_thick'][ntime, :, :] = data1
 
      f1.close()

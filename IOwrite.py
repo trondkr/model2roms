@@ -434,22 +434,25 @@ def writeClimFile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, d
             f1.variables['ubar'][ntime, :, :] = data3
             f1.variables['vbar'][ntime, :, :] = data4
         if myvar == "ageice":
-            f1.variables['ageice'][ntime, :, :] = data1
+            print "NOTE! Setting values of ageice to ZERO! (IOWrite.py)"
+            f1.variables['ageice'][ntime, :, :] = data1*0.0
             f1.variables['sfwat'][ntime, :, :] = -10.
             f1.variables['tisrf'][ntime, :, :] = 0.
             f1.variables['ti'][ntime, :, :] = 0.
-            f1.variables['snow_thick'][ntime, :, :] = 0.
             f1.variables['sig11'][ntime, :, :] = 0.
             f1.variables['sig12'][ntime, :, :] = 0.
             f1.variables['sig22'][ntime, :, :] = 0.
         if myvar in ['uice','vice']:
-            f1.variables[myvar][ntime, :, :] = data1
-        if myvar=='iceconcentration':
-            f1.variables['aice'][ntime, :, :] = data1
-        if myvar=='icethickness':
+            print "NOTE! Setting values of uice and vice to ZERO! (IOWrite.py)"
+            f1.variables[myvar][ntime, :, :] = data1*0.0
+        if myvar=='aice':
+            print "NOTE! Setting values of aice to ZERO! (IOWrite.py)"
+            f1.variables['aice'][ntime, :, :] = data1*0.0
+        if myvar=='hice':
             f1.variables['hice'][ntime, :, :] = data1
-        if myvar=='snowdepth':
-            f1.variables['snow_thick'][ntime, :, :] = data1
+        if myvar=='snow_thick':
+            print "NOTE! Setting values of snow_thick to ZERO! (IOWrite.py)"
+            f1.variables['snow_thick'][ntime, :, :] = data1*0.0
 
     if isClimatology is True:
         # Climatological time starts at the 15th of each month

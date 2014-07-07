@@ -12,6 +12,11 @@ import barotropic
 import IOinitial
 import IOsubset
 
+try:
+    import ESMF
+except ImportError:
+    print "Could not find module ESMF"
+    pass
 __author__ = 'Trond Kristiansen'
 __email__ = 'trond.kristiansen@imr.no'
 __created__ = datetime(2008, 8, 15)
@@ -128,9 +133,10 @@ def HorizontalInterpolation(myvar, grdROMS, grdMODEL, data, show_progress):
     print 'Start %s horizontal interpolation for %s' % (grdMODEL.grdType, myvar)
 
     if grdMODEL.grdType == 'regular':
+
         if myvar in ['temperature', 'salinity']:
             array1 = interp2D.doHorInterpolationRegularGrid(myvar, grdROMS, grdMODEL, data, show_progress)
-        if myvar in ['ssh', 'ageice', 'uice', 'sim', 'sim2', 'vice', 'iceconcentration', 'icethickness', 'snowdepth']:
+        if myvar in ['ssh', 'ageice', 'uice', 'vice', 'aice', 'hice', 'snow_thick']:
             array1 = interp2D.doHorInterpolationSSHRegularGrid(myvar, grdROMS, grdMODEL, data)
         if myvar in ['uvel', 'vvel']:
             array1 = interp2D.doHorInterpolationRegularGrid(myvar, grdROMS, grdMODEL, data, show_progress)
@@ -280,7 +286,7 @@ def getTime(cdf, grdROMS, grdMODEL, year, ID, mytime, mytype):
         # Find the day and month that the NORESM file. We need to use the time modules from
         # netcdf4 for python as they handle calendars that are no_leap.
         # http://www.esrl.noaa.gov/psd/people/jeffrey.s.whitaker/python/netcdftime.html#datetime
-        mydays = cdf.variables["time"][mytime]
+        mydays = cdf.variables["time"][0]
         mycalendar = cdf.variables["time"].calendar
         refdateP = cdf.variables["time"].units
         refdate = utime(refdateP, calendar=mycalendar)
@@ -312,12 +318,17 @@ def getGLORYS2V1filename(year, ID, myvar, dataPath):
 
 
 def getNORESMfilename(year, ID, myvar, dataPath):
-    if myvar in ["thetao", "so", "uo", "vo"]:
-        # 3D variables
-        filename = dataPath + str(myvar.lower()) + '_Omon_NorESM1-M_rcp85_r1i1p1_200601-200912_rectangular.nc'
+
+    if (myvar=='grid'):
+        filename = dataPath + 'NorESM.nc'
+        #TODO: Fix this hardcoding of grid path
+        #filename = "/work/users/trondk/REGSCEN/GRID/NorESM.nc"
     else:
-        # 2D variables
-        filename = dataPath + str(myvar.lower()) + '_Omon_NorESM1-M_rcp85_r1i1p1_200601-210012_rectangular.nc'
+        if (ID < 10):
+            filename = dataPath + 'NRCP45AERCN_f19_g16_CLE_01.micom.hm.'+str(year)+'-0'+str(ID)+'.nc'
+        else:
+            filename = dataPath + 'NRCP45AERCN_f19_g16_CLE_01.micom.hm.'+str(year)+'-'+str(ID)+'.nc'
+    print filename
 
     return filename
 
@@ -345,8 +356,7 @@ def getWOAMONTHLYfilename(year, ID, myvar, dataPath):
 
     return filename
 
-def get3Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
-
+def createFields(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
     # All variables for all time are now stored in arrays. Now, start the interpolation to the
     # new grid for all variables and then finally write results to file.
     indexROMS_S_U = (grdROMS.Nlevels, grdROMS.eta_u, grdROMS.xi_u)
@@ -358,122 +368,171 @@ def get3Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
     if myvar == 'uvel':        varN = 3; Udata = np.zeros((indexROMS_S_U), dtype=np.float64)
     if myvar == 'vvel':        varN = 4; Vdata = np.zeros((indexROMS_S_V), dtype=np.float64)
 
+    if mytype == "NORESM":
+        cdf = Dataset(getNORESMfilename(year, ID, varNames[varN], dataPath))
+        myunits = cdf.variables[str(varNames[varN])].units
+
+    grdMODEL.field = ESMF.Field(grdMODEL.esmfgrid, "fieldSrc", staggerloc=ESMF.StaggerLoc.CENTER)
+    grdROMS.field  = ESMF.Field(grdROMS.esmfgrid, "fieldDst", staggerloc=ESMF.StaggerLoc.CENTER)
+
+    cdf = Dataset(variablefilename)
+
+    # Grid is (y,x) while regridding takes (x,y) so we have to flip the data array
+    fieldSrc[:,:] = np.flipud(np.rot90(np.squeeze(cdf.variables[myvariable][0,0,:,:])))
+
+    regridSrc2Dst = ESMF.Regrid(fieldSrc, fieldDst, regrid_method=ESMF.RegridMethod.BILINEAR)
+
+    # Get the actual regridded array
+    dstfield = regridSrc2Dst(fieldSrc, fieldDst)
+
+    createMap(dstfield,dstgrid)
+    data1 = np.squeeze(cdf.variables[str(varNames[varN])][0, :,
+                       int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
+                       int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])])
+
+
+def get3Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
+
+    if myvar == 'temperature': varN = 0;
+    if myvar == 'salinity': varN = 1;
+    if myvar == 'uvel': varN = 3;
+    if myvar == 'vvel': varN = 4;
+
     # The variable splitExtract is defined in IOsubset.py and depends on the orientation
     # and mytype of grid (-180-180 or 0-360). Assumes regular grid.
-    if grdMODEL.splitExtract is True:
-        if mytype == "SODA":
-
-            filename = getSODAfilename(year, ID, None, dataPath)
-            cdf = Dataset(filename)
-
-            data1 = cdf.variables[varNames[varN]][0, :,
-                    int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
-                    int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])]
-            data2 = cdf.variables[varNames[varN]][0, :,
-                    int(grdMODEL.indices[1, 2]):int(grdMODEL.indices[1, 3]),
-                    int(grdMODEL.indices[1, 0]):int(grdMODEL.indices[1, 1])]
-
-        if mytype == "SODAMONTHLY":
-
-            filename = getSODAMONTHLYfilename(year, ID, None, dataPath)
-            cdf = Dataset(filename)
-
-            data1 = cdf.variables[str(varNames[varN])][:,
-                    int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
-                    int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])]
-            data2 = cdf.variables[str(varNames[varN])][:,
-                    int(grdMODEL.indices[1, 2]):int(grdMODEL.indices[1, 3]),
-                    int(grdMODEL.indices[1, 0]):int(grdMODEL.indices[1, 1])]
-
-        if mytype in ["WOAMONTHLY"]:
-
-            filename = getWOAMONTHLYfilename(year, ID, myvar, dataPath)
-            cdf = Dataset(filename)
-
-            data1 = cdf.variables[str(varNames[varN])][ID - 1, :,
-                    int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
-                    int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])]
-            data2 = cdf.variables[str(varNames[varN])][ID - 1, :,
-                    int(grdMODEL.indices[1, 2]):int(grdMODEL.indices[1, 3]),
-                    int(grdMODEL.indices[1, 0]):int(grdMODEL.indices[1, 1])]
-
-        if mytype == "GLORYS2V1":
-            if myvar == 'temperature':
-                cdf = Dataset(getGLORYS2V1filename(year, ID, 'T', dataPath))
-                myunits = cdf.variables[str(varNames[varN])].units
-
-            if myvar == 'salinity': cdf = Dataset(getGLORYS2V1filename(year, ID, 'S', dataPath))
-            if myvar == 'uvel': cdf = Dataset(getGLORYS2V1filename(year, ID, 'U', dataPath))
-            if myvar == 'vvel': cdf = Dataset(getGLORYS2V1filename(year, ID, 'V', dataPath))
-
-            data1 = np.squeeze(cdf.variables[str(varNames[varN])][0, :,
-                               int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
-                               int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])])
-            data2 = np.squeeze(cdf.variables[str(varNames[varN])][0, :,
-                               int(grdMODEL.indices[1, 2]):int(grdMODEL.indices[1, 3]),
-                               int(grdMODEL.indices[1, 0]):int(grdMODEL.indices[1, 1])])
-
-        if mytype == "NORESM":
-            cdf = Dataset(getNORESMfilename(year, ID, varNames[varN], dataPath))
-            myunits = cdf.variables[str(varNames[varN])].units
-
-            data1 = np.squeeze(cdf.variables[str(varNames[varN])][0, :,
-                               int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
-                               int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])])
-            data2 = np.squeeze(cdf.variables[str(varNames[varN])][0, :,
-                               int(grdMODEL.indices[1, 2]):int(grdMODEL.indices[1, 3]),
-                               int(grdMODEL.indices[1, 0]):int(grdMODEL.indices[1, 1])])
-
-        cdf.close()
-
-        data = np.concatenate((data1, data2), axis=2)
-
-    else:
+    if  grdMODEL.useESMF:
         if mytype == "SODA":
             filename = getSODAfilename(year, ID, None, dataPath)
             cdf = Dataset(filename)
-
-            data = cdf.variables[str(varNames[varN])][0, :,
-                   int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
-                   int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])]
+            data = cdf.variables[varNames[varN]][0,:,:,:]
 
         if mytype == "SODAMONTHLY":
             filename = getSODAMONTHLYfilename(year, ID, None, dataPath)
             cdf = Dataset(filename)
-
-            data = cdf.variables[str(varNames[varN])][:,
-                   int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
-                   int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])]
+            data = cdf.variables[str(varNames[varN])][:,:,:]
 
         if mytype == "WOAMONTHLY":
             filename = getWOAMONTHLYfilename(year, ID, myvar, dataPath)
             cdf = Dataset(filename)
-
-            data = cdf.variables[str(varNames[varN])][ID, :,
-                   int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
-                   int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])]
-
-        if mytype == "GLORYS2V1":
-            if myvar == 'temperature':
-                cdf = Dataset(getGLORYS2V1filename(year, ID, 'T', dataPath))
-
-                myunits = cdf.variables[str(varNames[varN])].units
-            if myvar == 'salinity': cdf = Dataset(getGLORYS2V1filename(year, ID, 'S', dataPath))
-            if myvar == 'uvel': cdf = Dataset(getGLORYS2V1filename(year, ID, 'U', dataPath))
-            if myvar == 'vvel': cdf = Dataset(getGLORYS2V1filename(year, ID, 'V', dataPath))
-
-            data = np.squeeze(cdf.variables[str(varNames[varN])][0, :,
-                              int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
-                              int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])])
+            data = cdf.variables[str(varNames[varN])][ID - 1, :,:,:]
 
         if mytype == "NORESM":
             cdf = Dataset(getNORESMfilename(year, ID, varNames[varN], dataPath))
             myunits = cdf.variables[str(varNames[varN])].units
-
-            data = np.squeeze(cdf.variables[str(varNames[varN])][0, :,
-                              int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
-                              int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])])
+            data = np.squeeze(cdf.variables[str(varNames[varN])][0,:,:,:])
         cdf.close()
+    else:
+        if grdMODEL.splitExtract is True:
+            if mytype == "SODA":
+                filename = getSODAfilename(year, ID, None, dataPath)
+                cdf = Dataset(filename)
+
+                data1 = cdf.variables[varNames[varN]][0, :,
+                        int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
+                        int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])]
+                data2 = cdf.variables[varNames[varN]][0, :,
+                        int(grdMODEL.indices[1, 2]):int(grdMODEL.indices[1, 3]),
+                        int(grdMODEL.indices[1, 0]):int(grdMODEL.indices[1, 1])]
+
+            if mytype == "SODAMONTHLY":
+                filename = getSODAMONTHLYfilename(year, ID, None, dataPath)
+                cdf = Dataset(filename)
+
+                data1 = cdf.variables[str(varNames[varN])][:,
+                        int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
+                        int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])]
+                data2 = cdf.variables[str(varNames[varN])][:,
+                        int(grdMODEL.indices[1, 2]):int(grdMODEL.indices[1, 3]),
+                        int(grdMODEL.indices[1, 0]):int(grdMODEL.indices[1, 1])]
+
+            if mytype in ["WOAMONTHLY"]:
+
+                filename = getWOAMONTHLYfilename(year, ID, myvar, dataPath)
+                cdf = Dataset(filename)
+
+                data1 = cdf.variables[str(varNames[varN])][ID - 1, :,
+                        int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
+                        int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])]
+                data2 = cdf.variables[str(varNames[varN])][ID - 1, :,
+                        int(grdMODEL.indices[1, 2]):int(grdMODEL.indices[1, 3]),
+                        int(grdMODEL.indices[1, 0]):int(grdMODEL.indices[1, 1])]
+
+            if mytype == "GLORYS2V1":
+                if myvar == 'temperature':
+                    cdf = Dataset(getGLORYS2V1filename(year, ID, 'T', dataPath))
+                    myunits = cdf.variables[str(varNames[varN])].units
+
+                if myvar == 'salinity': cdf = Dataset(getGLORYS2V1filename(year, ID, 'S', dataPath))
+                if myvar == 'uvel': cdf = Dataset(getGLORYS2V1filename(year, ID, 'U', dataPath))
+                if myvar == 'vvel': cdf = Dataset(getGLORYS2V1filename(year, ID, 'V', dataPath))
+
+                data1 = np.squeeze(cdf.variables[str(varNames[varN])][0, :,
+                                   int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
+                                   int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])])
+                data2 = np.squeeze(cdf.variables[str(varNames[varN])][0, :,
+                                   int(grdMODEL.indices[1, 2]):int(grdMODEL.indices[1, 3]),
+                                   int(grdMODEL.indices[1, 0]):int(grdMODEL.indices[1, 1])])
+
+            if mytype == "NORESM":
+                cdf = Dataset(getNORESMfilename(year, ID, varNames[varN], dataPath))
+                myunits = cdf.variables[str(varNames[varN])].units
+                data1 = np.squeeze(cdf.variables[str(varNames[varN])][0, :,
+                                   int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
+                                   int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])])
+                data2 = np.squeeze(cdf.variables[str(varNames[varN])][0, :,
+                                   int(grdMODEL.indices[1, 2]):int(grdMODEL.indices[1, 3]),
+                                   int(grdMODEL.indices[1, 0]):int(grdMODEL.indices[1, 1])])
+
+            cdf.close()
+
+            data = np.concatenate((data1, data2), axis=2)
+
+        else:
+            if mytype == "SODA":
+                filename = getSODAfilename(year, ID, None, dataPath)
+                cdf = Dataset(filename)
+
+                data = cdf.variables[str(varNames[varN])][0, :,
+                       int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
+                       int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])]
+
+            if mytype == "SODAMONTHLY":
+                filename = getSODAMONTHLYfilename(year, ID, None, dataPath)
+                cdf = Dataset(filename)
+
+                data = cdf.variables[str(varNames[varN])][:,
+                       int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
+                       int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])]
+
+            if mytype == "WOAMONTHLY":
+                filename = getWOAMONTHLYfilename(year, ID, myvar, dataPath)
+                cdf = Dataset(filename)
+
+                data = cdf.variables[str(varNames[varN])][ID, :,
+                       int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
+                       int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])]
+
+            if mytype == "GLORYS2V1":
+                if myvar == 'temperature':
+                    cdf = Dataset(getGLORYS2V1filename(year, ID, 'T', dataPath))
+
+                    myunits = cdf.variables[str(varNames[varN])].units
+                if myvar == 'salinity': cdf = Dataset(getGLORYS2V1filename(year, ID, 'S', dataPath))
+                if myvar == 'uvel': cdf = Dataset(getGLORYS2V1filename(year, ID, 'U', dataPath))
+                if myvar == 'vvel': cdf = Dataset(getGLORYS2V1filename(year, ID, 'V', dataPath))
+
+                data = np.squeeze(cdf.variables[str(varNames[varN])][0, :,
+                                  int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
+                                  int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])])
+
+            if mytype == "NORESM":
+                cdf = Dataset(getNORESMfilename(year, ID, varNames[varN], dataPath))
+                myunits = cdf.variables[str(varNames[varN])].units
+
+                data = np.squeeze(cdf.variables[str(varNames[varN])][0, :,
+                                  int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
+                                  int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])])
+            cdf.close()
 
     if myvar == 'temperature' and mytype in ["GLORYS2V1", "NORESM"]:
 
@@ -482,8 +541,8 @@ def get3Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
                 data = np.where(data <= -32.767, grdROMS.fill_value, data)
             data = data - 273.15
 
-        if time == 0 and myvar == myvars[0]:
-            tmp = np.squeeze(data[0, :, :])
+            #  if time == 0 and myvar == myvars[0]:
+            #      tmp = np.squeeze(data[0, :, :])
             #grdMODEL.mask = np.zeros(grdMODEL.lon.shape, dtype=np.float64)
             #grdMODEL.mask[:, :] = np.where(tmp == grdROMS.fill_value, 1, 0)
 
@@ -502,137 +561,165 @@ def get2Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
 
     indexROMS_SSH = (grdROMS.eta_rho, grdROMS.xi_rho)
 
+    if mytype == "NORESM":
+        if myvar == 'ageice': varN = 5;  SSHdata = np.zeros((indexROMS_SSH), dtype=np.float64)
+        if myvar == 'uice':   varN = 6;  SSHdata = np.zeros((indexROMS_SSH), dtype=np.float64)
+        if myvar == 'vice':   varN = 7;  SSHdata = np.zeros((indexROMS_SSH), dtype=np.float64)
+        if myvar == 'aice':   varN = 8;  SSHdata = np.zeros((indexROMS_SSH), dtype=np.float64)
+        if myvar == 'hice':   varN = 9;  SSHdata = np.zeros((indexROMS_SSH), dtype=np.float64)
+        if myvar == 'snow_thick': varN = 10;  SSHdata = np.zeros((indexROMS_SSH), dtype=np.float64)
 
     if myvar == 'ssh': varN = 2;  SSHdata = np.zeros((indexROMS_SSH), dtype=np.float64)
-    if mytype == "NORESM":
-        if myvar == 'ageice': varN = 0;  SSHdata = np.zeros((indexROMS_SSH), dtype=np.float64)
-        if myvar == 'uice':   varN = 1;  SSHdata = np.zeros((indexROMS_SSH), dtype=np.float64)
-        if myvar == 'sim':    varN = 2;  SSHdata = np.zeros((indexROMS_SSH), dtype=np.float64)
-        if myvar == 'vice':   varN = 3;  SSHdata = np.zeros((indexROMS_SSH), dtype=np.float64)
-        if myvar == 'sim2':   varN = 4;  SSHdata = np.zeros((indexROMS_SSH), dtype=np.float64)
-        if myvar == 'iceconcentration': varN = 5;  SSHdata = np.zeros((indexROMS_SSH), dtype=np.float64)
-        if myvar == 'icethickness':     varN = 6;  SSHdata = np.zeros((indexROMS_SSH), dtype=np.float64)
-        if myvar == 'snowdepth':        varN = 7;  SSHdata = np.zeros((indexROMS_SSH), dtype=np.float64)
 
-    if grdMODEL.splitExtract is True:
+    if  grdMODEL.useESMF:
         if mytype == "SODA":
             filename = getSODAfilename(year, ID, None, dataPath)
             cdf = Dataset(filename)
-
-            data1 = cdf.variables[varNames[varN]][0,
-                    int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
-                    int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])]
-            data2 = cdf.variables[varNames[varN]][0,
-                    int(grdMODEL.indices[1, 2]):int(grdMODEL.indices[1, 3]),
-                    int(grdMODEL.indices[1, 0]):int(grdMODEL.indices[1, 1])]
+            data = cdf.variables[varNames[varN]][0,:,:]
 
         if mytype == "SODAMONTHLY":
             filename = getSODAMONTHLYfilename(year, ID, None, dataPath)
             cdf = Dataset(filename)
+            data = cdf.variables[str(varNames[varN])][:,:]
 
-            data1 = cdf.variables[str(varNames[varN])][
-                    int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
-                    int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])]
-            data2 = cdf.variables[str(varNames[varN])][
-                    int(grdMODEL.indices[1, 2]):int(grdMODEL.indices[1, 3]),
-                    int(grdMODEL.indices[1, 0]):int(grdMODEL.indices[1, 1])]
-
-        if mytype == "GLORYS2V1":
-            cdf = Dataset(getGLORYS2V1filename(year, ID, 'T', dataPath))
-
-            data1 = np.squeeze(cdf.variables[str(varNames[varN])][0,
-                               int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
-                               int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])])
-            data2 = np.squeeze(cdf.variables[str(varNames[varN])][0,
-                               int(grdMODEL.indices[1, 2]):int(grdMODEL.indices[1, 3]),
-                               int(grdMODEL.indices[1, 0]):int(grdMODEL.indices[1, 1])])
+        if mytype == "WOAMONTHLY":
+            filename = getWOAMONTHLYfilename(year, ID, myvar, dataPath)
+            cdf = Dataset(filename)
+            data = cdf.variables[str(varNames[varN])][ID - 1, :,:]
 
         if mytype == "NORESM":
             cdf = Dataset(getNORESMfilename(year, ID, varNames[varN], dataPath))
-
-            data1 = np.squeeze(cdf.variables[str(varNames[varN])][0,
-                               int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
-                               int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])])
-            data2 = np.squeeze(cdf.variables[str(varNames[varN])][0,
-                               int(grdMODEL.indices[1, 2]):int(grdMODEL.indices[1, 3]),
-                               int(grdMODEL.indices[1, 0]):int(grdMODEL.indices[1, 1])])
-
+            #myunits = cdf.variables[str(varNames[varN])].units
+            data = np.squeeze(cdf.variables[str(varNames[varN])][0, :,:])
+            print "DATA SSH:",np.shape(data),varNames[varN],varN
         cdf.close()
-        data = np.concatenate((data1, data2), axis=1)
-
     else:
-        if mytype == "SODA":
-            filename = getSODAfilename(year, ID, None, dataPath)
-            cdf = Dataset(filename)
+        if grdMODEL.splitExtract is True:
+            if mytype == "SODA":
+                filename = getSODAfilename(year, ID, None, dataPath)
+                cdf = Dataset(filename)
 
-            data = cdf.variables[str(varNames[varN])][0,
-                   int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
-                   int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])]
+                data1 = cdf.variables[varNames[varN]][0,
+                        int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
+                        int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])]
+                data2 = cdf.variables[varNames[varN]][0,
+                        int(grdMODEL.indices[1, 2]):int(grdMODEL.indices[1, 3]),
+                        int(grdMODEL.indices[1, 0]):int(grdMODEL.indices[1, 1])]
 
-        if mytype == "SODAMONTHLY":
-            filename = getSODAMONTHLYfilename(year, ID, None, dataPath)
-            cdf = Dataset(filename)
+            if mytype == "SODAMONTHLY":
+                filename = getSODAMONTHLYfilename(year, ID, None, dataPath)
+                cdf = Dataset(filename)
 
-            data = cdf.variables[str(varNames[varN])][
-                   int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
-                   int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])]
+                data1 = cdf.variables[str(varNames[varN])][
+                        int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
+                        int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])]
+                data2 = cdf.variables[str(varNames[varN])][
+                        int(grdMODEL.indices[1, 2]):int(grdMODEL.indices[1, 3]),
+                        int(grdMODEL.indices[1, 0]):int(grdMODEL.indices[1, 1])]
+
+            if mytype == "GLORYS2V1":
+                cdf = Dataset(getGLORYS2V1filename(year, ID, 'T', dataPath))
+
+                data1 = np.squeeze(cdf.variables[str(varNames[varN])][0,
+                                   int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
+                                   int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])])
+                data2 = np.squeeze(cdf.variables[str(varNames[varN])][0,
+                                   int(grdMODEL.indices[1, 2]):int(grdMODEL.indices[1, 3]),
+                                   int(grdMODEL.indices[1, 0]):int(grdMODEL.indices[1, 1])])
+
+            if mytype == "NORESM":
+                cdf = Dataset(getNORESMfilename(year, ID, varNames[varN], dataPath))
+
+                data1 = np.squeeze(cdf.variables[str(varNames[varN])][0,
+                                   int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
+                                   int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])])
+                data2 = np.squeeze(cdf.variables[str(varNames[varN])][0,
+                                   int(grdMODEL.indices[1, 2]):int(grdMODEL.indices[1, 3]),
+                                   int(grdMODEL.indices[1, 0]):int(grdMODEL.indices[1, 1])])
+
+            cdf.close()
+            data = np.concatenate((data1, data2), axis=1)
+
+        else:
+            if mytype == "SODA":
+                filename = getSODAfilename(year, ID, None, dataPath)
+                cdf = Dataset(filename)
+
+                data = cdf.variables[str(varNames[varN])][0,
+                       int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
+                       int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])]
+
+            if mytype == "SODAMONTHLY":
+                filename = getSODAMONTHLYfilename(year, ID, None, dataPath)
+                cdf = Dataset(filename)
+
+                data = cdf.variables[str(varNames[varN])][
+                       int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
+                       int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])]
+
+            if mytype == "GLORYS2V1":
+                cdf = Dataset(getGLORYS2V1filename(year, ID, 'T', dataPath))
+
+                data = np.squeeze(cdf.variables[str(varNames[varN])][0,
+                                  int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
+                                  int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])])
+
+            if mytype == "NORESM":
+                cdf = Dataset(getNORESMfilename(year, ID, varNames[varN], dataPath))
+
+                data = np.squeeze(cdf.variables[str(varNames[varN])][0,
+                                  int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
+                                  int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])])
+
+            cdf.close()
+            # data = np.where(abs(data) == grdMODEL.fill_value, grdROMS.fill_value, data)
+            #data = np.ma.where(abs(data) > 1000, grdROMS.fill_value, data)
 
         if mytype == "GLORYS2V1":
-            cdf = Dataset(getGLORYS2V1filename(year, ID, 'T', dataPath))
-
-            data = np.squeeze(cdf.variables[str(varNames[varN])][0,
-                          int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
-                          int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])])
-
-        if mytype == "NORESM":
-            cdf = Dataset(getNORESMfilename(year, ID, varNames[varN], dataPath))
-
-            data = np.squeeze(cdf.variables[str(varNames[varN])][0,
-                          int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
-                          int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])])
-
-        cdf.close()
-        # data = np.where(abs(data) == grdMODEL.fill_value, grdROMS.fill_value, data)
-        #data = np.ma.where(abs(data) > 1000, grdROMS.fill_value, data)
-
-    if mytype == "GLORYS2V1":
             data = np.where(data <= -32.767, grdROMS.fill_value, data)
             data = np.ma.masked_where(data <= grdROMS.fill_value, data)
 
-    if __debug__:
-        print "Data range of %s just after extracting from netcdf file: %s - %s" % (str(varNames[varN]),
-                                                                                    data.min(), data.max())
+        if __debug__:
+            print "Data range of %s just after extracting from netcdf file: %s - %s" % (str(varNames[varN]),
+                                                                                        data.min(), data.max())
 
     return data
 
 
 def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, myvars, show_progress, mytype, subset,
-                      isClimatology, writeIce):
-    """First opening of input file is just for initialization of grid"""
-
+                      isClimatology, writeIce, useESMF):
+    # First opening of input file is just for initialization of grid
     if mytype == 'SODA':
-        fileNameIn = dataPath + 'SODA_2.0.2_' + str(years[0]) + '_' + str(IDS[0]) + '.cdf'
+        fileNameIn = getSODAfilename(years[0], IDS[0], "salinity", dataPath)
     if mytype == 'SODAMONTHLY':
-        fileNameIn = dataPath + 'SODA_2.0.2_' + str(years[0]) + '0' + str(IDS[0]) + '.cdf'
+        fileNameIn = getSODAfilename(years[0], IDS[0], "salinity", dataPath)
     if mytype == 'NORESM':
-        fileNameIn = dataPath + 'thetao_Omon_NorESM1-M_rcp85_r1i1p1_200601-200912_rectangular.nc'
-
+        fileNameIn = getNORESMfilename(years[0], IDS[0], "grid", dataPath)
     if mytype == 'WOAMONTHLY':
-        fileNameIn = dataPath + 'salinity_monthly_1deg.nc'
-
+        fileNameIn = getWOAMONTHLYfilename(years[0], IDS[0], "temperature", dataPath)
     if mytype == 'GLORYS2V1':
-        fileNameIn = dataPath + 'global-reanalysis-phys-001-009-ran-fr-glorys2-grids/REGRID/GLORYS2V1_ORCA025_' + str(
-            years[0]) + '0115_R20110216_gridS_regrid.nc'
-    if mytype == 'HYCOM':
-        fileNameIn = dataPath + 'archv.2003_307_00_3zt.nc'
-
+        fileNameIn = getGLORYS2V1filename(years[0], IDS[0], "S", dataPath)
 
     # First time in loop, get the essential old grid information
     # MODEL data already at Z-levels. No need to interpolate to fixed depths,
     # but we use the one we have
-    grdMODEL = grd.grdClass(fileNameIn, mytype)
-    grdROMS = grd.grdClass(romsgridpath, "ROMS")
+    grdMODEL = grd.grdClass(fileNameIn, mytype, useESMF)
+    grdROMS = grd.grdClass(romsgridpath, "ROMS", useESMF)
     grdROMS.myvars = myvars
+    if (useESMF):
+        print "\nCreating the interpolation weights and indexes using ESMF:"
+        print "->regridSrc2Dst at RHO points"
+        grdMODEL.fieldSrc = ESMF.Field(grdMODEL.esmfgrid, "fieldSrc", staggerloc=ESMF.StaggerLoc.CENTER)
+        grdMODEL.fieldDst_rho = ESMF.Field(grdROMS.esmfgrid, "fieldDst", staggerloc=ESMF.StaggerLoc.CENTER)
+        grdMODEL.regridSrc2Dst_rho = ESMF.Regrid(grdMODEL.fieldSrc, grdMODEL.fieldDst_rho, regrid_method=ESMF.RegridMethod.BILINEAR)
+        print "->regridSrc2Dst at U points"
+        grdMODEL.fieldSrc = ESMF.Field(grdMODEL.esmfgrid, "fieldSrc", staggerloc=ESMF.StaggerLoc.CENTER)
+        grdMODEL.fieldDst_u = ESMF.Field(grdROMS.esmfgrid_u, "fieldDst_u", staggerloc=ESMF.StaggerLoc.CENTER)
+        grdMODEL.regridSrc2Dst_u = ESMF.Regrid(grdMODEL.fieldSrc, grdMODEL.fieldDst_u, regrid_method=ESMF.RegridMethod.BILINEAR)
+        print "->regridSrc2Dst at V points"
+        grdMODEL.fieldSrc = ESMF.Field(grdMODEL.esmfgrid, "fieldSrc", staggerloc=ESMF.StaggerLoc.CENTER)
+        grdMODEL.fieldDst_v = ESMF.Field(grdROMS.esmfgrid_v, "fieldDst_v", staggerloc=ESMF.StaggerLoc.CENTER)
+        grdMODEL.regridSrc2Dst_v = ESMF.Regrid(grdMODEL.fieldSrc, grdMODEL.fieldDst_v, regrid_method=ESMF.RegridMethod.BILINEAR)
 
     # Now we want to subset the data to avoid storing more information than we need.
     # We do this by finding the indices of maximum and minimum latitude and longitude in the matrixes
@@ -664,10 +751,9 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
                 varNames = ['t_an', 's_an']
 
             if mytype == 'NORESM':
-                filename = getNORESMfilename(year, ID, "so", dataPath)
+                filename = getNORESMfilename(year, ID, "saln", dataPath)
                 writeIce = True
-                varNames = ['thetao', 'so', 'zos', 'uo', 'vo', 'ageice', 'uice', 'vice', 'aice', 'hice', 'snd']
-                varNames = ['ageice', 'transix', 'sim', 'transiy', 'sim', 'sic', 'sit', 'snd']
+                varNames = ['templvl','salnlvl','sealv', 'uvellvl', 'vvellvl','fice', 'fice', 'fice', 'fice', 'fice', 'fice']
 
             # Now open the input file and get the time
             cdf = Dataset(filename)
@@ -692,13 +778,8 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
                 if myvar in ['temperature', 'salinity', 'uvel', 'vvel']:
                     data = get3Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath)
 
-                if myvar in ['ssh', 'ageice', 'uice', 'sim', 'vice', 'sim2', 'iceconcentration', 'icethickness','snowdepth']:
+                if myvar in ['ssh', 'ageice', 'uice', 'vice', 'aice', 'hice','snow_thick']:
                     data = get2Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath)
-
-                    # if mytype=="NORESM":
-                    #datacyclic, loncyclic = addcyclic(data, grdMODEL.lon[0,:])
-                    #grdMODEL.lon, grdMODEL.lat = np.meshgrid(loncyclic,grdMODEL.lat[:,0])
-                    #data=datacyclic
 
                 # Take the input data and horizontally interpolate to your grid
                 array1 = HorizontalInterpolation(myvar, grdROMS, grdMODEL, data, show_progress)
@@ -709,15 +790,15 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
                         myvar, STdata.min(), STdata.max())
 
                     for dd in xrange(len(STdata[:,0,0])):
-                          STdata[dd,:,:] = np.where(grdROMS.mask_rho == 0, grdROMS.fill_value, STdata[dd,:,:])
+                        STdata[dd,:,:] = np.where(grdROMS.mask_rho == 0, grdROMS.fill_value, STdata[dd,:,:])
 
                     STdata = np.where(abs(STdata) > 1000, grdROMS.fill_value, STdata)
 
                     IOwrite.writeClimFile(grdROMS, time, climName, myvar, isClimatology, writeIce, STdata)
                     if time == grdROMS.initTime and grdROMS.write_init is True:
-                        IOinitial.createInitFile(grdROMS, time, initName, myvar, STdata)
+                        IOinitial.createInitFile(grdROMS, time, initName, myvar, writeIce, STdata)
 
-                if myvar in ['ssh', 'ageice', 'iceconcentration', 'icethickness', 'snowdepth']:
+                if myvar in ['ssh', 'ageice', 'aice', 'hice', 'snow_thick']:
                     SSHdata = array1[0, :, :]
                     print "Data range of %s after interpolation: %3.3f to %3.3f" % (
                         myvar, SSHdata.min(), SSHdata.max())
@@ -727,43 +808,26 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
 
                     IOwrite.writeClimFile(grdROMS, time, climName, myvar, isClimatology, writeIce, SSHdata)
                     if time == grdROMS.initTime:
-                        IOinitial.createInitFile(grdROMS, time, initName, myvar, SSHdata)
+                        IOinitial.createInitFile(grdROMS, time, initName, myvar, writeIce, SSHdata)
 
                 # The following are special routines used to calculate the u and v velocity
                 # of ice based on the transport, which is divided by snow and ice thickenss
                 # and then multiplied by grid size in dx or dy direction (opposite of transport).
                 if myvar in ['uice', 'vice']:
-                    array2 = array1
 
-                if myvar in ['sim', 'sim2']:
-                    if myvar == 'sim':
-                        print "transix", array2.min(), array2.max()
-                        print "sim", array1.min(), array1.max()
+                    SSHdata = (array1) # * (1. / grdROMS.pm))
+                    if  myvar=="uice":mymask=grdROMS.mask_u
+                    if  myvar=="vice":mymask=grdROMS.mask_v
 
-                        SSHdata = array2 / (array1) # * (1. / grdROMS.pm))
-                        SSHdata = np.where(grdROMS.mask_u == 0, grdROMS.fill_value, SSHdata)
-                       # SSHdata = np.where(abs(SSHdata) > 1000, grdROMS.fill_value, SSHdata)
-                        print "UICE: Data range of %s after interpolation: %3.3f to %3.3f" % (
-                            myvar, SSHdata.min(), SSHdata.max())
-                    if myvar == 'sim2':
-                        SSHdata = array2 / (array1) # * (1. / grdROMS.pn))
-                        SSHdata = np.where(grdROMS.mask_v == 0, grdROMS.fill_value, SSHdata)
-                      #  SSHdata = np.where(abs(SSHdata) > 1000, grdROMS.fill_value, SSHdata)
+                    SSHdata = np.where(mymask == 0, grdROMS.fill_value, SSHdata)
 
-                        print "VICE: Data range of %s after interpolation: %3.3f to %3.3f" % (
-                            myvar, SSHdata.min(), SSHdata.max())
-
-
-                    if myvar == 'sim':
-                        IOwrite.writeClimFile(grdROMS, time, climName, 'uice', isClimatology, writeIce, SSHdata)
-                    if myvar == 'sim2':
-                        IOwrite.writeClimFile(grdROMS, time, climName, 'vice', isClimatology, writeIce, SSHdata)
+                    IOwrite.writeClimFile(grdROMS, time, climName, myvar, isClimatology, writeIce, SSHdata)
 
                     if time == grdROMS.initTime:
-                        if myvar == 'sim':
-                            IOinitial.createInitFile(grdROMS, time, initName, 'uice', SSHdata)
-                        if myvar == 'sim2':
-                            IOinitial.createInitFile(grdROMS, time, initName, 'vice', SSHdata)
+                        if myvar == 'uice':
+                            IOinitial.createInitFile(grdROMS, time, initName, 'uice', writeIce,  SSHdata)
+                        if myvar == 'vice':
+                            IOinitial.createInitFile(grdROMS, time, initName, 'vice', writeIce, SSHdata)
 
                 if myvar == 'uvel':
                     array2 = array1
@@ -797,6 +861,6 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
                                           UBARdata, VBARdata)
                     if time == grdROMS.initTime:
                         # We print time=initTime to init file so that we have values for ubar and vbar (not present at time=1)
-                        IOinitial.createInitFile(grdROMS, time, initName, myvar, Udata, Vdata, UBARdata, VBARdata)
+                        IOinitial.createInitFile(grdROMS, time, initName, myvar, writeIce, Udata, Vdata, UBARdata, VBARdata)
 
             time += 1
