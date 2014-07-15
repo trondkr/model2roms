@@ -1,12 +1,9 @@
-from netCDF4 import Dataset, datetime, timedelta
-from netcdftime import utime
+from netCDF4 import Dataset, datetime, date2num,num2date
 import numpy as np
 import interp2D
 import interpolation as interp
 import IOwrite
-from mpl_toolkits.basemap import addcyclic
 
-import date
 import grd
 import barotropic
 import IOinitial
@@ -20,9 +17,9 @@ except ImportError:
 __author__ = 'Trond Kristiansen'
 __email__ = 'trond.kristiansen@imr.no'
 __created__ = datetime(2008, 8, 15)
-__modified__ = datetime(2010, 1, 7)
+__modified__ = datetime(2014, 7, 15)
 __version__ = "1.5"
-__status__ = "Development, modified on 15.08.2008,01.10.2009,07.01.2010"
+__status__ = "Development, modified on 15.08.2008,01.10.2009,07.01.2010, 15.07.2014"
 
 
 def VerticalInterpolation(myvar, array1, array2, grdROMS, grdMODEL):
@@ -203,30 +200,28 @@ def interpolate2UV(grdROMS, grdMODEL, urot, vrot):
     return Zu, Zv
 
 
-def getTime(cdf, grdROMS, grdMODEL, year, ID, mytime, mytype):
+def getTime(cdf, grdROMS, grdMODEL, year, ID, mytime, mytype, firstRun):
     """
     Create a date object to keep track of Julian dates etc.
     Also create a reference date starting at 1948/01/01.
     Go here to check results:http://lena.gsfc.nasa.gov/lenaDEV/html/doy_conv.html
     """
-    ref_date = date.Date()
-    ref_date.day = 1
-    ref_date.month = 1
-    ref_date.year = 1948
-    jdref = ref_date.ToJDNumber()
+
+    if (mytype)=='NORESM':
+       jdref = date2num(datetime(1800,1,1),cdf.variables["time"].units,calendar=cdf.variables["time"].calendar)
+    else:
+        jdref = date2num(datetime(1948,1,1),cdf.variables["time"].units,calendar=cdf.variables["time"].calendar)
 
     if mytype == 'SODA':
 
         # Find the day and month that the SODA file respresents based on the year and ID number.
         # Each SODA file represents a 5 day average, therefore we let the date we find be the first day
         # of those 5 days. Thats the reason we subtract 4 below for day of month.
+        import date
 
-        days = 0.0;
-        month = 1;
-        loop = True
+        days = 0.0; month = 1; loop = True
 
         while loop is True:
-
             d = date.NumberDaysMonth(month, year)
             if days + d < int(ID) * 5:
                 days = days + d
@@ -235,16 +230,10 @@ def getTime(cdf, grdROMS, grdMODEL, year, ID, mytime, mytype):
                 day = int(int(ID) * 5 - days)
                 loop = False
 
-        soda_date = date.Date()
-        soda_date.day = day
-        soda_date.month = month
-        soda_date.year = year
-        jdsoda = soda_date.ToJDNumber()
-
-        grdROMS.time = (jdsoda - jdref)
-        grdROMS.reftime = jdref
-
-        print '\nCurrent time of SODA file : %s/%s/%s' % (soda_date.year, soda_date.month, soda_date.day)
+        mycalendar = cdf.variables["time"].calendar
+        myunits = cdf.variables["time"].units
+        currentdate = datetime(year, month, day)
+        jd = date2num(currentdate, myunits, calendar=mycalendar)
 
     if mytype == 'SODAMONTHLY':
         # Find the day and month that the SODAMONTHLY file respresents based on the year and ID number.
@@ -252,17 +241,11 @@ def getTime(cdf, grdROMS, grdMODEL, year, ID, mytime, mytype):
 
         month = ID
         day = 15
+        mycalendar = cdf.variables["time"].calendar
+        myunits = cdf.variables["time"].units
+        currentdate = datetime(year, month, day)
+        jd = date2num(currentdate, myunits, calendar=mycalendar)
 
-        soda_date = date.Date()
-        soda_date.day = day
-        soda_date.month = month
-        soda_date.year = year
-        jdsoda = soda_date.ToJDNumber()
-
-        grdROMS.time = (jdsoda - jdref)
-        grdROMS.reftime = jdref
-
-        print '\nCurrent time of SODAMONTHLY file : %s/%s/%s' % (soda_date.year, soda_date.month, soda_date.day)
 
     if mytype == 'GLORYS2V1':
         # Find the day and month that the SODAMONTHLY file respresents based on the year and ID number.
@@ -270,17 +253,11 @@ def getTime(cdf, grdROMS, grdMODEL, year, ID, mytime, mytype):
 
         month = ID
         day = 15
+        mycalendar = cdf.variables["time"].calendar
+        myunits = cdf.variables["time"].units
+        currentdate = datetime(year, month, day)
+        jd = date2num(currentdate, myunits, calendar=mycalendar)
 
-        glorys_date = date.Date()
-        glorys_date.day = day
-        glorys_date.month = month
-        glorys_date.year = year
-        jdglorys = glorys_date.ToJDNumber()
-
-        grdROMS.time = (jdglorys - jdref)
-        grdROMS.reftime = jdref
-
-        print '\nCurrent time of GLORYS2V1 file : %s/%s/%s' % (glorys_date.year, glorys_date.month, glorys_date.day)
 
     if mytype == 'NORESM':
         # Find the day and month that the NORESM file. We need to use the time modules from
@@ -288,20 +265,19 @@ def getTime(cdf, grdROMS, grdMODEL, year, ID, mytime, mytype):
         # http://www.esrl.noaa.gov/psd/people/jeffrey.s.whitaker/python/netcdftime.html#datetime
         mydays = cdf.variables["time"][0]
         mycalendar = cdf.variables["time"].calendar
-        refdateP = cdf.variables["time"].units
-        refdate = utime(refdateP, calendar=mycalendar)
-        currentdate = refdate.num2date(mydays)
+        myunits = cdf.variables["time"].units
+        # Fake the start date first time around
+        if (firstRun):
+            currentdate = datetime(2006,1,1)
+            print "NOTICE!\n First datestamp in result files are hardcoded to %s"%(currentdate)
+        else:
+            currentdate = num2date(mydays, units=myunits, calendar=mycalendar)
+        jd = date2num(currentdate, myunits, calendar='noleap')
 
-        noresm_date = date.Date()
-        noresm_date.day = currentdate.day
-        noresm_date.month = currentdate.month
-        noresm_date.year = currentdate.year
-        jdnoresm = noresm_date.ToJDNumber()
+    grdROMS.time = (jd - jdref)
+    grdROMS.reftime = jdref
 
-        grdROMS.time = (jdnoresm - jdref)
-        grdROMS.reftime = jdref
-
-        print '\nCurrent time of NORESM file : %s/%s/%s' % (noresm_date.year, noresm_date.month, noresm_date.day)
+    print '\nCurrent time of %s file : %s' % (mytype, currentdate)
 
 
 def getGLORYS2V1filename(year, ID, myvar, dataPath):
@@ -355,40 +331,40 @@ def getWOAMONTHLYfilename(year, ID, myvar, dataPath):
         print "Could not find any input files in folder: %s"%(datapath)
 
     return filename
-
-def createFields(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
-    # All variables for all time are now stored in arrays. Now, start the interpolation to the
-    # new grid for all variables and then finally write results to file.
-    indexROMS_S_U = (grdROMS.Nlevels, grdROMS.eta_u, grdROMS.xi_u)
-    indexROMS_S_V = (grdROMS.Nlevels, grdROMS.eta_v, grdROMS.xi_v)
-    indexROMS_S_ST = (grdROMS.Nlevels, grdROMS.eta_rho, grdROMS.xi_rho)
-
-    if myvar == 'temperature': varN = 0; STdata = np.zeros((indexROMS_S_ST), dtype=np.float64)
-    if myvar == 'salinity':    varN = 1; STdata = np.zeros((indexROMS_S_ST), dtype=np.float64)
-    if myvar == 'uvel':        varN = 3; Udata = np.zeros((indexROMS_S_U), dtype=np.float64)
-    if myvar == 'vvel':        varN = 4; Vdata = np.zeros((indexROMS_S_V), dtype=np.float64)
-
-    if mytype == "NORESM":
-        cdf = Dataset(getNORESMfilename(year, ID, varNames[varN], dataPath))
-        myunits = cdf.variables[str(varNames[varN])].units
-
-    grdMODEL.field = ESMF.Field(grdMODEL.esmfgrid, "fieldSrc", staggerloc=ESMF.StaggerLoc.CENTER)
-    grdROMS.field  = ESMF.Field(grdROMS.esmfgrid, "fieldDst", staggerloc=ESMF.StaggerLoc.CENTER)
-
-    cdf = Dataset(variablefilename)
-
-    # Grid is (y,x) while regridding takes (x,y) so we have to flip the data array
-    fieldSrc[:,:] = np.flipud(np.rot90(np.squeeze(cdf.variables[myvariable][0,0,:,:])))
-
-    regridSrc2Dst = ESMF.Regrid(fieldSrc, fieldDst, regrid_method=ESMF.RegridMethod.BILINEAR)
-
-    # Get the actual regridded array
-    dstfield = regridSrc2Dst(fieldSrc, fieldDst)
-
-    createMap(dstfield,dstgrid)
-    data1 = np.squeeze(cdf.variables[str(varNames[varN])][0, :,
-                       int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
-                       int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])])
+#
+# def createFields(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
+#     # All variables for all time are now stored in arrays. Now, start the interpolation to the
+#     # new grid for all variables and then finally write results to file.
+#     indexROMS_S_U = (grdROMS.Nlevels, grdROMS.eta_u, grdROMS.xi_u)
+#     indexROMS_S_V = (grdROMS.Nlevels, grdROMS.eta_v, grdROMS.xi_v)
+#     indexROMS_S_ST = (grdROMS.Nlevels, grdROMS.eta_rho, grdROMS.xi_rho)
+#
+#     if myvar == 'temperature': varN = 0; STdata = np.zeros((indexROMS_S_ST), dtype=np.float64)
+#     if myvar == 'salinity':    varN = 1; STdata = np.zeros((indexROMS_S_ST), dtype=np.float64)
+#     if myvar == 'uvel':        varN = 3; Udata = np.zeros((indexROMS_S_U), dtype=np.float64)
+#     if myvar == 'vvel':        varN = 4; Vdata = np.zeros((indexROMS_S_V), dtype=np.float64)
+#
+#     if mytype == "NORESM":
+#         cdf = Dataset(getNORESMfilename(year, ID, varNames[varN], dataPath))
+#         myunits = cdf.variables[str(varNames[varN])].units
+#
+#     grdMODEL.field = ESMF.Field(grdMODEL.esmfgrid, "fieldSrc", staggerloc=ESMF.StaggerLoc.CENTER)
+#     grdROMS.field  = ESMF.Field(grdROMS.esmfgrid, "fieldDst", staggerloc=ESMF.StaggerLoc.CENTER)
+#
+#     cdf = Dataset(variablefilename)
+#
+#     # Grid is (y,x) while regridding takes (x,y) so we have to flip the data array
+#     fieldSrc[:,:] = np.flipud(np.rot90(np.squeeze(cdf.variables[myvariable][0,0,:,:])))
+#
+#     regridSrc2Dst = ESMF.Regrid(fieldSrc, fieldDst, regrid_method=ESMF.RegridMethod.BILINEAR)
+#
+#     # Get the actual regridded array
+#     dstfield = regridSrc2Dst(fieldSrc, fieldDst)
+#
+#     createMap(dstfield,dstgrid)
+#     data1 = np.squeeze(cdf.variables[str(varNames[varN])][0, :,
+#                        int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
+#                        int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])])
 
 
 def get3Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
@@ -591,7 +567,7 @@ def get2Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
             cdf = Dataset(getNORESMfilename(year, ID, varNames[varN], dataPath))
             #myunits = cdf.variables[str(varNames[varN])].units
             data = np.squeeze(cdf.variables[str(varNames[varN])][0, :,:])
-            print "DATA SSH:",np.shape(data),varNames[varN],varN
+
         cdf.close()
     else:
         if grdMODEL.splitExtract is True:
@@ -757,7 +733,8 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
 
             # Now open the input file and get the time
             cdf = Dataset(filename)
-            getTime(cdf, grdROMS, grdMODEL, year, ID, time, mytype)
+
+            getTime(cdf, grdROMS, grdMODEL, year, ID, time, mytype, firstRun)
             cdf.close()
 
             # Each MODEL file consist only of one time step. Get the subset data selected, and
@@ -794,9 +771,10 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
 
                     STdata = np.where(abs(STdata) > 1000, grdROMS.fill_value, STdata)
 
-                    IOwrite.writeClimFile(grdROMS, time, climName, myvar, isClimatology, writeIce, STdata)
+                    IOwrite.writeClimFile(grdROMS, time, climName, myvar, isClimatology, writeIce, mytype, STdata)
                     if time == grdROMS.initTime and grdROMS.write_init is True:
-                        IOinitial.createInitFile(grdROMS, time, initName, myvar, writeIce, STdata)
+                        print "WRITING TO INIT:",time,grdROMS.time
+                        IOinitial.createInitFile(grdROMS, time, initName, myvar, writeIce, mytype, STdata)
 
                 if myvar in ['ssh', 'ageice', 'aice', 'hice', 'snow_thick']:
                     SSHdata = array1[0, :, :]
@@ -806,9 +784,9 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
                     SSHdata = np.where(grdROMS.mask_rho == 0, grdROMS.fill_value, SSHdata)
                     SSHdata = np.where(abs(SSHdata) > 1000, grdROMS.fill_value, SSHdata)
 
-                    IOwrite.writeClimFile(grdROMS, time, climName, myvar, isClimatology, writeIce, SSHdata)
+                    IOwrite.writeClimFile(grdROMS, time, climName, myvar, isClimatology, writeIce, mytype, SSHdata)
                     if time == grdROMS.initTime:
-                        IOinitial.createInitFile(grdROMS, time, initName, myvar, writeIce, SSHdata)
+                        IOinitial.createInitFile(grdROMS, time, initName, myvar, writeIce, mytype, SSHdata)
 
                 # The following are special routines used to calculate the u and v velocity
                 # of ice based on the transport, which is divided by snow and ice thickenss
@@ -821,13 +799,13 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
 
                     SSHdata = np.where(mymask == 0, grdROMS.fill_value, SSHdata)
 
-                    IOwrite.writeClimFile(grdROMS, time, climName, myvar, isClimatology, writeIce, SSHdata)
+                    IOwrite.writeClimFile(grdROMS, time, climName, myvar, isClimatology, writeIce, mytype, SSHdata)
 
                     if time == grdROMS.initTime:
                         if myvar == 'uice':
-                            IOinitial.createInitFile(grdROMS, time, initName, 'uice', writeIce,  SSHdata)
+                            IOinitial.createInitFile(grdROMS, time, initName, 'uice', writeIce, mytype,  SSHdata)
                         if myvar == 'vice':
-                            IOinitial.createInitFile(grdROMS, time, initName, 'vice', writeIce, SSHdata)
+                            IOinitial.createInitFile(grdROMS, time, initName, 'vice', writeIce, mytype, SSHdata)
 
                 if myvar == 'uvel':
                     array2 = array1
@@ -857,10 +835,10 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
                     VBARdata = np.where(grdROMS.mask_v == 0, grdROMS.fill_value, VBARdata)
                     VBARdata = np.where(abs(VBARdata) > 1000, grdROMS.fill_value, VBARdata)
 
-                    IOwrite.writeClimFile(grdROMS, time, climName, myvar, isClimatology, writeIce, Udata, Vdata,
+                    IOwrite.writeClimFile(grdROMS, time, climName, myvar, isClimatology, writeIce, mytype, Udata, Vdata,
                                           UBARdata, VBARdata)
                     if time == grdROMS.initTime:
                         # We print time=initTime to init file so that we have values for ubar and vbar (not present at time=1)
-                        IOinitial.createInitFile(grdROMS, time, initName, myvar, writeIce, Udata, Vdata, UBARdata, VBARdata)
+                        IOinitial.createInitFile(grdROMS, time, initName, myvar, writeIce, mytype, Udata, Vdata, UBARdata, VBARdata)
 
             time += 1

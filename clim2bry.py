@@ -42,7 +42,7 @@ def myhelp():
                       u(No,Mpo)
                       ubar(1,Mpo)"""
 
-def writeBry(grdROMS, year, bryName, climName, writeIce):
+def writeBry(grdROMS, year, bryName, climName, writeIce, mytype):
 
     myzlib = True
     myformat='NETCDF4'
@@ -57,7 +57,7 @@ def writeBry(grdROMS, year, bryName, climName, writeIce):
     # Open the CLIM file
     clim    = Dataset(climName,'r')
     # Generate the BRY netcdf4 file that we will use to fill in data
-    IOBry.createBryFile(grdROMS, bryName, writeIce)
+    IOBry.createBryFile(grdROMS, bryName, writeIce, mytype)
     # Now open the file we created
     f = Dataset(bryName, mode='a', format=myformat, zlib=myzlib)
 

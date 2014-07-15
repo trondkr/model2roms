@@ -97,6 +97,7 @@ def main():
         romsgridpath = "/Users/trondkr/Projects/is4dvar/Grid/nordsjoen_8km_grid_hmax20m_v3.nc"
     if gridtype == "REGSCEN":
         romsgridpath = "/Users/trondkr/Projects/RegScen/Grid/AA_10km_grid.nc"
+        #romsgridpath = "/Users/trondkr/Projects/is4dvar/Grid/nordsjoen_8km_grid_hmax20m_v3.nc"
     #    romsgridpath = "/work/users/trondk/REGSCEN/GRID/AA_10km_grid.nc"
 
     if mytype == 'WOAMONTHLY': isClimatology = True
@@ -192,7 +193,7 @@ def main():
         model2roms.convertMODEL2ROMS(years, IDS, climName, initName, modelpath, romsgridpath, myvars, show_progress,
                                          mytype, subset, isClimatology, writeIce, useESMF)
 
-        clim2bry.writeBry(grdROMS, start_year, bryName, climName, writeIce)
+        clim2bry.writeBry(grdROMS, start_year, bryName, climName, writeIce, mytype)
 
     if decimateGrid:
         DecimateGrid.createGrid(grdROMS, '/Users/trond/Projects/arcwarm/SODA/soda2roms/imr_nordic_8km.nc', 2)

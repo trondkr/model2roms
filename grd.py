@@ -233,7 +233,7 @@ class grdClass:
             (https://www.myroms.org/forum/viewtopic.php?f=23&t=1254&hilit=critical+depth+tcline&sid=ec98a9e63e7857e2615b9182af752cde)
             the value of Tcline should now be equal to hc"""
 
-            self.vstretching=1
+            self.vstretching=2
             self.Nlevels=35
             self.theta_s=5.0
             self.theta_b=0.4
@@ -246,8 +246,8 @@ class grdClass:
             """Set initTime to 1 if you dont want the first timestep to be
             the initial field (no ubar and vbar if time=0)"""
 
-            self.initTime=1
-            self.ocean_time=1
+            self.initTime=0
+            self.ocean_time=0
             self.NT=2
             self.tracer=self.NT
 

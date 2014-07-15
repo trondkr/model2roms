@@ -29,7 +29,7 @@ def help ():
     To check the BRY file for CF compliancy: http://titania.badc.rl.ac.uk/cgi-bin/cf-checker.pl?cfversion=1.0
     """
 
-def createBryFile(grdROMS, outfilename, writeIce):
+def createBryFile(grdROMS, outfilename, writeIce, mytype):
 
     myzlib = True
     myformat='NETCDF4'
@@ -183,10 +183,16 @@ def createBryFile(grdROMS, outfilename, writeIce):
     vnc.units = "radian"
 
     v_time = f1.createVariable('ocean_time', 'd', ('ocean_time',),zlib=myzlib, fill_value=grdROMS.fill_value)
-    v_time.long_name = 'seconds since 1948-01-01 00:00:00'
-    v_time.units = 'seconds since 1948-01-01 00:00:00'
-    v_time.field = 'time, scalar, series'
-    v_time.calendar='standard'
+    if (mytype=="NORESM"):
+        v_time.long_name = 'seconds since 1800-01-01 00:00:00'
+        v_time.units = 'seconds since 1800-01-01 00:00:00'
+        v_time.field = 'time, scalar, series'
+        v_time.calendar = 'noleap'
+    else:
+        v_time.long_name = 'seconds since 1948-01-01 00:00:00'
+        v_time.units = 'seconds since 1948-01-01 00:00:00'
+        v_time.field = 'time, scalar, series'
+        v_time.calendar='standard'
 
     v_temp_west=f1.createVariable('temp_west', 'f', ('ocean_time', 's_rho', 'eta_rho',),zlib=myzlib, fill_value=grdROMS.fill_value)
     v_temp_west.long_name = "potential temperature western boundary condition"

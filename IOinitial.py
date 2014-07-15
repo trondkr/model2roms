@@ -25,7 +25,7 @@ def help ():
      Edited by Trond Kristiansen, 16.3.2009, 11.11.2009, 20.11.2009
      """
 
-def createInitFile(grdROMS, ntime, outfilename, var, writeIce, data1=None, data2=None, data3=None, data4=None):
+def createInitFile(grdROMS, ntime, outfilename, var, writeIce, mytype, data1=None, data2=None, data3=None, data4=None):
 
      # Create initial file for use with ROMS. This is the same as extracting time 0 from
      # the climatology file.
@@ -176,10 +176,16 @@ def createInitFile(grdROMS, ntime, outfilename, var, writeIce, data1=None, data2
           vnc.units = "radian"
 
           v_time = f1.createVariable('ocean_time', 'd', ('ocean_time',),zlib=myzlib, fill_value=grdROMS.fill_value)
-          v_time.long_name = 'seconds since 1948-01-01 00:00:00'
-          v_time.units = 'seconds since 1948-01-01 00:00:00'
-          v_time.field = 'time, scalar, series'
-          v_time.calendar='standard'
+          if (mytype=="NORESM"):
+            v_time.long_name = 'seconds since 1800-01-01 00:00:00'
+            v_time.units = 'seconds since 1800-01-01 00:00:00'
+            v_time.field = 'time, scalar, series'
+            v_time.calendar = 'noleap'
+          else:
+            v_time.long_name = 'seconds since 1948-01-01 00:00:00'
+            v_time.units = 'seconds since 1948-01-01 00:00:00'
+            v_time.field = 'time, scalar, series'
+            v_time.calendar='standard'
 
           v_temp=f1.createVariable('temp', 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho',),zlib=myzlib, fill_value=grdROMS.fill_value)
           v_temp.long_name = "potential temperature"
@@ -328,6 +334,28 @@ def createInitFile(grdROMS, ntime, outfilename, var, writeIce, data1=None, data2
                 sig22.field = "ice stress 22, scalar, series"
                 sig22.missing_value = grdROMS.fill_value
 
+                vnc=f1.createVariable('tau_iw','d')
+                vnc.long_name = "Tau_iw" ;
+                vnc.units = "unknown"
+
+                vnc=f1.createVariable('chu_iw','d')
+                vnc.long_name = "Chu_iw" ;
+                vnc.units = "unknown"
+
+                v_tomk=f1.createVariable('t0mk', 'f', ('ocean_time', 'eta_rho', 'xi_rho',),zlib=myzlib, fill_value=grdROMS.fill_value)
+                v_tomk.long_name = "t0mk potential temperature"
+                v_tomk.units = "Celsius"
+                v_tomk.time = "ocean_time"
+                v_tomk.missing_value = grdROMS.fill_value
+
+                v_somk=f1.createVariable('s0mk', 'f', ('ocean_time', 'eta_rho', 'xi_rho',),zlib=myzlib, fill_value=grdROMS.fill_value)
+                v_somk.long_name = "s0mk salinity"
+                v_somk.time = "ocean_time"
+                v_somk.field = "salinity, scalar, series"
+                v_somk.missing_value = grdROMS.fill_value
+
+
+
           d= num2date(grdROMS.time * 86400.0,units=v_time.long_name,calendar=v_time.calendar)
           print '\n'
           print '========================================================================='
@@ -338,7 +366,6 @@ def createInitFile(grdROMS, ntime, outfilename, var, writeIce, data1=None, data2
           print 'TIME_REF = %s'%(v_time.long_name)
           print '========================================================================='
           print '\n'
-     
      else:
         f1 = Dataset(outfilename, mode='a', format=myformat)
 
@@ -347,8 +374,13 @@ def createInitFile(grdROMS, ntime, outfilename, var, writeIce, data1=None, data2
 
      if var.lower()=='temperature':
         f1.variables['temp'][ntime,:,:,:]  = data1
+        if writeIce:
+            f1.variables['t0mk'][ntime,:,:]=np.squeeze(data1[len(grdROMS.z_r)-1,:,:])
      if var.lower()=='salinity':
         f1.variables['salt'][ntime,:,:,:]  = data1
+        if writeIce:
+            f1.variables['s0mk'][ntime,:,:]=np.squeeze(data1[len(grdROMS.z_r)-1,:,:])
+
      if var.lower()=='ssh':
         f1.variables['zeta'][ntime,:,:]    = data1
      if var in ['uvel','vvel','ubar','vbar']:
@@ -374,5 +406,7 @@ def createInitFile(grdROMS, ntime, outfilename, var, writeIce, data1=None, data2
             f1.variables['hice'][ntime, :, :] = data1
         if var.lower() == 'snow_thick':
             f1.variables['snow_thick'][ntime, :, :] = data1
+        f1.variables['tau_iw']=0.015
+        f1.variables['chu_iw']==0.0012
 
      f1.close()
