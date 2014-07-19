@@ -392,21 +392,21 @@ def createInitFile(grdROMS, ntime, outfilename, var, writeIce, mytype, data1=Non
      if writeIce:
         if var.lower() == "ageice":
             f1.variables['ageice'][ntime, :, :] = data1
-            f1.variables['sfwat'][ntime, :, :] = -10.
+            f1.variables['sfwat'][ntime, :, :] = 0.
             f1.variables['tisrf'][ntime, :, :] = 0.
             f1.variables['ti'][ntime, :, :] = 0.
             f1.variables['sig11'][ntime, :, :] = 0.
             f1.variables['sig12'][ntime, :, :] = 0.
             f1.variables['sig22'][ntime, :, :] = 0.
         if var.lower() in ['uice','vice']:
-            f1.variables[var.lower()][ntime, :, :] = data1
+            f1.variables[var.lower()][ntime, :, :] = data1/100.
         if var.lower() == 'aice':
-            f1.variables['aice'][ntime, :, :] = data1
+            f1.variables['aice'][ntime, :, :] = data1/100.
         if var.lower() == 'hice':
             f1.variables['hice'][ntime, :, :] = data1
         if var.lower() == 'snow_thick':
             f1.variables['snow_thick'][ntime, :, :] = data1
         f1.variables['tau_iw']=0.015
-        f1.variables['chu_iw']==0.0012
+        f1.variables['chu_iw']=0.0012
 
      f1.close()

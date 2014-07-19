@@ -129,26 +129,12 @@ def VerticalInterpolation(myvar, array1, array2, grdROMS, grdMODEL):
 def HorizontalInterpolation(myvar, grdROMS, grdMODEL, data, show_progress):
     print 'Start %s horizontal interpolation for %s' % (grdMODEL.grdType, myvar)
 
-    if grdMODEL.grdType == 'regular':
-
-        if myvar in ['temperature', 'salinity']:
-            array1 = interp2D.doHorInterpolationRegularGrid(myvar, grdROMS, grdMODEL, data, show_progress)
-        if myvar in ['ssh', 'ageice', 'uice', 'vice', 'aice', 'hice', 'snow_thick']:
-            array1 = interp2D.doHorInterpolationSSHRegularGrid(myvar, grdROMS, grdMODEL, data)
-        if myvar in ['uvel', 'vvel']:
-            array1 = interp2D.doHorInterpolationRegularGrid(myvar, grdROMS, grdMODEL, data, show_progress)
-
-    if grdMODEL.grdType == 'irregular':
-        if myvar == 'temperature':
-            interp2D.doHorInterpolationIrregularGrid(myvar, grdROMS, grdMODEL, data)
-        if myvar == 'salinity':
-            interp2D.doHorInterpolationIrregularGrid(myvar, grdROMS, grdMODEL, data)
-        if myvar == 'ssh':
-            interp2D.doHorInterpolationSSHIrregularGrid(myvar, grdROMS, grdMODEL, data)
-        if myvar == 'uvel':
-            interp2D.doHorInterpolationIrregularGrid('uvel', grdROMS, grdMODEL, data)
-        if myvar == 'vvel':
-            interp2D.doHorInterpolationIrregularGrid('vvel', grdROMS, grdMODEL, data)
+    if myvar in ['temperature', 'salinity']:
+        array1 = interp2D.doHorInterpolationRegularGrid(myvar, grdROMS, grdMODEL, data, show_progress)
+    if myvar in ['ssh', 'ageice', 'uice', 'vice', 'aice', 'hice', 'snow_thick']:
+        array1 = interp2D.doHorInterpolationSSHRegularGrid(myvar, grdROMS, grdMODEL, data)
+    if myvar in ['uvel', 'vvel']:
+        array1 = interp2D.doHorInterpolationRegularGrid(myvar, grdROMS, grdMODEL, data, show_progress)
 
     return array1
 
@@ -296,14 +282,21 @@ def getGLORYS2V1filename(year, ID, myvar, dataPath):
 def getNORESMfilename(year, ID, myvar, dataPath):
 
     if (myvar=='grid'):
-        filename = dataPath + 'NorESM.nc'
+        filename = dataPath + 'GRID/NorESM.nc'
         #TODO: Fix this hardcoding of grid path
         #filename = "/work/users/trondk/REGSCEN/GRID/NorESM.nc"
     else:
-        if (ID < 10):
-            filename = dataPath + 'NRCP45AERCN_f19_g16_CLE_01.micom.hm.'+str(year)+'-0'+str(ID)+'.nc'
+        if myvar in ['iage', 'uvel', 'vvel', 'aice', 'hi', 'hs']:
+            if (ID < 10):
+                filename = dataPath + 'ICE/NRCP45AERCN_f19_g16_CLE_01.cice.h.'+str(year)+'-0'+str(ID)+'.nc'
+            else:
+                filename = dataPath + 'ICE/NRCP45AERCN_f19_g16_CLE_01.cice.h.'+str(year)+'-'+str(ID)+'.nc'
         else:
-            filename = dataPath + 'NRCP45AERCN_f19_g16_CLE_01.micom.hm.'+str(year)+'-'+str(ID)+'.nc'
+            if (ID < 10):
+                filename = dataPath + 'OCN/NRCP45AERCN_f19_g16_CLE_01.micom.hm.'+str(year)+'-0'+str(ID)+'.nc'
+            else:
+                filename = dataPath + 'OCN/NRCP45AERCN_f19_g16_CLE_01.micom.hm.'+str(year)+'-'+str(ID)+'.nc'
+
     print filename
 
     return filename
@@ -331,40 +324,6 @@ def getWOAMONTHLYfilename(year, ID, myvar, dataPath):
         print "Could not find any input files in folder: %s"%(datapath)
 
     return filename
-#
-# def createFields(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
-#     # All variables for all time are now stored in arrays. Now, start the interpolation to the
-#     # new grid for all variables and then finally write results to file.
-#     indexROMS_S_U = (grdROMS.Nlevels, grdROMS.eta_u, grdROMS.xi_u)
-#     indexROMS_S_V = (grdROMS.Nlevels, grdROMS.eta_v, grdROMS.xi_v)
-#     indexROMS_S_ST = (grdROMS.Nlevels, grdROMS.eta_rho, grdROMS.xi_rho)
-#
-#     if myvar == 'temperature': varN = 0; STdata = np.zeros((indexROMS_S_ST), dtype=np.float64)
-#     if myvar == 'salinity':    varN = 1; STdata = np.zeros((indexROMS_S_ST), dtype=np.float64)
-#     if myvar == 'uvel':        varN = 3; Udata = np.zeros((indexROMS_S_U), dtype=np.float64)
-#     if myvar == 'vvel':        varN = 4; Vdata = np.zeros((indexROMS_S_V), dtype=np.float64)
-#
-#     if mytype == "NORESM":
-#         cdf = Dataset(getNORESMfilename(year, ID, varNames[varN], dataPath))
-#         myunits = cdf.variables[str(varNames[varN])].units
-#
-#     grdMODEL.field = ESMF.Field(grdMODEL.esmfgrid, "fieldSrc", staggerloc=ESMF.StaggerLoc.CENTER)
-#     grdROMS.field  = ESMF.Field(grdROMS.esmfgrid, "fieldDst", staggerloc=ESMF.StaggerLoc.CENTER)
-#
-#     cdf = Dataset(variablefilename)
-#
-#     # Grid is (y,x) while regridding takes (x,y) so we have to flip the data array
-#     fieldSrc[:,:] = np.flipud(np.rot90(np.squeeze(cdf.variables[myvariable][0,0,:,:])))
-#
-#     regridSrc2Dst = ESMF.Regrid(fieldSrc, fieldDst, regrid_method=ESMF.RegridMethod.BILINEAR)
-#
-#     # Get the actual regridded array
-#     dstfield = regridSrc2Dst(fieldSrc, fieldDst)
-#
-#     createMap(dstfield,dstgrid)
-#     data1 = np.squeeze(cdf.variables[str(varNames[varN])][0, :,
-#                        int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
-#                        int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])])
 
 
 def get3Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
@@ -396,6 +355,8 @@ def get3Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
             cdf = Dataset(getNORESMfilename(year, ID, varNames[varN], dataPath))
             myunits = cdf.variables[str(varNames[varN])].units
             data = np.squeeze(cdf.variables[str(varNames[varN])][0,:,:,:])
+            data = np.where(abs(data)>=32768 , grdROMS.fill_value, data)
+
         cdf.close()
     else:
         if grdMODEL.splitExtract is True:
@@ -684,15 +645,15 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
     grdROMS.myvars = myvars
     if (useESMF):
         print "\nCreating the interpolation weights and indexes using ESMF:"
-        print "->regridSrc2Dst at RHO points"
+        print "  -> regridSrc2Dst at RHO points"
         grdMODEL.fieldSrc = ESMF.Field(grdMODEL.esmfgrid, "fieldSrc", staggerloc=ESMF.StaggerLoc.CENTER)
         grdMODEL.fieldDst_rho = ESMF.Field(grdROMS.esmfgrid, "fieldDst", staggerloc=ESMF.StaggerLoc.CENTER)
         grdMODEL.regridSrc2Dst_rho = ESMF.Regrid(grdMODEL.fieldSrc, grdMODEL.fieldDst_rho, regrid_method=ESMF.RegridMethod.BILINEAR)
-        print "->regridSrc2Dst at U points"
+        print "  -> regridSrc2Dst at U points"
         grdMODEL.fieldSrc = ESMF.Field(grdMODEL.esmfgrid, "fieldSrc", staggerloc=ESMF.StaggerLoc.CENTER)
         grdMODEL.fieldDst_u = ESMF.Field(grdROMS.esmfgrid_u, "fieldDst_u", staggerloc=ESMF.StaggerLoc.CENTER)
         grdMODEL.regridSrc2Dst_u = ESMF.Regrid(grdMODEL.fieldSrc, grdMODEL.fieldDst_u, regrid_method=ESMF.RegridMethod.BILINEAR)
-        print "->regridSrc2Dst at V points"
+        print "  -> regridSrc2Dst at V points"
         grdMODEL.fieldSrc = ESMF.Field(grdMODEL.esmfgrid, "fieldSrc", staggerloc=ESMF.StaggerLoc.CENTER)
         grdMODEL.fieldDst_v = ESMF.Field(grdROMS.esmfgrid_v, "fieldDst_v", staggerloc=ESMF.StaggerLoc.CENTER)
         grdMODEL.regridSrc2Dst_v = ESMF.Regrid(grdMODEL.fieldSrc, grdMODEL.fieldDst_v, regrid_method=ESMF.RegridMethod.BILINEAR)
@@ -729,7 +690,12 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
             if mytype == 'NORESM':
                 filename = getNORESMfilename(year, ID, "saln", dataPath)
                 writeIce = True
-                varNames = ['templvl','salnlvl','sealv', 'uvellvl', 'vvellvl','fice', 'fice', 'fice', 'fice', 'fice', 'fice']
+                varNames = ['templvl','salnlvl','sealv', 'uvellvl', 'vvellvl','iage', 'uvel', 'vvel', 'aice', 'hi', 'hs']
+
+                myvars=['temperature','salinity', 'ssh', 'uvel', 'vvel','ageice','uice','vice','aice','hice','snow_thick']
+
+                #varNames = ['iage', 'uvel', 'vvel', 'aice', 'hi', 'hs']
+
 
             # Now open the input file and get the time
             cdf = Dataset(filename)
@@ -773,16 +739,18 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
 
                     IOwrite.writeClimFile(grdROMS, time, climName, myvar, isClimatology, writeIce, mytype, STdata)
                     if time == grdROMS.initTime and grdROMS.write_init is True:
-                        print "WRITING TO INIT:",time,grdROMS.time
                         IOinitial.createInitFile(grdROMS, time, initName, myvar, writeIce, mytype, STdata)
 
                 if myvar in ['ssh', 'ageice', 'aice', 'hice', 'snow_thick']:
                     SSHdata = array1[0, :, :]
-                    print "Data range of %s after interpolation: %3.3f to %3.3f" % (
-                        myvar, SSHdata.min(), SSHdata.max())
 
                     SSHdata = np.where(grdROMS.mask_rho == 0, grdROMS.fill_value, SSHdata)
-                    SSHdata = np.where(abs(SSHdata) > 1000, grdROMS.fill_value, SSHdata)
+                    SSHdata = np.where(abs(SSHdata) > 10000, grdROMS.fill_value, SSHdata)
+                    SSHdata = np.where(abs(SSHdata) == 0, grdROMS.fill_value, SSHdata)
+                    SSHdata = np.ma.masked_where(abs(SSHdata) > 100, SSHdata)
+
+                    print "Data range of %s after interpolation: %3.3f to %3.3f" % (
+                        myvar, SSHdata.min(), SSHdata.max())
 
                     IOwrite.writeClimFile(grdROMS, time, climName, myvar, isClimatology, writeIce, mytype, SSHdata)
                     if time == grdROMS.initTime:
@@ -792,12 +760,18 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
                 # of ice based on the transport, which is divided by snow and ice thickenss
                 # and then multiplied by grid size in dx or dy direction (opposite of transport).
                 if myvar in ['uice', 'vice']:
+                    SSHdata = array1[0, :, :]
 
-                    SSHdata = (array1) # * (1. / grdROMS.pm))
                     if  myvar=="uice":mymask=grdROMS.mask_u
                     if  myvar=="vice":mymask=grdROMS.mask_v
 
                     SSHdata = np.where(mymask == 0, grdROMS.fill_value, SSHdata)
+                    SSHdata = np.where(abs(SSHdata) > 1000, grdROMS.fill_value, SSHdata)
+                    SSHdata = np.where(abs(SSHdata) == 0, grdROMS.fill_value, SSHdata)
+                    SSHdata = np.ma.masked_where(abs(SSHdata) > 1000, SSHdata)
+
+                    print "Data range of %s after interpolation: %3.3f to %3.3f" % (myvar, SSHdata.min(), SSHdata.max())
+
 
                     IOwrite.writeClimFile(grdROMS, time, climName, myvar, isClimatology, writeIce, mytype, SSHdata)
 

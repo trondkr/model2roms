@@ -287,7 +287,7 @@ def writeClimFile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
                 ageice.field = "ice age, scalar, series"
                 ageice.missing_value = grdROMS.fill_value
 
-                uice = f1.createVariable('uice', 'f', ('ocean_time', 'eta_u', 'xi_u',), zlib=myzlib,
+                uice = f1.createVariable('uice', 'd', ('ocean_time', 'eta_u', 'xi_u',), zlib=myzlib,
                                        fill_value=grdROMS.fill_value)
                 uice.long_name = "time-averaged u-component of ice velocity"
                 uice.units = "meter second-1"
@@ -295,7 +295,7 @@ def writeClimFile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
                 uice.field = "u-component of ice velocity, scalar, series"
                 uice.missing_value = grdROMS.fill_value
 
-                vice = f1.createVariable('vice', 'f', ('ocean_time', 'eta_v', 'xi_v',), zlib=myzlib,
+                vice = f1.createVariable('vice', 'd', ('ocean_time', 'eta_v', 'xi_v',), zlib=myzlib,
                                        fill_value=grdROMS.fill_value)
 
                 vice.long_name = "time-averaged v-component of ice velocity"
@@ -440,25 +440,30 @@ def writeClimFile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
             f1.variables['ubar'][ntime, :, :] = data3
             f1.variables['vbar'][ntime, :, :] = data4
         if myvar == "ageice":
-            print "NOTE! Setting values of ageice to ZERO! (IOWrite.py)"
-            f1.variables['ageice'][ntime, :, :] = data1*0.0
-            f1.variables['sfwat'][ntime, :, :] = -10.
+            #print "NOTE! Setting values of ageice to ZERO! (IOWrite.py)"
+            f1.variables['ageice'][ntime, :, :] = data1
+            data1 = np.where(data1>30, grdROMS.fill_value,data1)
+            f1.variables['sfwat'][ntime, :, :] = 0.
             f1.variables['tisrf'][ntime, :, :] = 0.
             f1.variables['ti'][ntime, :, :] = 0.
             f1.variables['sig11'][ntime, :, :] = 0.
             f1.variables['sig12'][ntime, :, :] = 0.
             f1.variables['sig22'][ntime, :, :] = 0.
-        if myvar in ['uice','vice']:
-            print "NOTE! Setting values of uice and vice to ZERO! (IOWrite.py)"
-            f1.variables[myvar][ntime, :, :] = data1*0.0
+        if myvar=='uice':
+            print "UICE:",np.min(data1*0.01),np.max(data1*0.01),np.mean(data1*0.01),myvar
+            f1.variables['uice'][ntime, :, :] = data1*0.01 # NorESM is cm/s divide by 100 to get m/s
+        if myvar=='vice':
+            print "SHAPE of VICE", np.shape(data1), np.shape(grdROMS.lon_v)
+            print "VICE:",np.min(data1*0.01),np.max(data1*0.01),np.mean(data1*0.01),myvar
+            f1.variables['vice'][ntime, :, :] = data1*0.01 # NorESM is cm/s divide by 100 to get m/s
         if myvar=='aice':
-            print "NOTE! Setting values of aice to ZERO! (IOWrite.py)"
-            f1.variables['aice'][ntime, :, :] = data1*0.0
+            f1.variables['aice'][ntime, :, :] = data1*0.01 #NorESM is % divide by 100 to get fraction
         if myvar=='hice':
+            data1 = np.ma.masked_where(abs(data1) > 10, data1)
             f1.variables['hice'][ntime, :, :] = data1
         if myvar=='snow_thick':
-            print "NOTE! Setting values of snow_thick to ZERO! (IOWrite.py)"
-            f1.variables['snow_thick'][ntime, :, :] = data1*0.0
+            data1 = np.ma.masked_where(abs(data1) > 100, data1)
+            f1.variables['snow_thick'][ntime, :, :] = data1
 
     if isClimatology is True:
         # Climatological time starts at the 15th of each month

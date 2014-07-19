@@ -108,7 +108,7 @@ def compileAllGFORTRAN():
     print "\n==================================================================="
 
 compiler="ifort"
-compiler="gfortran" # Hexagon
+#compiler="gfortran" # Hexagon
 if compiler=="gfortran":
     compileAllGFORTRAN()
 else:

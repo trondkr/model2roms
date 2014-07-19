@@ -170,7 +170,7 @@ class grdClass:
     6000, 6250, 6500, 6750])
 
             self.Nlevels = len(self.depth)
-            self.fill_value=1.e+20
+            self.fill_value=1.e+30
 
             if np.rank(self.lon)==1:
                     self.lon, self.lat = np.meshgrid(self.lon,self.lat)

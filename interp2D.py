@@ -125,9 +125,9 @@ def doHorInterpolationSSHRegularGrid(myvar,grdROMS,grdMODEL,mydata):
                 field = grdMODEL.regridSrc2Dst_rho(grdMODEL.fieldSrc, grdMODEL.fieldDst_rho)
 
             field = np.fliplr(np.rot90(field,3))
-            #if myvar=="hice":
-            #    import plotData
-            #    plotData.contourMap(grdROMS,grdROMS.lon_rho,grdROMS.lat_rho, field, "surface", myvar)
+           # if myvar in ["hice","aice"]:
+           #     import plotData
+           #     plotData.contourMap(grdROMS,grdROMS.lon_rho,grdROMS.lat_rho, field, "surface", myvar)
 
     else:
         i0 = np.argmin(np.fabs(grdMODEL.lon[0,:]-180))

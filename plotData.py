@@ -67,6 +67,10 @@ def contourMap(grdROMS, tlon, tlat, mydata, depthlevel, var):
         levels = np.arange(-2.0, 2.0, 0.1)
     if var=='sodamask':
         levels=np.arange(0,1,1)
+    if var=='hice':
+        levels=np.arange(0,10,0.1)
+    if var=='aice':
+        levels=np.arange(0,1,0.1)
     if var =='runoff':
         CS1 = map.contourf(x, y, mydata)#,alpha=0.5)
         plt.colorbar(orientation='horizontal')

@@ -97,7 +97,7 @@ def main():
         romsgridpath = "/Users/trondkr/Projects/is4dvar/Grid/nordsjoen_8km_grid_hmax20m_v3.nc"
     if gridtype == "REGSCEN":
         romsgridpath = "/Users/trondkr/Projects/RegScen/Grid/AA_10km_grid.nc"
-        #romsgridpath = "/Users/trondkr/Projects/is4dvar/Grid/nordsjoen_8km_grid_hmax20m_v3.nc"
+     #   romsgridpath = "/Users/trondkr/Projects/is4dvar/Grid/nordsjoen_8km_grid_hmax20m_v3.nc"
     #    romsgridpath = "/work/users/trondk/REGSCEN/GRID/AA_10km_grid.nc"
 
     if mytype == 'WOAMONTHLY': isClimatology = True
@@ -140,6 +140,7 @@ def main():
     myvars = ['temperature', 'salinity', 'ssh', 'uvel', 'vvel']
     if mytype=="NORESM":
         myvars=['temperature','salinity', 'ssh', 'uvel', 'vvel','ageice','uice','vice','aice','hice','snow_thick']
+      #  myvars=['ageice','uice','vice','aice','hice','snow_thick']
 
     # WOA only currently contains salinity and temperature
     if isClimatology==True:
@@ -171,7 +172,7 @@ def main():
         IDS = [(i + int(start_day_in_start_year) +1) for i in range(loop + 1)]
 
     # FIXME: this only gives the option of running all months of the year and not subset.
-    print IDS
+
     #IDS=[i  + 1 for i in range(12)]
 
     if isClimatology==True:
