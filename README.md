@@ -5,6 +5,13 @@ required to run the ROMS (Regional Ocean Modeling System) model. As a first vers
 converting the NORESM (ESM climate model), SODA, HYCOM, World Ocean Atlas (WOA), or GLORYS (Mercator Ocean) model
 runs to a set of forcing files for a given ROMS grid structure.
 
+<h3>Latest updates</h3>
+<ul>
+<li>Support for using Earth System Modeling Framework as the default interpolation method. This allows the input data to be on any kind of grid structure (e.g. irregular) as long as geographical information such as longitude and latitude of grid cells are available. The implementation uses the Python interface to ESMF which can be found here: <a href="https://www.earthsystemcog.org/projects/esmpy/" target="_blank">www.earthsystemcog.org/projects/esmpy/</a>. Using ESMF significantly increases the speed of the interpolation. As an example, interpolating one variable (e.g. temperature distribution) from a global irregular grid to a local non-rectangular grid of size 1250x789, at 70 different depth levels, takes 3 seconds on a Mac Laptop Pro. Additional information as to how to install ESMF and ESMPy on Mac OSX is available <a href="http://www.trondkristiansen.com/?page_id=1302" target="_blank">www.trondkristiansen.com/</a></li>
+<li>Added support for ICE variables. The latest version writes to file (init, bry, and clim) all necessary ice variables required to run ROMS with ice.</li>
+<li>Many general improvements to the code such as more generic time and date methods.</li>
+</ul>
+
 <h2>Background</h2>
 
 For the last few years I have been working on this toolbox model2roms. This toolbox is a collection of Python
