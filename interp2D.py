@@ -40,7 +40,7 @@ def doHorInterpolationRegularGrid(myvar, grdROMS, grdMODEL, mydata, show_progres
             field = grdMODEL.regridSrc2Dst_rho(grdMODEL.fieldSrc, grdMODEL.fieldDst_rho)
 
             # Since ESMF uses coordinates (x,y) we need to rotate and flip to get back to (y,x) order.
-            field = np.fliplr(np.rot90(field,3))
+            field = np.fliplr(np.rot90(field.data,3))
 
             #import plotData
             #plotData.contourMap(grdROMS,grdROMS.lon_rho,grdROMS.lat_rho, field, k, myvar)
@@ -124,7 +124,7 @@ def doHorInterpolationSSHRegularGrid(myvar,grdROMS,grdMODEL,mydata):
             else:
                 field = grdMODEL.regridSrc2Dst_rho(grdMODEL.fieldSrc, grdMODEL.fieldDst_rho)
 
-            field = np.fliplr(np.rot90(field,3))
+            field = np.fliplr(np.rot90(field.data,3))
            # if myvar in ["hice","aice"]:
            #     import plotData
            #     plotData.contourMap(grdROMS,grdROMS.lon_rho,grdROMS.lat_rho, field, "surface", myvar)

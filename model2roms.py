@@ -745,9 +745,12 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
                     SSHdata = array1[0, :, :]
 
                     SSHdata = np.where(grdROMS.mask_rho == 0, grdROMS.fill_value, SSHdata)
-                    SSHdata = np.where(abs(SSHdata) > 10000, grdROMS.fill_value, SSHdata)
+                    SSHdata = np.where(abs(SSHdata) > 100, grdROMS.fill_value, SSHdata)
                     SSHdata = np.where(abs(SSHdata) == 0, grdROMS.fill_value, SSHdata)
-                    SSHdata = np.ma.masked_where(abs(SSHdata) > 100, SSHdata)
+
+                    # Specific for ROMs. We set 0 where we should have fillvalue for ice otherwise ROMS blows up.
+                    SSHdata = np.where(abs(SSHdata) == grdROMS.fill_value, 0, SSHdata)
+                   # SSHdata = np.ma.masked_where(abs(SSHdata) > 100, SSHdata)
 
                     print "Data range of %s after interpolation: %3.3f to %3.3f" % (
                         myvar, SSHdata.min(), SSHdata.max())
@@ -766,9 +769,11 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
                     if  myvar=="vice":mymask=grdROMS.mask_v
 
                     SSHdata = np.where(mymask == 0, grdROMS.fill_value, SSHdata)
-                    SSHdata = np.where(abs(SSHdata) > 1000, grdROMS.fill_value, SSHdata)
+                    SSHdata = np.where(abs(SSHdata) > 100, grdROMS.fill_value, SSHdata)
                     SSHdata = np.where(abs(SSHdata) == 0, grdROMS.fill_value, SSHdata)
-                    SSHdata = np.ma.masked_where(abs(SSHdata) > 1000, SSHdata)
+                    SSHdata = np.where(abs(SSHdata) == grdROMS.fill_value, 0, SSHdata)
+
+                    #SSHdata = np.ma.masked_where(abs(SSHdata) > 1000, SSHdata)
 
                     print "Data range of %s after interpolation: %3.3f to %3.3f" % (myvar, SSHdata.min(), SSHdata.max())
 

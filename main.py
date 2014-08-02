@@ -103,8 +103,8 @@ def main():
     if mytype == 'WOAMONTHLY': isClimatology = True
     else: isClimatology = False
 
-    start_year  = 2006
-    end_year    = 2010
+    start_year  = 2015
+    end_year    = 2026
     start_month = 1
     end_month   = 12
 
