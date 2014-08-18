@@ -58,9 +58,13 @@ def calculate_z_w(self):
             else:
                 Cs_w[k]=sc_w[k]
             
-            if k==0:
-                Cs_w[k]=0
-            
+           # if k==0:
+              #  Cs_w[k]=0
+
+           # if k==self.Nlevels-1:
+           #     print "SETTING Cs_w == -1"
+              #  Cs_w[k]=-1
+
         if self.vstretching==2:
             """
             A. Shchepetkin new vertical stretching function.
@@ -84,6 +88,11 @@ def calculate_z_w(self):
                     Cs_w[k]=Csur
             else:
                 Cs_w[k]=sc_w
+
+            if k==0:
+                Cs_w[k]=0
+            if k==self.Nlevels:
+                Cs_w[k]=-1
 
 
     zeta=None
@@ -127,7 +136,7 @@ def calculate_z_r(self):
              b * [-0.5 + 0.5 * TANH(a * (s + 0.5)) / TANH(0.5 * a)]
         """
         sc_r[k]=-1.0+(self.Nlevels-k-0.5)/self.Nlevels
-        
+
         if self.vstretching==1:
             Ptheta=np.sinh(self.theta_s*sc_r[k])/np.sinh(self.theta_s)
             Rtheta=(np.tanh(self.theta_s*(sc_r[k]+0.5))/(2.0*np.tanh(0.5*self.theta_s)))-0.5
@@ -139,6 +148,8 @@ def calculate_z_r(self):
                 
             if k==0:
                 Cs_r[k]=0
+            if k==self.Nlevels-1:
+                Cs_r[k]=-1
 
         if self.vstretching==2:
             """
@@ -154,15 +165,20 @@ def calculate_z_r(self):
 
                 if self.theta_b > 0.0:
 
-                    Cbot=np.sinh(self.theta_b)*(sc_r[k] + 1.0)/np.sinh(self.theta_b) - 1.0
+                    Cbot=(np.sinh(self.theta_b)*(sc_r[k] + 1.0)/np.sinh(self.theta_b)) - 1.0
 
                     Cweight=((sc_r[k]+1.0)**Aweight)*(1.0 + (Aweight/Bweight)*(1.0-(sc_r[k]+1.0)**Bweight))
 
-                    Cs_r[k]=Cweight*Csur +(1.0-Cweight)*Cbot
+                    Cs_r[k]=Cweight*Csur +(1.0 - Cweight)*Cbot
                 else:
                     Cs_r[k]=Csur
             else:
                 Cs_r[k]=sc_r
+
+            if k==0:
+                Cs_r[k]=0
+            if k==self.Nlevels-1:
+                Cs_r[k]=-1
 
     """
     TODO: FIXME hardcode variables should be read from file

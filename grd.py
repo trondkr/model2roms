@@ -233,7 +233,7 @@ class grdClass:
             (https://www.myroms.org/forum/viewtopic.php?f=23&t=1254&hilit=critical+depth+tcline&sid=ec98a9e63e7857e2615b9182af752cde)
             the value of Tcline should now be equal to hc"""
 
-            self.vstretching=2
+            self.vstretching=1
             self.Nlevels=35
             self.theta_s=5.0
             self.theta_b=0.4
