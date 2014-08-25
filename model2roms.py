@@ -31,7 +31,7 @@ def VerticalInterpolation(myvar, array1, array2, grdROMS, grdMODEL):
 
     if myvar in ['salinity', 'temperature']:
         print 'Start vertical interpolation for %s (dimensions=%s x %s)' % (myvar, grdROMS.xi_rho, grdROMS.eta_rho)
-        outdata = np.zeros((outINDEX_ST), dtype=np.float64, order='Fortran')
+        outdata = np.empty((outINDEX_ST), dtype=np.float64, order='Fortran')
 
         outdata = interp.interpolation.dovertinter(np.asarray(outdata, order='Fortran'),
                                                    np.asarray(array1, order='Fortran'),
@@ -47,10 +47,9 @@ def VerticalInterpolation(myvar, array1, array2, grdROMS, grdMODEL):
 
         outdata = np.ma.masked_where(abs(outdata) > 1000, outdata)
 
-
-        #import plotData
-        #for k in range(grdROMS.Nlevels):
-        #plotData.contourMap(grdROMS, grdROMS.lon_rho, grdROMS.lat_rho, np.squeeze(outdata[34,:,:]),34, myvar)
+        import plotData
+       # for k in xrange(0,len(grdROMS.depth)-1,5):
+      #  plotData.contourMap(grdROMS, grdROMS.lon_rho, grdROMS.lat_rho, np.squeeze(outdata[0,:,:]),0, myvar)
 
 
         return outdata
@@ -355,8 +354,10 @@ def get3Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
             cdf = Dataset(getNORESMfilename(year, ID, varNames[varN], dataPath))
             myunits = cdf.variables[str(varNames[varN])].units
             data = np.squeeze(cdf.variables[str(varNames[varN])][0,:,:,:])
-            data = np.where(abs(data)>=32768 , grdROMS.fill_value, data)
+            data=np.where(data.mask,grdROMS.fill_value,data)
+           # data = np.where(abs(data)>=32768 , grdROMS.fill_value, data)
 
+            print "Data range", np.min(data),np.max(data)
         cdf.close()
     else:
         if grdMODEL.splitExtract is True:
@@ -528,7 +529,9 @@ def get2Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
             cdf = Dataset(getNORESMfilename(year, ID, varNames[varN], dataPath))
             #myunits = cdf.variables[str(varNames[varN])].units
             data = np.squeeze(cdf.variables[str(varNames[varN])][0, :,:])
+            data=np.where(data.mask,grdROMS.fill_value,data)
 
+            print "Extracted raw data: %s min: %s max: %s"%(myvar,np.min(data),np.max(data))
         cdf.close()
     else:
         if grdMODEL.splitExtract is True:
@@ -623,7 +626,7 @@ def get2Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
     return data
 
 
-def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, myvars, show_progress, mytype, subset,
+def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, myvars, show_progress, mytype, gridtype, subset,
                       isClimatology, writeIce, useESMF):
     # First opening of input file is just for initialization of grid
     if mytype == 'SODA':
@@ -640,8 +643,8 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
     # First time in loop, get the essential old grid information
     # MODEL data already at Z-levels. No need to interpolate to fixed depths,
     # but we use the one we have
-    grdMODEL = grd.grdClass(fileNameIn, mytype, useESMF)
-    grdROMS = grd.grdClass(romsgridpath, "ROMS", useESMF)
+    grdMODEL = grd.grdClass(fileNameIn, mytype, mytype, useESMF)
+    grdROMS = grd.grdClass(romsgridpath, "ROMS", gridtype, useESMF)
     grdROMS.myvars = myvars
     if (useESMF):
         print "\nCreating the interpolation weights and indexes using ESMF:"
@@ -691,10 +694,8 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
                 filename = getNORESMfilename(year, ID, "saln", dataPath)
                 writeIce = True
                 varNames = ['templvl','salnlvl','sealv', 'uvellvl', 'vvellvl','iage', 'uvel', 'vvel', 'aice', 'hi', 'hs']
-
                 myvars=['temperature','salinity', 'ssh', 'uvel', 'vvel','ageice','uice','vice','aice','hice','snow_thick']
 
-                #varNames = ['iage', 'uvel', 'vvel', 'aice', 'hi', 'hs']
 
 
             # Now open the input file and get the time
@@ -726,7 +727,6 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
 
                 # Take the input data and horizontally interpolate to your grid
                 array1 = HorizontalInterpolation(myvar, grdROMS, grdMODEL, data, show_progress)
-
                 if myvar in ['temperature', 'salinity']:
                     STdata = VerticalInterpolation(myvar, array1, array1, grdROMS, grdMODEL)
                     print "Data range of %s after interpolation: %3.3f to %3.3f" % (
@@ -752,8 +752,8 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
                     SSHdata = np.where(abs(SSHdata) == grdROMS.fill_value, 0, SSHdata)
                    # SSHdata = np.ma.masked_where(abs(SSHdata) > 100, SSHdata)
 
-                    print "Data range of %s after interpolation: %3.3f to %3.3f" % (
-                        myvar, SSHdata.min(), SSHdata.max())
+                   # print "Data range of %s after interpolation: %3.3f to %3.3f" % (
+                   #     myvar, SSHdata.min(), SSHdata.max())
 
                     IOwrite.writeClimFile(grdROMS, time, climName, myvar, isClimatology, writeIce, mytype, SSHdata)
                     if time == grdROMS.initTime:
@@ -775,7 +775,7 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
 
                     #SSHdata = np.ma.masked_where(abs(SSHdata) > 1000, SSHdata)
 
-                    print "Data range of %s after interpolation: %3.3f to %3.3f" % (myvar, SSHdata.min(), SSHdata.max())
+                   # print "Data range of %s after interpolation: %3.3f to %3.3f" % (myvar, SSHdata.min(), SSHdata.max())
 
 
                     IOwrite.writeClimFile(grdROMS, time, climName, myvar, isClimatology, writeIce, mytype, SSHdata)
@@ -802,8 +802,8 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
                     Udata, Vdata, UBARdata, VBARdata = VerticalInterpolation(myvar, u, v, grdROMS, grdMODEL)
 
                 if myvar == 'vvel':
-                    print "Data range of U after interpolation: %3.3f to %3.3f - V after scaling: %3.3f to %3.3f" % (
-                        Udata.min(), Udata.max(), Vdata.min(), Vdata.max())
+                 #   print "Data range of U after interpolation: %3.3f to %3.3f - V after scaling: %3.3f to %3.3f" % (
+                  #      Udata.min(), Udata.max(), Vdata.min(), Vdata.max())
 
                     Udata = np.where(grdROMS.mask_u == 0, grdROMS.fill_value, Udata)
                     Udata = np.where(abs(Udata) > 1000, grdROMS.fill_value, Udata)

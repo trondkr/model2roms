@@ -96,17 +96,17 @@ def main():
     if gridtype == "NS8KM":
         romsgridpath = "/Users/trondkr/Projects/is4dvar/Grid/nordsjoen_8km_grid_hmax20m_v3.nc"
     if gridtype == "REGSCEN":
-        romsgridpath = "/Users/trondkr/Projects/RegScen/Grid/AA_10km_grid.nc"
-     #   romsgridpath = "/Users/trondkr/Projects/is4dvar/Grid/nordsjoen_8km_grid_hmax20m_v3.nc"
+        romsgridpath = "/Users/trondkr/Projects/RegScen/Grid/AA_10km_grid_noest.nc"
+      #  romsgridpath = "/Users/trondkr/Projects/is4dvar/Grid/nordsjoen_8km_grid_hmax20m_v3.nc"
     #    romsgridpath = "/work/users/trondk/REGSCEN/GRID/AA_10km_grid.nc"
 
     if mytype == 'WOAMONTHLY': isClimatology = True
     else: isClimatology = False
 
     start_year  = 2006
-    end_year    = 2006
+    end_year    = 2016
     start_month = 1
-    end_month   = 3
+    end_month   = 12
 
     startdate = datetime(start_year, start_month, 1)
     enddate   = datetime(end_year, end_month, 1)
@@ -180,8 +180,9 @@ def main():
         print "Will create climatology for months: %s"%(IDS)
 
     # Create the grid object for the output grid
-    grdROMS = grd.grdClass(romsgridpath, "ROMS", useESMF)
+    grdROMS = grd.grdClass(romsgridpath, "ROMS", gridtype, useESMF)
     grdROMS.vars=myvars
+
     if (useESMF):
         # initialize MPI
         import ESMF
@@ -192,7 +193,7 @@ def main():
         showInfo(myvars, romsgridpath, climName, initName, bryName, start_year, end_year, isClimatology, useESMF)
 
         model2roms.convertMODEL2ROMS(years, IDS, climName, initName, modelpath, romsgridpath, myvars, show_progress,
-                                         mytype, subset, isClimatology, writeIce, useESMF)
+                                         mytype, gridtype, subset, isClimatology, writeIce, useESMF)
 
         clim2bry.writeBry(grdROMS, start_year, bryName, climName, writeIce, mytype)
 

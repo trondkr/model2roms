@@ -26,7 +26,7 @@ def contourMap(grdROMS, tlon, tlat, mydata, depthlevel, var):
             llcrnrlon=15,urcrnrlon=24,lat_ts=70,resolution='h',area_thresh=0.)
         levels = np.arange(-2.0, 8.0, 0.25)
 
-    if grdROMS.grdName=='NorthSea':
+    if grdROMS.grdName=='NS8KM':
         map = Basemap(llcrnrlon=-18.5,
                       llcrnrlat=43.5,
                       urcrnrlon=32.5,
@@ -48,7 +48,7 @@ def contourMap(grdROMS, tlon, tlat, mydata, depthlevel, var):
         print "Plotting REGSCEN"
         map = Basemap(projection='ortho',lon_0=-20,lat_0=25, resolution='c', area_thresh=10000)
         levels = np.arange(-2.0, 30.0, 0.5)
-
+    print "Test",grdROMS.grdName
     x, y = map(tlon,tlat)
 
     map.drawcoastlines()
@@ -64,13 +64,19 @@ def contourMap(grdROMS, tlon, tlat, mydata, depthlevel, var):
     if var=='ssh':
         levels = np.arange(-1.5, 1.5, 0.1)
     if var in ['uvel','vvel','urot','vrot','ubar','vbar']:
-        levels = np.arange(-2.0, 2.0, 0.1)
+        levels = np.arange(-1.0, 1.0, 0.1)
     if var=='sodamask':
         levels=np.arange(0,1,1)
     if var=='hice':
-        levels=np.arange(0,10,0.1)
+        levels=np.arange(0,100,0.1)
     if var=='aice':
-        levels=np.arange(0,1,0.1)
+        levels=np.arange(0,100,5)
+    if var=='uice' or var=="vice":
+        levels=np.arange(-100,100,5)
+    if var=='ageice':
+        levels=np.arange(0,12,1)
+    if var=='snow_thick':
+        levels=np.arange(0,2,0.1)
     if var =='runoff':
         CS1 = map.contourf(x, y, mydata)#,alpha=0.5)
         plt.colorbar(orientation='horizontal')

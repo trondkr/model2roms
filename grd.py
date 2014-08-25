@@ -26,7 +26,7 @@ __status__   = "Development"
 
 class grdClass:
 
-    def __init__(self,grdfilename,type,useESMF):
+    def __init__(self,grdfilename,type,name,useESMF):
         """
         The object is initialised and created through the __init__ method
         As an example of how to use, these lines return a grid object called grdTEST:
@@ -36,7 +36,7 @@ class grdClass:
 
         self.grdfilename= grdfilename
         self.type=type
-        self.grdName=type
+        self.grdName=name
         self.useESMF=useESMF
 
         self.openNetCDF()
@@ -169,8 +169,9 @@ class grdClass:
     3000, 3250, 3500, 3750, 4000, 4250, 4500, 4750, 5000, 5250, 5500, 5750,
     6000, 6250, 6500, 6750])
 
+
             self.Nlevels = len(self.depth)
-            self.fill_value=1.e+30
+            self.fill_value=-32768
 
             if np.rank(self.lon)==1:
                     self.lon, self.lat = np.meshgrid(self.lon,self.lat)
@@ -233,7 +234,7 @@ class grdClass:
             (https://www.myroms.org/forum/viewtopic.php?f=23&t=1254&hilit=critical+depth+tcline&sid=ec98a9e63e7857e2615b9182af752cde)
             the value of Tcline should now be equal to hc"""
 
-            self.vstretching=1
+            self.vstretching=2
             self.Nlevels=35
             self.theta_s=5.0
             self.theta_b=0.4
@@ -318,7 +319,7 @@ class grdClass:
             IOverticalGrid.calculate_z_w(self)
 
             if (self.useESMF):
-                print self.grdfilename
+
                 self.esmfgrid_u = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
                                       is_sphere=True, coord_names=['lon_u','lat_u'], add_mask=True)
                 self.esmfgrid_v = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,

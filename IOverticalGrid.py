@@ -58,12 +58,12 @@ def calculate_z_w(self):
             else:
                 Cs_w[k]=sc_w[k]
             
-           # if k==0:
-              #  Cs_w[k]=0
+            if k==0:
+                Cs_w[k]=0
 
-           # if k==self.Nlevels-1:
+            if k==self.Nlevels-1:
            #     print "SETTING Cs_w == -1"
-              #  Cs_w[k]=-1
+                Cs_w[k]=-1
 
         if self.vstretching==2:
             """

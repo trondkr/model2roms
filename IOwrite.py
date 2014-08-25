@@ -441,8 +441,8 @@ def writeClimFile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
             f1.variables['vbar'][ntime, :, :] = data4
         if myvar == "ageice":
             #print "NOTE! Setting values of ageice to ZERO! (IOWrite.py)"
-            data1 = np.where(abs(data1)>120,0,data1)
-
+            data1 = np.where(abs(data1)>100,0,data1)
+            print "AGEICE:",np.min(data1),np.max(data1),np.mean(data1),myvar
             f1.variables['ageice'][ntime, :, :] = data1
             f1.variables['sfwat'][ntime, :, :] = 0.
             f1.variables['tisrf'][ntime, :, :] = 0.
@@ -461,6 +461,7 @@ def writeClimFile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
             f1.variables['vice'][ntime, :, :] = data1*0.01 # NorESM is cm/s divide by 100 to get m/s
         if myvar=='aice':
             data1 = np.where(abs(data1)>120,0,data1)
+            print "AICE:",np.min(data1*0.01),np.max(data1*0.01),np.mean(data1*0.01),myvar
             f1.variables['aice'][ntime, :, :] = data1*0.01 #NorESM is % divide by 100 to get fraction
         if myvar=='hice':
             data1 = np.where(abs(data1)>10,0,data1)
@@ -468,7 +469,7 @@ def writeClimFile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
             f1.variables['hice'][ntime, :, :] = data1
         if myvar=='snow_thick':
             #data1 = np.ma.masked_where(abs(data1) > 100, data1)
-            data1 = np.where(abs(data1)>100,0,data1)
+            data1 = np.where(abs(data1)>10,0,data1)
             f1.variables['snow_thick'][ntime, :, :] = data1
 
     if isClimatology is True:
