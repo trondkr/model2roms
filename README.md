@@ -35,9 +35,56 @@ Without filter            | With filter
 :-------------------------:|:-------------------------:
 <img src="http://www.trondkristiansen.com/wp-content/gallery/romstools/temperature_depth_ESMF_0_withoutfilter_time_75190.0.png" width=100%>  |  <img src="http://www.trondkristiansen.com/wp-content/gallery/romstools/temperature_depth_ESMF_0_withfilter_time_75190.0.png" width=100%>
 
+<h3>Optional settings</h3>
+Prior to run model2roms you have to specify a number of settings so that the program can identify where input and grid files can be found. In addition, you can specify what sort of run you are doing by turning options on and off. Most of the general settings are found in `main.py`, a few definitions for variable names are found in `model2roms.py`, and finally some settings for the grid specifications re found in `grd.py`. Eventually, all of the settings will be moved to one file. Still, the main settings are the following:
+```
+    # Set show_progress to "False" if you do not want to see the progress
+    # indicator for horizontal interpolation.
+    show_progress = True
+    
+    # Set compileAll to True if you want automatic re-compilation of all the
+    # fortran files necessary to run soda2roms. You need to edit compile.py for this
+    compileAll = False
 
+    # Extract time-series of data for given set of longitude/latitudes. Useful to create time-series of input files.
+    extractStations = False
+    # Define a set of longitude/latitude positions with names to extract into
+    
+    # Create the bry, init, and clim files for a given ROMS grid and forcing data (e.g. SODA, HYCOM)
+    createForcing = True
+    # Create a smaller resolution grid based on your original. Decimates every second for
+    # each time run. This option is used for large grids where you want to do a number of testing prior ro creating the final      # forcing files.
+    decimateGrid = False
+    
+    # Write ice values to file (for Arctic regions)
+    writeIce = True
+    
+    # Use ESMF for the interpolation. This requires that you have ESMF and ESMPy installed (import ESMF)
+    useESMF = True
+    
+    # Apply filter to smooth the 2D fields after interpolation (time consuming)
+    useFilter = False
 
+    # Set the input data MODEL type (SODA, SODAMONTHLY,GLORYS2V1,WOAMONTHLY,NORESM)
+    mytype = 'NORESM'
 
+    # Define what grid type you wnat to interpolate to (see grd.py for details):
+    gridtype = "NS8KM"
+
+    # Define the paths to the input data
+    if mytype == 'NORESM':
+        modelpath = "/Users/trondkr/Projects/RegScen/NRCP45AERCN_f19_g16_CLE_01/"
+
+    # Define the path to the grid file
+    if gridtype == "NS8KM":
+        romsgridpath = "/Users/trondkr/Projects/is4dvar/Grid/nordsjoen_8km_grid_hmax20m_v3.nc"
+  
+    # Define the start year and month and end year and month.
+    start_year  = 2017
+    end_year    = 2026
+    start_month = 1
+    end_month   = 12
+    
 <p style="clear: both;">
 
 <h2>Contact</h2>
