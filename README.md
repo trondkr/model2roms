@@ -1,9 +1,7 @@
 <h1>Model2roms</h1>
 
-This project is a Python toolbox for creating the necessary climatology, boundary, and initial files 
-required to run the ROMS (Regional Ocean Modeling System) model. As a first version this toolkit focuses on
-converting the NORESM (ESM climate model), SODA, HYCOM, World Ocean Atlas (WOA), or GLORYS (Mercator Ocean) model
-runs to a set of forcing files for a given ROMS grid structure.
+Model2roms is a Python toolbox for creating the necessary climatology, boundary, and initial forcing files 
+required to run the ROMS (<a href="http://myroms.org/" target="_blank">Regional Ocean Modeling System</a>) model. The latest version of model2roms can convert several popular model hindcasts and projections including the NORESM (Norways Earth System Model), SODA global re-analysis, HYCOM, World Ocean Atlas (WOA), and GLORYS (Mercator Ocean) to a use as forcing files for a given ROMS grid structure.
 
 <h3>Latest updates</h3>
 <ul>
@@ -30,6 +28,11 @@ day from 01/01/1948 (see model2roms.py). Make sure to edit the main.py file befo
 ```html
 python main.py
 ```
+<h3>Options for interpolation</h3>
+The latest version of model2roms has adapated the use of the ESMF python package to handle all of the horizontal interpolations. This has significantly speeded up the interpolations and also solved a number of problems if the grid covers the Nort or South Poles. In addition, ESMF can handle any input type grid and therefore making it very easy to convert any type of model into forcing files for ROMS. However, often the target grid has higher resolution than the source grid which opens up areas (e.g. along the coastlines) where you have no data. Model2roms contains an option `useFilter` that will extrapolate data to fill these areas with no data using a Laplace operator. This is quite useful, but also time-consuming and should be turned off unless you need it:
+
+<img src="http://www.trondkristiansen.com/wp-content/gallery/romstools/temperature_depth_ESMF_0_withfilter_time_75190.0.png
+" width="30%" height="30%"/>
 
 <h2>Contact</h2>
 <ul>
