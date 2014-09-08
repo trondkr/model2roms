@@ -31,10 +31,9 @@ python main.py
 <h3>Options for interpolation</h3>
 The latest version of model2roms has adapated the use of the ESMF python package to handle all of the horizontal interpolations. This has significantly speeded up the interpolations and also solved a number of problems if the grid covers the Nort or South Poles. In addition, ESMF can handle any input type grid and therefore making it very easy to convert any type of model into forcing files for ROMS. However, often the target grid has higher resolution than the source grid which opens up areas (e.g. along the coastlines) where you have no data. Model2roms contains an option `useFilter` that will extrapolate data to fill these areas with no data using a Laplace operator. This is quite useful, but also time-consuming and should be turned off unless you need it:
 
-<img src="http://www.trondkristiansen.com/wp-content/gallery/romstools/temperature_depth_ESMF_0_withfilter_time_75190.0.png
-" width="30%" height="30%"/>
+<p style="float: left; font-size: 9pt; text-align: center; width: 30%; height: 30% margin-right: 1%; margin-bottom: 0.5em;"><img src="http://www.trondkristiansen.com/wp-content/gallery/romstools/temperature_depth_ESMF_0_withfilter_time_75190.0.png" style="width: 30%">With filter</p>
 
-<p style="float: left; font-size: 9pt; text-align: center; width: 30%; height: 30% margin-right: 1%; margin-bottom: 0.5em;"><img src="http://www.trondkristiansen.com/wp-content/gallery/romstools/temperature_depth_ESMF_0_withfilter_time_75190.0.png" style="width: 100%">With filter</p>
+<p style="float: left; font-size: 9pt; text-align: center; width: 30%; height: 30% margin-right: 1%; margin-bottom: 0.5em;"><img src="http://www.trondkristiansen.com/wp-content/gallery/romstools/temperature_depth_ESMF_0_withfilter_time_75190.0.png" style="width: 30%">Without filter</p>
 
 <h2>Contact</h2>
 <ul>
