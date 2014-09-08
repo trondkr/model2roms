@@ -34,6 +34,8 @@ The latest version of model2roms has adapated the use of the ESMF python package
 <img src="http://www.trondkristiansen.com/wp-content/gallery/romstools/temperature_depth_ESMF_0_withfilter_time_75190.0.png
 " width="30%" height="30%"/>
 
+<p style="float: left; font-size: 9pt; text-align: center; width: 30%; height: 30% margin-right: 1%; margin-bottom: 0.5em;"><img src="http://www.trondkristiansen.com/wp-content/gallery/romstools/temperature_depth_ESMF_0_withfilter_time_75190.0.png" style="width: 100%">With filter</p>
+
 <h2>Contact</h2>
 <ul>
 <li>me @ trondkristiansen.com</li>
