@@ -19,8 +19,8 @@ except ImportError:
 __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
 __created__  = datetime(2008, 12, 9)
-__modified__ = datetime(2013, 7, 1)
-__version__  = "1.1"
+__modified__ = datetime(2014, 10, 23)
+__version__  = "1.2"
 __status__   = "Development"
 
 
@@ -132,17 +132,17 @@ class grdClass:
 
             IOverticalGrid.get_z_levels(self)
             
-        if self.type=='GLORYS2V1':
+        if self.type=='GLORYS':
             self.grdType  = 'regular'
             print '---> Assuming %s grid type for %s'%(self.grdType,self.type)
-            self.lon = self.cdf.variables["lon"][:]
-            self.lat = self.cdf.variables["lat"][:]
-            self.lonName='lon'
-            self.latName='lat'
+            self.lon = self.cdf.variables["nav_lon"][:]
+            self.lat = self.cdf.variables["nav_lat"][:]
+            self.lonName='nav_lon'
+            self.latName='nav_lat'
             #NOTE spelling error for depth in netcdf files
             self.depth = self.cdf.variables["deptht"][:]
             self.Nlevels = len(self.depth)
-            self.fill_value=-32767
+            self.fill_value=9.96921e+36
 
             if np.rank(self.lon)==1:
                     self.lon, self.lat = np.meshgrid(self.lon,self.lat)
@@ -336,7 +336,7 @@ class grdClass:
         if self.type=="ROMS":
             self.Lp=len(self.lat_rho[1,:])
             self.Mp=len(self.lat_rho[:,1])
-        if self.type in ['SODA','SODAMONTHLY','AVERAGE','GLORYS2V1','NORESM','WOAMONTHLY']:
+        if self.type in ['SODA','SODAMONTHLY','AVERAGE','GLORYS','NORESM','WOAMONTHLY']:
             self.Lp=len(self.lat[1,:])
             self.Mp=len(self.lat[:,1])
 

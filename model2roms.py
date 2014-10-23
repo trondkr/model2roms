@@ -47,9 +47,9 @@ def VerticalInterpolation(myvar, array1, array2, grdROMS, grdMODEL):
 
         outdata = np.ma.masked_where(abs(outdata) > 1000, outdata)
 
-        import plotData
-       # for k in xrange(0,len(grdROMS.depth)-1,5):
-      #  plotData.contourMap(grdROMS, grdROMS.lon_rho, grdROMS.lat_rho, np.squeeze(outdata[0,:,:]),0, myvar)
+#        import plotData
+#        for k in xrange(0,len(grdROMS.depth)-1,5):
+#          plotData.contourMap(grdROMS, grdROMS.lon_rho, grdROMS.lat_rho, np.squeeze(outdata[0,:,:]),0, myvar)
 
 
         return outdata
@@ -125,15 +125,15 @@ def VerticalInterpolation(myvar, array1, array2, grdROMS, grdMODEL):
         return outdataU, outdataV, outdataUBAR, outdataVBAR
 
 
-def HorizontalInterpolation(myvar, grdROMS, grdMODEL, data, show_progress):
+def HorizontalInterpolation(myvar, grdROMS, grdMODEL, data, show_progress, useFilter):
     print 'Start %s horizontal interpolation for %s' % (grdMODEL.grdType, myvar)
 
     if myvar in ['temperature', 'salinity']:
-        array1 = interp2D.doHorInterpolationRegularGrid(myvar, grdROMS, grdMODEL, data, show_progress)
+        array1 = interp2D.doHorInterpolationRegularGrid(myvar, grdROMS, grdMODEL, data, show_progress, useFilter)
     if myvar in ['ssh', 'ageice', 'uice', 'vice', 'aice', 'hice', 'snow_thick']:
-        array1 = interp2D.doHorInterpolationSSHRegularGrid(myvar, grdROMS, grdMODEL, data)
+        array1 = interp2D.doHorInterpolationSSHRegularGrid(myvar, grdROMS, grdMODEL, data, useFilter)
     if myvar in ['uvel', 'vvel']:
-        array1 = interp2D.doHorInterpolationRegularGrid(myvar, grdROMS, grdMODEL, data, show_progress)
+        array1 = interp2D.doHorInterpolationRegularGrid(myvar, grdROMS, grdMODEL, data, show_progress, useFilter)
 
     return array1
 
@@ -194,6 +194,8 @@ def getTime(cdf, grdROMS, grdMODEL, year, ID, mytime, mytype, firstRun):
 
     if (mytype)=='NORESM':
        jdref = date2num(datetime(1800,1,1),cdf.variables["time"].units,calendar=cdf.variables["time"].calendar)
+    elif (mytype)=='GLORYS':
+       jdref = date2num(datetime(1948,1,1),cdf.variables["time_counter"].units,calendar=cdf.variables["time_counter"].calendar)
     else:
         jdref = date2num(datetime(1948,1,1),cdf.variables["time"].units,calendar=cdf.variables["time"].calendar)
 
@@ -232,17 +234,16 @@ def getTime(cdf, grdROMS, grdMODEL, year, ID, mytime, mytype, firstRun):
         jd = date2num(currentdate, myunits, calendar=mycalendar)
 
 
-    if mytype == 'GLORYS2V1':
-        # Find the day and month that the SODAMONTHLY file respresents based on the year and ID number.
-        # Each SODA file represents a 1 month average.
+    if mytype == 'GLORYS':
+        # Find the day and month that the GLORYS file respresents based on the year and ID number.
+        # Each file represents a 1 month average.
 
         month = ID
         day = 15
-        mycalendar = cdf.variables["time"].calendar
-        myunits = cdf.variables["time"].units
+        mycalendar = cdf.variables["time_counter"].calendar
+        myunits = cdf.variables["time_counter"].units
         currentdate = datetime(year, month, day)
         jd = date2num(currentdate, myunits, calendar=mycalendar)
-
 
     if mytype == 'NORESM':
         # Find the day and month that the NORESM file. We need to use the time modules from
@@ -261,19 +262,29 @@ def getTime(cdf, grdROMS, grdMODEL, year, ID, mytime, mytype, firstRun):
 
     grdROMS.time = (jd - jdref)
     grdROMS.reftime = jdref
+    grdROMS.timeunits=myunits
 
     print '\nCurrent time of %s file : %s' % (mytype, currentdate)
 
 
-def getGLORYS2V1filename(year, ID, myvar, dataPath):
+def getGLORYSfilename(year, ID, myvar, dataPath):
     # Month indicates month
     # myvar:S,T,U,V
-    if ID < 10: filename = dataPath + 'global-reanalysis-phys-001-009-ran-fr-glorys2-grid' + str(
-        myvar.lower()) + '/REGRID/GLORYS2V1_ORCA025_' + str(year) + '0' + str(ID) + '15_R20110216_grid' + str(
-        myvar.upper()) + '_regrid.nc'
-    if ID >= 10: filename = dataPath + 'global-reanalysis-phys-001-009-ran-fr-glorys2-grid' + str(
-        myvar.lower()) + '/REGRID/GLORYS2V1_ORCA025_' + str(year) + str(ID) + '15_R20110216_grid' + str(
-        myvar.upper()) + '_regrid.nc'
+    if (myvar in ['iicevelu', 'iicevelv', 'ileadfra', 'iicethic']):
+        myvarPrefix = 'icemod'
+        myvar = "ice"
+    elif (myvar in ['sossheig']):
+        myvarPrefix = 'grid2D'
+        myvar = "2D"
+    else:
+        myvarPrefix = 'grid'+str(myvar.upper())
+    if ID < 10: filename = dataPath + 'dataset-global-reanalysis-phys-001-009-ran-fr-glorys2v3-monthly-' + str(
+        myvar.lower()) + '/GLORYS2V3_ORCA025_' + str(year) + '0' + str(ID) + '15_R20130808_' + str(myvarPrefix) + '.nc'
+
+    if ID >= 10: filename = dataPath + 'dataset-global-reanalysis-phys-001-009-ran-fr-glorys2v3-monthly-' + str(
+        myvar.lower()) + '/GLORYS2V3_ORCA025_' + str(year) + str(ID) + '15_R20130808_' + str(myvarPrefix) + '.nc'
+
+    print "Filename in: %s"%(filename)
 
     return filename
 
@@ -358,6 +369,18 @@ def get3Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
            # data = np.where(abs(data)>=32768 , grdROMS.fill_value, data)
 
             print "Data range", np.min(data),np.max(data)
+
+        if mytype == "GLORYS":
+            if myvar == 'temperature':
+                cdf = Dataset(getGLORYSfilename(year, ID, 'T', dataPath))
+                myunits = cdf.variables[str(varNames[varN])].units
+
+            if myvar == 'salinity': cdf = Dataset(getGLORYSfilename(year, ID, 'S', dataPath))
+            if myvar in ['uvel','vvel']: cdf = Dataset(getGLORYSfilename(year, ID, 'UV', dataPath))
+            data = np.squeeze(cdf.variables[str(varNames[varN])][0,:,:,:])
+            data=np.where(data.mask,grdROMS.fill_value,data)
+
+
         cdf.close()
     else:
         if grdMODEL.splitExtract is True:
@@ -395,14 +418,14 @@ def get3Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
                         int(grdMODEL.indices[1, 2]):int(grdMODEL.indices[1, 3]),
                         int(grdMODEL.indices[1, 0]):int(grdMODEL.indices[1, 1])]
 
-            if mytype == "GLORYS2V1":
+            if mytype == "GLORYS":
                 if myvar == 'temperature':
-                    cdf = Dataset(getGLORYS2V1filename(year, ID, 'T', dataPath))
+                    cdf = Dataset(getGLORYSfilename(year, ID, 'T', dataPath))
                     myunits = cdf.variables[str(varNames[varN])].units
 
-                if myvar == 'salinity': cdf = Dataset(getGLORYS2V1filename(year, ID, 'S', dataPath))
-                if myvar == 'uvel': cdf = Dataset(getGLORYS2V1filename(year, ID, 'U', dataPath))
-                if myvar == 'vvel': cdf = Dataset(getGLORYS2V1filename(year, ID, 'V', dataPath))
+                if myvar == 'salinity': cdf = Dataset(getGLORYSfilename(year, ID, 'S', dataPath))
+                if myvar == 'uvel': cdf = Dataset(getGLORYSfilename(year, ID, 'U', dataPath))
+                if myvar == 'vvel': cdf = Dataset(getGLORYSfilename(year, ID, 'V', dataPath))
 
                 data1 = np.squeeze(cdf.variables[str(varNames[varN])][0, :,
                                    int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
@@ -450,14 +473,14 @@ def get3Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
                        int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
                        int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])]
 
-            if mytype == "GLORYS2V1":
+            if mytype == "GLORYS":
                 if myvar == 'temperature':
-                    cdf = Dataset(getGLORYS2V1filename(year, ID, 'T', dataPath))
+                    cdf = Dataset(getGLORYSfilename(year, ID, 'T', dataPath))
 
                     myunits = cdf.variables[str(varNames[varN])].units
-                if myvar == 'salinity': cdf = Dataset(getGLORYS2V1filename(year, ID, 'S', dataPath))
-                if myvar == 'uvel': cdf = Dataset(getGLORYS2V1filename(year, ID, 'U', dataPath))
-                if myvar == 'vvel': cdf = Dataset(getGLORYS2V1filename(year, ID, 'V', dataPath))
+                if myvar == 'salinity': cdf = Dataset(getGLORYSfilename(year, ID, 'S', dataPath))
+                if myvar == 'uvel': cdf = Dataset(getGLORYSfilename(year, ID, 'U', dataPath))
+                if myvar == 'vvel': cdf = Dataset(getGLORYSfilename(year, ID, 'V', dataPath))
 
                 data = np.squeeze(cdf.variables[str(varNames[varN])][0, :,
                                   int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
@@ -472,10 +495,10 @@ def get3Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
                                   int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])])
             cdf.close()
 
-    if myvar == 'temperature' and mytype in ["GLORYS2V1", "NORESM"]:
+    if myvar == 'temperature' and mytype in ["GLORYS", "NORESM"]:
 
         if myunits == "degree_Kelvin" or myunits == "K":
-            if mytype in ["GLORYS2V1"]:
+            if mytype in ["GLORYS"]:
                 data = np.where(data <= -32.767, grdROMS.fill_value, data)
             data = data - 273.15
 
@@ -484,7 +507,7 @@ def get3Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
             #grdMODEL.mask = np.zeros(grdMODEL.lon.shape, dtype=np.float64)
             #grdMODEL.mask[:, :] = np.where(tmp == grdROMS.fill_value, 1, 0)
 
-    if mytype == "GLORYS2V1":
+    if mytype == "GLORYS":
         data = np.where(data <= -32.767, grdROMS.fill_value, data)
         data = np.ma.masked_where(data <= grdROMS.fill_value, data)
 
@@ -507,6 +530,12 @@ def get2Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
         if myvar == 'hice':   varN = 9;  SSHdata = np.zeros((indexROMS_SSH), dtype=np.float64)
         if myvar == 'snow_thick': varN = 10;  SSHdata = np.zeros((indexROMS_SSH), dtype=np.float64)
 
+    if mytype == "GLORYS":
+        if myvar == 'uice':   varN = 5;  SSHdata = np.zeros((indexROMS_SSH), dtype=np.float64)
+        if myvar == 'vice':   varN = 6;  SSHdata = np.zeros((indexROMS_SSH), dtype=np.float64)
+        if myvar == 'aice':   varN = 7;  SSHdata = np.zeros((indexROMS_SSH), dtype=np.float64)
+        if myvar == 'hice':   varN = 8;  SSHdata = np.zeros((indexROMS_SSH), dtype=np.float64)
+
     if myvar == 'ssh': varN = 2;  SSHdata = np.zeros((indexROMS_SSH), dtype=np.float64)
 
     if  grdMODEL.useESMF:
@@ -528,6 +557,11 @@ def get2Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
         if mytype == "NORESM":
             cdf = Dataset(getNORESMfilename(year, ID, varNames[varN], dataPath))
             #myunits = cdf.variables[str(varNames[varN])].units
+            data = np.squeeze(cdf.variables[str(varNames[varN])][0, :,:])
+            data=np.where(data.mask,grdROMS.fill_value,data)
+
+        if mytype == "GLORYS":
+            cdf = Dataset(getGLORYSfilename(year, ID, varNames[varN], dataPath))
             data = np.squeeze(cdf.variables[str(varNames[varN])][0, :,:])
             data=np.where(data.mask,grdROMS.fill_value,data)
 
@@ -557,8 +591,8 @@ def get2Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
                         int(grdMODEL.indices[1, 2]):int(grdMODEL.indices[1, 3]),
                         int(grdMODEL.indices[1, 0]):int(grdMODEL.indices[1, 1])]
 
-            if mytype == "GLORYS2V1":
-                cdf = Dataset(getGLORYS2V1filename(year, ID, 'T', dataPath))
+            if mytype == "GLORYS":
+                cdf = Dataset(getGLORYSfilename(year, ID, '2D', dataPath))
 
                 data1 = np.squeeze(cdf.variables[str(varNames[varN])][0,
                                    int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
@@ -597,8 +631,8 @@ def get2Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
                        int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
                        int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])]
 
-            if mytype == "GLORYS2V1":
-                cdf = Dataset(getGLORYS2V1filename(year, ID, 'T', dataPath))
+            if mytype == "GLORYS":
+                cdf = Dataset(getGLORYSfilename(year, ID, '2D', dataPath))
 
                 data = np.squeeze(cdf.variables[str(varNames[varN])][0,
                                   int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
@@ -615,7 +649,7 @@ def get2Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
             # data = np.where(abs(data) == grdMODEL.fill_value, grdROMS.fill_value, data)
             #data = np.ma.where(abs(data) > 1000, grdROMS.fill_value, data)
 
-        if mytype == "GLORYS2V1":
+        if mytype == "GLORYS":
             data = np.where(data <= -32.767, grdROMS.fill_value, data)
             data = np.ma.masked_where(data <= grdROMS.fill_value, data)
 
@@ -626,8 +660,8 @@ def get2Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
     return data
 
 
-def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, myvars, show_progress, mytype, gridtype, subset,
-                      isClimatology, writeIce, useESMF):
+def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, myvars, varNames, show_progress, mytype, gridtype, subset,
+                      isClimatology, writeIce, useESMF, useFilter, myformat):
     # First opening of input file is just for initialization of grid
     if mytype == 'SODA':
         fileNameIn = getSODAfilename(years[0], IDS[0], "salinity", dataPath)
@@ -637,25 +671,29 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
         fileNameIn = getNORESMfilename(years[0], IDS[0], "grid", dataPath)
     if mytype == 'WOAMONTHLY':
         fileNameIn = getWOAMONTHLYfilename(years[0], IDS[0], "temperature", dataPath)
-    if mytype == 'GLORYS2V1':
-        fileNameIn = getGLORYS2V1filename(years[0], IDS[0], "S", dataPath)
+    if mytype == 'GLORYS':
+        fileNameIn = getGLORYSfilename(years[0], IDS[0], "S", dataPath)
 
     # First time in loop, get the essential old grid information
     # MODEL data already at Z-levels. No need to interpolate to fixed depths,
     # but we use the one we have
+
     grdMODEL = grd.grdClass(fileNameIn, mytype, mytype, useESMF)
     grdROMS = grd.grdClass(romsgridpath, "ROMS", gridtype, useESMF)
     grdROMS.myvars = myvars
     if (useESMF):
         print "\nCreating the interpolation weights and indexes using ESMF:"
+
         print "  -> regridSrc2Dst at RHO points"
         grdMODEL.fieldSrc = ESMF.Field(grdMODEL.esmfgrid, "fieldSrc", staggerloc=ESMF.StaggerLoc.CENTER)
         grdMODEL.fieldDst_rho = ESMF.Field(grdROMS.esmfgrid, "fieldDst", staggerloc=ESMF.StaggerLoc.CENTER)
         grdMODEL.regridSrc2Dst_rho = ESMF.Regrid(grdMODEL.fieldSrc, grdMODEL.fieldDst_rho, regrid_method=ESMF.RegridMethod.BILINEAR)
+
         print "  -> regridSrc2Dst at U points"
         grdMODEL.fieldSrc = ESMF.Field(grdMODEL.esmfgrid, "fieldSrc", staggerloc=ESMF.StaggerLoc.CENTER)
         grdMODEL.fieldDst_u = ESMF.Field(grdROMS.esmfgrid_u, "fieldDst_u", staggerloc=ESMF.StaggerLoc.CENTER)
         grdMODEL.regridSrc2Dst_u = ESMF.Regrid(grdMODEL.fieldSrc, grdMODEL.fieldDst_u, regrid_method=ESMF.RegridMethod.BILINEAR)
+
         print "  -> regridSrc2Dst at V points"
         grdMODEL.fieldSrc = ESMF.Field(grdMODEL.esmfgrid, "fieldSrc", staggerloc=ESMF.StaggerLoc.CENTER)
         grdMODEL.fieldDst_v = ESMF.Field(grdROMS.esmfgrid_v, "fieldDst_v", staggerloc=ESMF.StaggerLoc.CENTER)
@@ -676,27 +714,18 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
 
             if mytype == 'SODA':
                 filename = getSODAfilename(year, ID, None, dataPath)
-                varNames = ['TEMP', 'SALT', 'SSH', 'U', 'V']
 
             if mytype == 'SODAMONTHLY':
                 filename = getSODAMONTHLYfilename(year, ID, None, dataPath)
-                varNames = ['temp', 'salt', 'ssh', 'u', 'v']
 
-            if mytype == 'GLORYS2V1':
-                filename = getGLORYS2V1filename(year, ID, "S", dataPath)
-                varNames = ['votemper', 'vosaline', 'sossheig', 'vozocrtx', 'vomecrty']
+            if mytype == 'GLORYS':
+                filename = getGLORYSfilename(year, ID, "S", dataPath)
 
             if mytype == 'WOAMONTHLY':
                 filename = getWOAMONTHLYfilename(year, ID, "temperature", dataPath)
-                varNames = ['t_an', 's_an']
 
             if mytype == 'NORESM':
                 filename = getNORESMfilename(year, ID, "saln", dataPath)
-                writeIce = True
-                varNames = ['templvl','salnlvl','sealv', 'uvellvl', 'vvellvl','iage', 'uvel', 'vvel', 'aice', 'hi', 'hs']
-                myvars=['temperature','salinity', 'ssh', 'uvel', 'vvel','ageice','uice','vice','aice','hice','snow_thick']
-
-
 
             # Now open the input file and get the time
             cdf = Dataset(filename)
@@ -726,7 +755,7 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
                     data = get2Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath)
 
                 # Take the input data and horizontally interpolate to your grid
-                array1 = HorizontalInterpolation(myvar, grdROMS, grdMODEL, data, show_progress)
+                array1 = HorizontalInterpolation(myvar, grdROMS, grdMODEL, data, show_progress, useFilter)
                 if myvar in ['temperature', 'salinity']:
                     STdata = VerticalInterpolation(myvar, array1, array1, grdROMS, grdMODEL)
                     print "Data range of %s after interpolation: %3.3f to %3.3f" % (
@@ -737,9 +766,9 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
 
                     STdata = np.where(abs(STdata) > 1000, grdROMS.fill_value, STdata)
 
-                    IOwrite.writeClimFile(grdROMS, time, climName, myvar, isClimatology, writeIce, mytype, STdata)
+                    IOwrite.writeClimFile(grdROMS, time, climName, myvar, isClimatology, writeIce, mytype, myformat, STdata)
                     if time == grdROMS.initTime and grdROMS.write_init is True:
-                        IOinitial.createInitFile(grdROMS, time, initName, myvar, writeIce, mytype, STdata)
+                        IOinitial.createInitFile(grdROMS, time, initName, myvar, writeIce, mytype, myformat, STdata)
 
                 if myvar in ['ssh', 'ageice', 'aice', 'hice', 'snow_thick']:
                     SSHdata = array1[0, :, :]
@@ -755,9 +784,9 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
                    # print "Data range of %s after interpolation: %3.3f to %3.3f" % (
                    #     myvar, SSHdata.min(), SSHdata.max())
 
-                    IOwrite.writeClimFile(grdROMS, time, climName, myvar, isClimatology, writeIce, mytype, SSHdata)
+                    IOwrite.writeClimFile(grdROMS, time, climName, myvar, isClimatology, writeIce, mytype,myformat, SSHdata)
                     if time == grdROMS.initTime:
-                        IOinitial.createInitFile(grdROMS, time, initName, myvar, writeIce, mytype, SSHdata)
+                        IOinitial.createInitFile(grdROMS, time, initName, myvar, writeIce, mytype, myformat,  SSHdata)
 
                 # The following are special routines used to calculate the u and v velocity
                 # of ice based on the transport, which is divided by snow and ice thickenss
@@ -775,16 +804,16 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
 
                     #SSHdata = np.ma.masked_where(abs(SSHdata) > 1000, SSHdata)
 
-                   # print "Data range of %s after interpolation: %3.3f to %3.3f" % (myvar, SSHdata.min(), SSHdata.max())
+                    print "Data range of %s after interpolation: %3.3f to %3.3f" % (myvar, SSHdata.min(), SSHdata.max())
 
 
-                    IOwrite.writeClimFile(grdROMS, time, climName, myvar, isClimatology, writeIce, mytype, SSHdata)
+                    IOwrite.writeClimFile(grdROMS, time, climName, myvar, isClimatology, writeIce, mytype, myformat, SSHdata)
 
                     if time == grdROMS.initTime:
                         if myvar == 'uice':
-                            IOinitial.createInitFile(grdROMS, time, initName, 'uice', writeIce, mytype,  SSHdata)
+                            IOinitial.createInitFile(grdROMS, time, initName, 'uice', writeIce, mytype, myformat,  SSHdata)
                         if myvar == 'vice':
-                            IOinitial.createInitFile(grdROMS, time, initName, 'vice', writeIce, mytype, SSHdata)
+                            IOinitial.createInitFile(grdROMS, time, initName, 'vice', writeIce, mytype, myformat, SSHdata)
 
                 if myvar == 'uvel':
                     array2 = array1
@@ -814,10 +843,10 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
                     VBARdata = np.where(grdROMS.mask_v == 0, grdROMS.fill_value, VBARdata)
                     VBARdata = np.where(abs(VBARdata) > 1000, grdROMS.fill_value, VBARdata)
 
-                    IOwrite.writeClimFile(grdROMS, time, climName, myvar, isClimatology, writeIce, mytype, Udata, Vdata,
+                    IOwrite.writeClimFile(grdROMS, time, climName, myvar, isClimatology, writeIce, mytype, myformat, Udata, Vdata,
                                           UBARdata, VBARdata)
                     if time == grdROMS.initTime:
                         # We print time=initTime to init file so that we have values for ubar and vbar (not present at time=1)
-                        IOinitial.createInitFile(grdROMS, time, initName, myvar, writeIce, mytype, Udata, Vdata, UBARdata, VBARdata)
+                        IOinitial.createInitFile(grdROMS, time, initName, myvar, writeIce, mytype, myformat, Udata, Vdata, UBARdata, VBARdata)
 
             time += 1

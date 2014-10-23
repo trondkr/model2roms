@@ -3,7 +3,7 @@ from mpl_toolkits.basemap import Basemap
 from pylab import *
 
 def contourMap(grdROMS, tlon, tlat, mydata, depthlevel, var):
-    print "NAME:",grdROMS.grdName
+
     map = Basemap(projection='ortho',lon_0=-20,lat_0=25, resolution='c', area_thresh=10000)
     levels = np.arange(-2.0, 30.0, 0.5)
 
@@ -45,10 +45,23 @@ def contourMap(grdROMS, tlon, tlat, mydata, depthlevel, var):
         levels = np.arange(-2.0, 30.0, 0.5)
 
     if grdROMS.grdName=='REGSCEN':
-        print "Plotting REGSCEN"
-        map = Basemap(projection='ortho',lon_0=-20,lat_0=25, resolution='c', area_thresh=10000)
+      #  map = Basemap(projection='ortho',lon_0=-20,lat_0=25, resolution='c', area_thresh=10000)
+        map = Basemap(llcrnrlon=-50,
+                      llcrnrlat=54,
+                      urcrnrlon=1,
+                      urcrnrlat=78,
+                      resolution='i',projection='tmerc',lon_0=-25,lat_0=60,area_thresh=200.)
+
         levels = np.arange(-2.0, 30.0, 0.5)
-    print "Test",grdROMS.grdName
+
+    if grdROMS.grdName=='GREENLAND':
+        map = Basemap(llcrnrlon=-45.5,
+                      llcrnrlat=53.5,
+                      urcrnrlon=15.5,
+                      urcrnrlat=75.7,
+                      resolution='i',projection='tmerc',lon_0=-20,lat_0=60,area_thresh=20.)
+        levels = np.arange(-2.0, 20.0, 0.5)
+
     x, y = map(tlon,tlat)
 
     map.drawcoastlines()
@@ -58,7 +71,7 @@ def contourMap(grdROMS, tlon, tlat, mydata, depthlevel, var):
     if var=='temperature':
         levels = np.arange(-2.0, 36.0, 1)
     if var=='salinity':
-        levels = np.arange(15.0, 40.0, 0.3)
+        levels = np.arange(25.0, 40.0, 0.3)
     if var=='runoff':
         levels = np.arange(1e-4, 1e-8, 1e-10)
     if var=='ssh':

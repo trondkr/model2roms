@@ -11,7 +11,7 @@ import numpy as np
 __author__ = 'Trond Kristiansen'
 __email__ = 'trond.kristiansen@imr.no'
 __created__ = datetime(2009, 1, 30)
-__modified__ = datetime(2014, 4, 7)
+__modified__ = datetime(2014, 10, 23)
 __version__ = "1.5"
 __status__ = "Development"
 
@@ -22,7 +22,7 @@ def myhelp():
     """
 
 
-def showInfo(myvars, romsgridpath, climName, initName, bryName, start_year, end_year, isClimatology, useESMF):
+def showInfo(myvars, romsgridpath, climName, initName, bryName, start_year, end_year, isClimatology, useESMF, myformat):
     if isClimatology:
         print 'Conversions run for climatological months'
     else:
@@ -32,6 +32,7 @@ def showInfo(myvars, romsgridpath, climName, initName, bryName, start_year, end_
         print '---> %s' % myvar
     if (useESMF):
         print "All horisontal interpolations will be done using ESMF-ESMPy (module ESMF)"
+    print "Output files are written in format: %s"%(myformat)
     print '\nOutput grid file is: %s' % romsgridpath
     print '\nInitializing'
 
@@ -66,29 +67,36 @@ def main():
     writeIce = True
     # Use ESMF for the interpolation. This requires that you have ESMF and ESMPy installed (import ESMF)
     useESMF = True
+    # Apply filter to smooth the 2D fields after interpolation (time consuming)
+    useFilter = True
+
+    # Format to write the ouput to: 'NETCDF4', 'NETCDF4_CLASSIC', 'NETCDF3_64BIT', or 'NETCDF3_CLASSIC'
+    # Using NETCDF4 automatically turns on compression of files (ZLIB)
+    myformat='NETCDF4'
 
     # Set the input data MODEL mytype
     mytype = 'SODA'
     mytype = 'SODAMONTHLY'
-    #mytype = 'GLORYS2V1'
-    #mytype = 'WOAMONTHLY'
+    mytype = 'WOAMONTHLY'
     mytype = 'NORESM'
+    mytype = 'GLORYS'
 
     # Define what grid type you wnat to interpolate to:
     gridtype = "NS8KM"
     gridtype = "REGSCEN"
+    gridtype = "GREENLAND"
 
     # Define the paths to the input data
     if mytype == 'SODA':
         modelpath = "/Volumes/MacintoshHD2/Datasets/SODA/"
     if mytype == 'SODAMONTHLY':
         modelpath = "/Volumes/MacintoshHD2/Datasets/SODAMonthly/"
-        #modelpath = "/Users/trondkr/Projects/RegScen/model2roms/testdata/"
-    if mytype == 'GLORYS2V1':
+    if mytype == 'GLORYS':
         modelpath = "/Volumes/MacintoshHD2/Datasets/GLOBAL_REANALYSIS_PHYS_001_009/"
+        modelpath = "/Users/trondkr/Projects/is4dvar/GLORYS2V3/"
     if mytype == 'NORESM':
         modelpath = "/Users/trondkr/Projects/RegScen/NRCP45AERCN_f19_g16_CLE_01/"
-     #   modelpath = "/work/users/trondk/REGSCEN/NRCP45AERCN_f19_g16_CLE_01/"
+    #    modelpath = "/work/users/trondk/REGSCEN/NRCP45AERCN_f19_g16_CLE_01/"
     if mytype == 'WOAMONTHLY':
         modelpath = "/Users/trondkr/Projects/is4dvar/createSSS/"
 
@@ -97,14 +105,18 @@ def main():
         romsgridpath = "/Users/trondkr/Projects/is4dvar/Grid/nordsjoen_8km_grid_hmax20m_v3.nc"
     if gridtype == "REGSCEN":
         romsgridpath = "/Users/trondkr/Projects/RegScen/Grid/AA_10km_grid_noest.nc"
-      #  romsgridpath = "/Users/trondkr/Projects/is4dvar/Grid/nordsjoen_8km_grid_hmax20m_v3.nc"
-    #    romsgridpath = "/work/users/trondk/REGSCEN/GRID/AA_10km_grid.nc"
+        romsgridpath = "/Users/trondkr/Projects/is4dvar/Grid/nordsjoen_8km_grid_hmax20m_v3.nc"
+        romsgridpath = "/work/users/trondk/REGSCEN/GRID/AA_10km_grid_noest.nc"
+
+    if gridtype == "GREENLAND":
+        romsgridpath="/Users/trondkr/Projects/RegScen/Grid/Sermilik_grid_4000m.nc"
 
     if mytype == 'WOAMONTHLY': isClimatology = True
     else: isClimatology = False
 
-    start_year  = 2006
-    end_year    = 2016
+    # Define the period to create forcing for
+    start_year  = 2010
+    end_year    = 2011
     start_month = 1
     end_month   = 12
 
@@ -127,6 +139,51 @@ def main():
         minLon = -179
         maxLon = 180
 
+    if gridtype == "GREENLAND":
+        abbreviation = "greenland"
+        minLat = -50
+        maxLat = 89.5
+        minLon = -179
+        maxLon = 180
+
+    # Define what and name of variables to include in the forcing files
+    # -> myvars is the name model2roms uses to identify variables
+    # -> varNames is the name of the variable found in the NetCDF input files
+    if mytype == 'SODA':
+       myvars = ['temperature', 'salinity', 'ssh', 'uvel', 'vvel']
+       varNames = ['TEMP', 'SALT', 'SSH', 'U', 'V']
+
+    if mytype == 'SODAMONTHLY':
+        myvars   = ['temperature', 'salinity', 'ssh', 'uvel', 'vvel']
+        varNames = ['temp', 'salt', 'ssh', 'u', 'v']
+
+    if mytype == 'GLORYS':
+        if (writeIce):
+            myvars   = ['temperature','salinity', 'ssh', 'uvel', 'vvel','uice','vice','aice','hice']
+            varNames = ['votemper', 'vosaline', 'sossheig', 'vozocrtx', 'vomecrty','iicevelu', 'iicevelv', 'ileadfra', 'iicethic']
+        else:
+            myvars   = ['temperature', 'salinity', 'ssh', 'uvel', 'vvel']
+            varNames = ['votemper', 'vosaline', 'sossheig', 'vozocrtx', 'vomecrty']
+
+    if mytype == 'WOAMONTHLY':
+        myvars   = ['temperature','salinity']
+        varNames = ['t_an', 's_an']
+
+    if mytype == 'NORESM':
+        myvars   = ['temperature','salinity', 'ssh', 'uvel', 'vvel','ageice','uice','vice','aice','hice','snow_thick']
+        varNames = ['templvl','salnlvl','sealv', 'uvellvl', 'vvellvl','iage', 'uvel', 'vvel', 'aice', 'hi', 'hs']
+
+    # Define frequency of input data (5 day or 30 day average files)
+    if mytype == 'SODA':
+        aveDays = 5.0
+
+    if mytype in ['SODAMONTHLY', 'GLORYS', 'NORESM','WOAMONTHLY']:
+        aveDays = 30.0
+
+
+
+
+    # NO EDIT BELOW =========================================================
     subset = np.zeros(4); subset[0] = minLat; subset[1] = maxLat; subset[2] = minLon; subset[3] = maxLon
 
     # Name of output files for CLIM, BRY, and INIT files
@@ -136,24 +193,7 @@ def main():
     if isClimatology is True:
         climName=abbreviation + '_' + str(mytype) + '_climatology.nc'
 
-    # Define what variables to include in the forcing files
-    myvars = ['temperature', 'salinity', 'ssh', 'uvel', 'vvel']
-    if mytype=="NORESM":
-        myvars=['temperature','salinity', 'ssh', 'uvel', 'vvel','ageice','uice','vice','aice','hice','snow_thick']
-      #  myvars=['ageice','uice','vice','aice','hice','snow_thick']
 
-    # WOA only currently contains salinity and temperature
-    if isClimatology==True:
-        myvars = ['temperature','salinity']
-
-    # 5 day or 30 day average files for model input files
-    if mytype == 'SODA':
-        aveDays = 5.0
-
-    if mytype in ['SODAMONTHLY', 'GLORYS2V1', 'NORESM','WOAMONTHLY']:
-        aveDays = 30.0
-
-    # NO EDIT BELOW =========================================================
     if compileAll is True:
         # Compile the Fortran 90 files to Python modules
         import compile
@@ -171,10 +211,6 @@ def main():
     else:
         IDS = [(i + int(start_day_in_start_year) +1) for i in range(loop + 1)]
 
-    # FIXME: this only gives the option of running all months of the year and not subset.
-
-    #IDS=[i  + 1 for i in range(12)]
-
     if isClimatology==True:
         IDS=[i+1 for i in xrange(12)]
         print "Will create climatology for months: %s"%(IDS)
@@ -190,12 +226,12 @@ def main():
 
     if createForcing:
 
-        showInfo(myvars, romsgridpath, climName, initName, bryName, start_year, end_year, isClimatology, useESMF)
+        showInfo(myvars, romsgridpath, climName, initName, bryName, start_year, end_year, isClimatology, useESMF, myformat)
 
-        model2roms.convertMODEL2ROMS(years, IDS, climName, initName, modelpath, romsgridpath, myvars, show_progress,
-                                         mytype, gridtype, subset, isClimatology, writeIce, useESMF)
+        model2roms.convertMODEL2ROMS(years, IDS, climName, initName, modelpath, romsgridpath, myvars, varNames, show_progress,
+                                         mytype, gridtype, subset, isClimatology, writeIce, useESMF, useFilter, myformat)
 
-        clim2bry.writeBry(grdROMS, start_year, bryName, climName, writeIce, mytype)
+        clim2bry.writeBry(grdROMS, start_year, bryName, climName, writeIce, mytype, myformat)
 
     if decimateGrid:
         DecimateGrid.createGrid(grdROMS, '/Users/trond/Projects/arcwarm/SODA/soda2roms/imr_nordic_8km.nc', 2)

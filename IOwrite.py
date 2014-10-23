@@ -8,8 +8,8 @@ import os
 __author__ = 'Trond Kristiansen'
 __email__ = 'trond.kristiansen@imr.no'
 __created__ = datetime(2009, 3, 2)
-__modified__ = datetime(2014, 3, 11)
-__version__ = "0.9.1"
+__modified__ = datetime(2014, 10, 23)
+__version__ = "1.1"
 __status__ = "Development"
 
 
@@ -28,10 +28,12 @@ def help():
     """
 
 
-def writeClimFile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, mytype, data1=None, data2=None, data3=None, data4=None):
+def writeClimFile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, mytype, myformat, data1=None, data2=None, data3=None, data4=None):
 
-    myzlib = True
-    myformat='NETCDF4'
+    if (myformat=='NETCDF4'):
+        myzlib = True
+    else:
+        myzlib = False
 
     if grdROMS.ioClimInitialized is False:
         grdROMS.ioClimInitialized = True
@@ -39,12 +41,13 @@ def writeClimFile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
             os.remove(outfilename)
 
         f1 = Dataset(outfilename, mode='w', format=myformat)
-        f1.title = "Climatology forcing file (CLIM) used for foring of the ROMS model"
-        f1.description = "Created for the %s grid file" % (grdROMS.grdName)
+        f1.title = "Climatology forcing file (CLIM) used for forcing the ROMS model"
+        f1.description = "Created for grid file: %s" % (grdROMS.grdName)
         f1.grd_file = "Gridfile: %s" % (grdROMS.grdfilename)
         f1.history = "Created " + time.ctime(time.time())
         f1.source = "Trond Kristiansen (trond.kristiansen@imr.no)"
-        f1.type = "File in NetCDF4 format created using SODA2ROMS"
+        f1.type = "File in %s format created using MODEL2ROMS"%(myformat)
+        f1.link = "https://github.com/trondkr/model2roms"
         f1.Conventions = "CF-1.0"
 
         # Define dimensions
@@ -421,11 +424,18 @@ def writeClimFile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
 
     if isClimatology is False:
         if myvar == grdROMS.myvars[0]:
-            f1.variables['ocean_time'][ntime] = grdROMS.time * 86400.0
 
-        d = num2date(grdROMS.time * 86400.0, units=f1.variables['ocean_time'].long_name,
+            if (grdROMS.timeunits[0:7]=="seconds"):
+
+                f1.variables['ocean_time'][ntime] = grdROMS.time
+                d = num2date(grdROMS.time, units=f1.variables['ocean_time'].long_name,
                      calendar=f1.variables['ocean_time'].calendar)
-        grdROMS.message = d
+            else:
+                f1.variables['ocean_time'][ntime] = grdROMS.time * 86400.0
+
+                d = num2date(grdROMS.time * 86400.0, units=f1.variables['ocean_time'].long_name,
+                     calendar=f1.variables['ocean_time'].calendar)
+            grdROMS.message = d
 
         if myvar == 'temperature':
             f1.variables['temp'][ntime, :, :, :] = data1
@@ -444,16 +454,23 @@ def writeClimFile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
             data1 = np.where(abs(data1)>100,0,data1)
             print "AGEICE:",np.min(data1),np.max(data1),np.mean(data1),myvar
             f1.variables['ageice'][ntime, :, :] = data1
+
+        if myvar=='uice':
+            data1 = np.where(abs(data1)>120,0,data1)
+            print "UICE:",np.min(data1*0.01),np.max(data1*0.01),np.mean(data1*0.01),myvar
+            f1.variables['uice'][ntime, :, :] = data1*0.01 # NorESM is cm/s divide by 100 to get m/s
             f1.variables['sfwat'][ntime, :, :] = 0.
             f1.variables['tisrf'][ntime, :, :] = 0.
             f1.variables['ti'][ntime, :, :] = 0.
             f1.variables['sig11'][ntime, :, :] = 0.
             f1.variables['sig12'][ntime, :, :] = 0.
             f1.variables['sig22'][ntime, :, :] = 0.
-        if myvar=='uice':
-            data1 = np.where(abs(data1)>120,0,data1)
-            print "UICE:",np.min(data1*0.01),np.max(data1*0.01),np.mean(data1*0.01),myvar
-            f1.variables['uice'][ntime, :, :] = data1*0.01 # NorESM is cm/s divide by 100 to get m/s
+
+            if mytype == 'GLORYS':
+                # Special care for GLORYS as dataset does not contain sea ice age and snow thickness
+                f1.variables['ageice'][ntime, :, :] = 0.
+                f1.variables['snow_thick'][ntime, :, :] = 0
+
         if myvar=='vice':
             data1 = np.where(abs(data1)>120,0,data1)
             print "SHAPE of VICE", np.shape(data1), np.shape(grdROMS.lon_v)

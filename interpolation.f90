@@ -107,7 +107,6 @@ Module interpolation
                                        !print*,'case3:Need to find better value for depth ',kT,'which has value ',dat(kT,jc,ic)
                                         DO kkT=1,Nsoda
                                             if (dat(kT-kkT,jc,ic) .GT. fill) then
-                                                ! print*,'CASE 3: Found good value at depth',kT,'with value',dat(kT-kkT,jc,ic), 'at depth',kt-kkT
                                                  outdat(Nroms-kc+1,jc,ic)=dat(kT-kkT,jc,ic)
                             
                                                 exit
@@ -117,7 +116,8 @@ Module interpolation
                                 end if
                                 
                                 ! CASE 4: Special case where ROMS layers are much deeper than in SODA
-                                ELSE IF (zr(kc,jc,ic) .LE. zs(kT) .AND. dat(kT,jc,ic) .GT. fill .AND. dat(kT+1,jc,ic) .LE. fill) THEN
+                                ELSE IF (zr(kc,jc,ic) .LE. zs(kT) .AND. dat(kT,jc,ic) .GT. fill &
+                                .AND. dat(kT+1,jc,ic) .LE. fill) THEN
                                 outdat(Nroms-kc+1,jc,ic)=dat(kT,jc,ic)
                               
                               
@@ -138,7 +138,8 @@ Module interpolation
                                 if (MAXVAL(dat(:,jc,ic)) .GT. fill) then
                                
                                     if (dat(kT,jc,ic) .LE. fill .OR. dat(kT+1,jc,ic) .LE. fill) then
-                                       !print*,'case4:Need to find better value for depth ',kT,kT+1,'which has values ',dat(kT,jc,ic),dat(kT+1,jc,ic)
+                                       !print*,'case4:Need to find better value for depth ',kT,kT+1,'which has &
+                                       values ',dat(kT,jc,ic),dat(kT+1,jc,ic)
                                         DO kkT=1,Nsoda
                                             if (dat(kT-kkT,jc,ic) .GT. fill .and. dat(kT-kkT+1,jc,ic) .GT. fill  ) then
                                                  !print*,'CASE 4: Found good value at depth',kT-kkT,kt-kkT+1

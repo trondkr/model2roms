@@ -29,22 +29,25 @@ def help ():
     To check the BRY file for CF compliancy: http://titania.badc.rl.ac.uk/cgi-bin/cf-checker.pl?cfversion=1.0
     """
 
-def createBryFile(grdROMS, outfilename, writeIce, mytype):
+def createBryFile(grdROMS, outfilename, writeIce, mytype, myformat):
 
-    myzlib = True
-    myformat='NETCDF4'
-    
+    if (myformat=='NETCDF4'):
+        myzlib = True
+    else:
+        myzlib = False
+
     if os.path.exists(outfilename):
         os.remove(outfilename)
     print 'Creating initial Boundary (BRY) file %s'%(outfilename)
 
     f1 = Dataset(outfilename, mode='w', format=myformat)
-    f1.title="Boundary forcing file (BRY) used for foring of the ROMS model"
+    f1.title="Boundary forcing file (BRY) used for forcing of the ROMS model"
     f1.description="Created for the %s grid file"%(grdROMS.grdName)
     f1.grdFile="%s"%(grdROMS.grdfilename)
     f1.history = 'Created ' + time.ctime(time.time())
     f1.source = 'Trond Kristiansen (trond.kristiansen@imr.no)'
-    f1.type='File in NetCDF4 format created using MODEL2ROMS'
+    f1.type = "File in %s format created using MODEL2ROMS"%(myformat)
+    f1.link = "https://github.com/trondkr/model2roms"
     f1.Conventions = "CF-1.0"
 
     """ Define dimensions """

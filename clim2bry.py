@@ -11,7 +11,7 @@ import IOBry
 __author__   = 'Trond Kristiansen'
 __email__    = 'trond.kristiansen@imr.no'
 __created__  = datetime(2009, 3, 2)
-__modified__ = datetime(2014, 4, 7)
+__modified__ = datetime(2014, 10, 23)
 __version__  = "1.2"
 __status__   = "Development"
 

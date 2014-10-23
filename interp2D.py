@@ -22,7 +22,7 @@ def laplaceFilter(field, threshold, toxi, toeta):
     tx=0.9*undef
     critx=0.01
     cor=1.6
-    mxs=100
+    mxs=10
 
     field=np.where(abs(field)>threshold,undef,field)
 
@@ -34,7 +34,7 @@ def laplaceFilter(field, threshold, toxi, toeta):
                                   int(toeta))
     return field
 
-def doHorInterpolationRegularGrid(myvar, grdROMS, grdMODEL, mydata, show_progress):
+def doHorInterpolationRegularGrid(myvar, grdROMS, grdMODEL, mydata, show_progress, useFilter):
 
 
     if show_progress is True:
@@ -75,13 +75,14 @@ def doHorInterpolationRegularGrid(myvar, grdROMS, grdMODEL, mydata, show_progres
             field = mp.interp(mydataout,lonsout,grdMODEL.lat[:,0],grdROMS.lon_rho,grdROMS.lat_rho,
                            checkbounds=False, masked=False, order=1)
 
-        field = laplaceFilter(field, 1000, grdROMS.xi_rho, grdROMS.eta_rho)
+        if (useFilter):
+            field = laplaceFilter(field, 1000, grdROMS.xi_rho, grdROMS.eta_rho)
         field=field*grdROMS.mask_rho
         array1[k,:,:]=field
 
-      #  if k==34:
-      #      import plotData
-      #      plotData.contourMap(grdROMS, grdROMS.lon_rho, grdROMS.lat_rho, field, str(k)+'_fill90', myvar)
+        if k==34:
+            import plotData
+            plotData.contourMap(grdROMS, grdROMS.lon_rho, grdROMS.lat_rho, field, str(k)+'_withfilter', myvar)
       #  if __debug__:
       #       print "Data range after horisontal interpolation: ", field.min(), field.max()
 
@@ -92,7 +93,7 @@ def doHorInterpolationRegularGrid(myvar, grdROMS, grdMODEL, mydata, show_progres
 
 
 
-def doHorInterpolationSSHRegularGrid(myvar,grdROMS,grdMODEL,mydata):
+def doHorInterpolationSSHRegularGrid(myvar,grdROMS,grdMODEL,mydata,useFilter):
 
     if myvar in ["uice"]:
         indexROMS_Z_ST = (grdMODEL.Nlevels,grdROMS.eta_u, grdROMS.xi_u)
@@ -145,7 +146,8 @@ def doHorInterpolationSSHRegularGrid(myvar,grdROMS,grdMODEL,mydata):
                        checkbounds=False, masked=False, order=1)
 
     # Smooth the output
-    field =  laplaceFilter(field, 1000, toxi, toeta)
+    if (useFilter):
+        field =  laplaceFilter(field, 1000, toxi, toeta)
     field=field*mymask
     array1[0,:,:]=field
 
