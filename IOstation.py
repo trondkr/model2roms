@@ -2,6 +2,7 @@
 import os, sys, datetime
 import numpy as np
 import grd
+import date
 import IOverticalGrid
 from netCDF4 import Dataset
 import os, time
