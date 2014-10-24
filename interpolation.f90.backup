@@ -62,23 +62,24 @@ Module interpolation
 !f2py intent(in,overwrite) Nroms, Nsoda, JJ, II, xi_rho, eta_rho
 !f2py intent(hide) ic,jc,kc,kT,rz1,rz2, kkT, ff
             fill=-10000
-           
+
             do jc=1,JJ
               do ic=1,II
                   do kc=1,Nroms
                       ! CASE 1: ROMS deeper than SODA. This part searches for deepest good value if ROMS depth is deeper
                       ! than SODA. This means that if no value, or only fill_value, is available from SODA where ROMS is
                       ! deepest, the closest value from SODA is found by looping upward in the water column.
+
                       IF (zr(kc,jc,ic) .LT. zs(Nsoda)) THEN
                           outdat(Nroms-kc+1,jc,ic)=dat(Nsoda,jc,ic)
                           if (MAXVAL(dat(:,jc,ic)) .GT. fill) then
                             if (dat(Nsoda,jc,ic) .LT. fill) then
-                              !print*,'Inside dovert and finding deepest depth with good values. current',dat(Nsoda,jc,ic)
+                             ! print*,'Inside dovert and finding deepest depth with good values. current',dat(Nsoda,jc,ic)
                               DO kT=1,Nsoda
                                 if (dat(Nsoda-kT,jc,ic) .GT. fill) then
-                                    !print*,'working on depth',kT,'with value',dat(kT,jc,ic)
+                                 !   print*,'working on depth',kT,'with value',dat(kT,jc,ic)
                                     outdat(Nroms-kc+1,jc,ic)=dat(Nsoda-kT,jc,ic)
-                                    !print*,'Able to find good value at depth ', Nsoda-kT
+                                !    print*,'Able to find good value at depth ', Nsoda-kT
                                     exit
                                 end if
                               end do
@@ -89,69 +90,109 @@ Module interpolation
                       ! CASE 2: ROMS shallower than SODA
                       ELSE IF (zr(kc,jc,ic) .GT. zs(1)) THEN
                           outdat(Nroms-kc+1,jc,ic)=dat(1,jc,ic)
+                          print*,"CASE 2\n\n\",dat(1,jc,ic)
                      
                       ELSE
                           ! DO LOOP BETWEEN SURFACE AND BOTTOM
-                          DO kT=1,Nsoda
-                              ! CASE 3: ROMS deeper than SODA for one layer, but shallower than next SODA layer (bottom in between)
-                              ! Deeper than some SODA depth layer, but shallower than next layer which is below bottom
-                              IF (zr(kc,jc,ic) .LE. zs(kT) .AND.               &
-                                -(bathymetry(jc,ic)) .GT. zs(kT+1)) THEN
-                                outdat(Nroms-kc+1,jc,ic)=dat(kT,jc,ic)
-                                
-                                ! We do not want to give the deepest depth a fill_value, so we find
-                                ! the closest value to deepest depth.
-                                if (MAXVAL(dat(:,jc,ic)) .GT. fill) then
-                               
-                                    if (dat(kT,jc,ic) .LE. fill) then
-                                       !print*,'case3:Need to find better value for depth ',kT,'which has value ',dat(kT,jc,ic)
-                                        DO kkT=1,Nsoda
-                                            if (dat(kT-kkT,jc,ic) .GT. fill) then
-                                                 outdat(Nroms-kc+1,jc,ic)=dat(kT-kkT,jc,ic)
-                            
-                                                exit
-                                            end if
-                                        end do
-                                    end if
-                                end if
-                                
-                                ! CASE 4: Special case where ROMS layers are much deeper than in SODA
-                                ELSE IF (zr(kc,jc,ic) .LE. zs(kT) .AND. dat(kT,jc,ic) .GT. fill &
-                                .AND. dat(kT+1,jc,ic) .LE. fill) THEN
-                                outdat(Nroms-kc+1,jc,ic)=dat(kT,jc,ic)
-                              
+                          DO kT=1,(Nsoda-5)
+                              !! CASE 3: ROMS deeper than SODA for one layer, but shallower than next SODA layer (bottom in between)
+                              !! Deeper than some SODA depth layer, but shallower than next layer which is below bottom
+                              !IF (zr(kc,jc,ic) .LE. zs(kT) .AND.               &
+                              !  -(bathymetry(jc,ic)) .GT. zs(kT+1)) THEN
+                              !  
+                              !  if (zr(kc,jc,ic) < -4000 ) then
+                              !      zr(kc,jc,ic) = 10
+                              !  else
+                              !  outdat(Nroms-kc+1,jc,ic) = dat(kT,jc,ic)
+                              !  end if
+                              !  
+                              !  !print*, kt,  dat(kT,jc,ic), Nroms
+                              ! ! print*, "==> ",jc, ic, kc, kT, dat(kT-10,jc,ic), (Nroms-kc+1)
+                              !
+                              !  ! We do not want to give the deepest depth a fill_value, so we find
+                              !  ! the closest value to deepest depth.
+                              ! ! if (MAXVAL(dat(:,jc,ic)) .GT. fill) then
+                              !
+                              !      if ( dat(kT,jc,ic) .LE. fill ) then
+                              !        ! print*,'case3:Need to find better value for depth ',kT,'which has value ',dat(kT,jc,ic)
+                              !          DO kkT=1,Nsoda
+                              !              if (dat(kT-kkT,jc,ic) .GT. fill) then
+                              !                !   print*,'CASE 3: Found good value at depth',kT,'with value',dat(kT-kkT,jc,ic), 'at depth',kt-kkT
+                              !                   outdat(Nroms-kc+1,jc,ic)=dat(kT-kkT,jc,ic)
+                              !
+                              !                  exit
+                              !              end if
+                              !          end do
+                              !      end if
+                              !
+                              !      if (dat(kT,jc,ic) .EQ. 0.0) then
+                              !        ! print*,'case3:Need to find better value for depth ',kT,'which has value ',dat(kT,jc,ic)
+                              !          DO kkT=1,Nsoda
+                              !              if (dat(kT-kkT,jc,ic) .GT. 0.0) then
+                              !                   !print*,'CASE 3: Found good value for depth',kT,'with value',dat(kT-kkT,jc,ic), 'at depth',kt-kkT
+                              !                  ! print*, ""
+                              !                   outdat(Nroms-kc+1,jc,ic)=dat(kT-kkT,jc,ic)
+                              !
+                              !                  exit
+                              !              end if
+                              !          end do
+                              !      end if
+                              !      exit
+                              ! ! end if
+                              !
+                              ! ! CASE 4: Special case where ROMS layers are much deeper than in SODA
+                              ! ELSE IF (zr(kc,jc,ic) .LE. zs(kT) .AND. dat(kT,jc,ic) .GT. fill .AND. dat(kT+1,jc,ic) .LE. fill) THEN
+                              ! outdat(Nroms-kc+1,jc,ic)=dat(kT,jc,ic)
+
                               
                               ! CASE 5: ROMS layer in between two SODA layers
                               ! This is the typical case for most layers
-                              ELSE IF ( (zr(kc,jc,ic) .LE. zs(kT)) .AND.       &
-                              (zr(kc,jc,ic) .GE. zs(kT+1)) .AND.               &
-                              (-bathymetry(jc,ic) .LE. zs(kT+1)) ) THEN
+                              IF ( (zr(kc,jc,ic) .LE. zs(kT)) .AND.       &
+                              (zr(kc,jc,ic) .GE. zs(kT+1))) then
+                              !.AND.               &
+                              !(-bathymetry(jc,ic) .LE. zs(kT+1)) ) THEN
                               
                                  rz2 = abs((zr(kc,jc,ic)-zs(kT+1))/            &
                                  (abs(zs(kT+1))-abs(zs(kT))))
                                  
                                  rz1 = 1.0-rz2
-        
+
                                  outdat(Nroms-kc+1,jc,ic) = (rz1*dat(kT+1,jc,ic) &
                                  + rz2*dat(kT,jc,ic))
                                 
-                                if (MAXVAL(dat(:,jc,ic)) .GT. fill) then
-                               
-                                    if (dat(kT,jc,ic) .LE. fill .OR. dat(kT+1,jc,ic) .LE. fill) then
-                                       !print*,'case4:Need to find better value for depth ',kT,kT+1,'which has &
-                                   !    values ',dat(kT,jc,ic),dat(kT+1,jc,ic)
-                                        DO kkT=1,Nsoda
-                                            if (dat(kT-kkT,jc,ic) .GT. fill .and. dat(kT-kkT+1,jc,ic) .GT. fill  ) then
-                                                 !print*,'CASE 4: Found good value at depth',kT-kkT,kt-kkT+1
-                                                 !print*,'with values',dat(kT-kkT,jc,ic), dat(kt-kkT+1,jc,ic)
-                                                 outdat(Nroms-kc+1,jc,ic) = (rz1*dat(kT+1-kkT,jc,ic) &
-                                                 + rz2*dat(kT-kkT,jc,ic))
-                            
-                                                exit
-                                            end if
-                                        END DO
-                                    end if
-                                 end if
+                                if ( (dat(kT,jc,ic) .EQ. 0.0) .OR. (dat(kT,jc,ic) .EQ. fill)) then
+                                    dat(kT,jc,ic)=fill
+                                    
+                                end if
+                                
+                                if ( (dat(kT+1,jc,ic) .EQ. 0.0) .OR. (dat(kT+1,jc,ic) .EQ. fill)) then
+                                    dat(kT+1,jc,ic)=fill
+                                    
+                                end if
+                                
+                                outdat(Nroms-kc+1,jc,ic) = dat(kT,jc,ic)
+                                !if ( outdat(Nroms-kc+1,jc,ic) .EQ. 0.0 ) then
+                                !                 outdat(Nroms-kc+1,jc,ic)=fill
+                                !                 end if
+                                !                 
+                                !!if (MAXVAL(dat(:,jc,ic)) .GE. fill) then
+                                !
+                                !    if (dat(kT,jc,ic) .LE. fill .OR. dat(kT+1,jc,ic) .LE. fill) then
+                                !       !print*,'case4:Need to find better value for depth ',kT,kT+1,'which has values ',dat(kT,jc,ic),dat(kT+1,jc,ic)
+                                !        DO kkT=1,Nsoda
+                                !            if (dat(kT-kkT,jc,ic) .GT. fill .and. dat(kT-kkT+1,jc,ic) .GT. fill  ) then
+                                !                 !print*,'CASE 4: Found good value at depth',kT-kkT,kt-kkT+1
+                                !                 !print*,'with values',dat(kT-kkT,jc,ic), dat(kt-kkT+1,jc,ic)
+                                !                 outdat(Nroms-kc+1,jc,ic) = (rz1*dat(kT+1-kkT,jc,ic) &
+                                !                 + rz2*dat(kT-kkT,jc,ic))
+                                !                if ( outdat(Nroms-kc+1,jc,ic) .EQ. 0.0 ) then
+                                !                 outdat(Nroms-kc+1,jc,ic)=fill
+                                !                 end if
+                                !                exit
+                                !            end if
+                                !        END DO
+                                !    end if
+                                ! end if
                                 
                                  exit
                                  

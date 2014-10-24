@@ -3,7 +3,6 @@ import os, sys, datetime
 import numpy as np
 import grd
 import IOverticalGrid
-import date
 from netCDF4 import Dataset
 import os, time
 import string
