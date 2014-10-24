@@ -7,6 +7,7 @@ required to run the ROMS (<a href="http://myroms.org/" target="_blank">Regional 
 <ul>
 <li>Support for using Earth System Modeling Framework as the default interpolation method. This allows the input data to be on any kind of grid structure (e.g. irregular) as long as geographical information such as longitude and latitude of grid cells are available. The implementation uses the Python interface to ESMF which can be found here: <a href="https://www.earthsystemcog.org/projects/esmpy/" target="_blank">www.earthsystemcog.org/projects/esmpy/</a>. Using ESMF significantly increases the speed of the interpolation. As an example, interpolating one variable (e.g. temperature distribution) from a global irregular grid to a local non-rectangular grid of size 1250x789, at 70 different depth levels, takes 3 seconds on a Mac Laptop Pro. Additional information as to how to install ESMF and ESMPy on Mac OSX is available <a href="http://www.trondkristiansen.com/?page_id=1302" target="_blank">www.trondkristiansen.com/</a></li>
 <li>Added support for ICE variables. The latest version writes to file (init, bry, and clim) all necessary ice variables required to run ROMS with ice.</li>
+<li>Added support to generate forcing using global <a href="http://sextant.ifremer.fr/record/7a7b31cb-9e7b-4b5b-9ff3-c1165b51f79b/" target="_blank">GLORYS2V3</a> files including sea ice</li>
 <li>Many general improvements to the code such as more generic time and date methods.</li>
 </ul>
 
@@ -65,6 +66,10 @@ Prior to run model2roms you have to specify a number of settings so that the pro
     # Apply filter to smooth the 2D fields after interpolation (time consuming)
     useFilter = False
 
+    # Format to write the ouput to: 'NETCDF4', 'NETCDF4_CLASSIC', 'NETCDF3_64BIT', or 'NETCDF3_CLASSIC'
+    # Using NETCDF4 automatically turns on compression of files (ZLIB)
+    myformat='NETCDF4'
+    
     # Set the input data MODEL type (SODA, SODAMONTHLY,GLORYS2V1,WOAMONTHLY,NORESM)
     mytype = 'NORESM'
 
