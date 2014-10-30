@@ -321,14 +321,14 @@ class grdClass:
             if (self.useESMF):
 
                 self.esmfgrid_u = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
-                                      is_sphere=True, coord_names=['lon_u','lat_u'], add_mask=True)
+                                      is_sphere=True, coord_names=['lon_u','lat_u'], add_mask=False)
                 self.esmfgrid_v = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
-                                      is_sphere=True, coord_names=['lon_v','lat_v'], add_mask=True)
+                                      is_sphere=True, coord_names=['lon_v','lat_v'], add_mask=False)
 
         # Create grid for ESMF interpolation
         if (self.useESMF):
             self.esmfgrid = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
-                                      is_sphere=True, coord_names=[self.lonName, self.latName], add_mask=True)
+                                      is_sphere=True, coord_names=[self.lonName, self.latName], add_mask=False)
 
 
 
