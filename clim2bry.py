@@ -42,10 +42,12 @@ def myhelp():
                       u(No,Mpo)
                       ubar(1,Mpo)"""
 
-def writeBry(grdROMS, year, bryName, climName, writeIce, mytype):
+def writeBry(grdROMS, year, bryName, climName, writeIce, mytype, myformat):
 
-    myzlib = True
-    myformat='NETCDF4'
+    if (myformat=='NETCDF4'):
+        myzlib = True
+    else:
+        myzlib = False
 
     # See myhelp function for definition of these variables:
 
@@ -57,7 +59,7 @@ def writeBry(grdROMS, year, bryName, climName, writeIce, mytype):
     # Open the CLIM file
     clim    = Dataset(climName,'r')
     # Generate the BRY netcdf4 file that we will use to fill in data
-    IOBry.createBryFile(grdROMS, bryName, writeIce, mytype)
+    IOBry.createBryFile(grdROMS, bryName, writeIce, mytype, myformat)
     # Now open the file we created
     f = Dataset(bryName, mode='a', format=myformat, zlib=myzlib)
 
@@ -228,6 +230,11 @@ def writeBry(grdROMS, year, bryName, climName, writeIce, mytype):
         # ------- Write out northern boundary variables ------------
 
         f.variables['temp_north'][itime,:,:] = temp_north
+        print
+        print "10 TEMP NORTH: ", temp_north[:,10]
+        print "100 TEMP NORTH: ", temp_north[:,100]
+        print "200 TEMP NORTH: ", temp_north[:,200]
+
         f.variables['salt_north'][itime,:,:] = salt_north
         f.variables['zeta_north'][itime,:]   = ssh_north
         f.variables['u_north'][itime,:,:]    = u_north

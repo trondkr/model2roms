@@ -83,8 +83,8 @@ def main():
 
     # Define what grid type you wnat to interpolate to:
     gridtype = "NS8KM"
-    gridtype = "REGSCEN"
-    gridtype = "GREENLAND"
+    #gridtype = "REGSCEN"
+    #gridtype = "GREENLAND"
 
     # Define the paths to the input data
     if mytype == 'SODA':
@@ -94,6 +94,7 @@ def main():
     if mytype == 'GLORYS':
         modelpath = "/Volumes/MacintoshHD2/Datasets/GLOBAL_REANALYSIS_PHYS_001_009/"
         modelpath = "/Users/trondkr/Projects/is4dvar/GLORYS2V3/"
+     #   modelpath = "/work/users/trondk/GLORYS2V3/"
     if mytype == 'NORESM':
         modelpath = "/Users/trondkr/Projects/RegScen/NRCP45AERCN_f19_g16_CLE_01/"
     #    modelpath = "/work/users/trondk/REGSCEN/NRCP45AERCN_f19_g16_CLE_01/"
@@ -116,9 +117,9 @@ def main():
 
     # Define the period to create forcing for
     start_year  = 2010
-    end_year    = 2011
+    end_year    = 2010
     start_month = 1
-    end_month   = 12
+    end_month   = 2
 
     startdate = datetime(start_year, start_month, 1)
     enddate   = datetime(end_year, end_month, 1)

@@ -47,9 +47,9 @@ def VerticalInterpolation(myvar, array1, array2, grdROMS, grdMODEL):
 
         outdata = np.ma.masked_where(abs(outdata) > 1000, outdata)
 
-#        import plotData
-#        for k in xrange(0,len(grdROMS.depth)-1,5):
-#          plotData.contourMap(grdROMS, grdROMS.lon_rho, grdROMS.lat_rho, np.squeeze(outdata[0,:,:]),0, myvar)
+      #  import plotData
+      #  for k in xrange(0,len(grdROMS.depth)-1,5):
+      #    plotData.contourMap(grdROMS, grdROMS.lon_rho, grdROMS.lat_rho, np.squeeze(outdata[k,:,:]),k, myvar)
 
 
         return outdata
