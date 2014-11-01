@@ -94,7 +94,7 @@ def main():
     if mytype == 'GLORYS':
         modelpath = "/Volumes/MacintoshHD2/Datasets/GLOBAL_REANALYSIS_PHYS_001_009/"
         modelpath = "/Users/trondkr/Projects/is4dvar/GLORYS2V3/"
-     #   modelpath = "/work/users/trondk/GLORYS2V3/"
+        modelpath = "/work/users/trondk/GLORYS2V3/"
     if mytype == 'NORESM':
         modelpath = "/Users/trondkr/Projects/RegScen/NRCP45AERCN_f19_g16_CLE_01/"
     #    modelpath = "/work/users/trondk/REGSCEN/NRCP45AERCN_f19_g16_CLE_01/"
@@ -104,6 +104,8 @@ def main():
     # Define the path to the grid file
     if gridtype == "NS8KM":
         romsgridpath = "/Users/trondkr/Projects/is4dvar/Grid/nordsjoen_8km_grid_hmax20m_v3.nc"
+        romsgridpath = "/work/users/trondk/NS8km/FORCING/GRID/nordsjoen_8km_grid_hmax20m_v3.nc"
+
     if gridtype == "REGSCEN":
         romsgridpath = "/Users/trondkr/Projects/RegScen/Grid/AA_10km_grid_noest.nc"
         romsgridpath = "/Users/trondkr/Projects/is4dvar/Grid/nordsjoen_8km_grid_hmax20m_v3.nc"
@@ -116,10 +118,10 @@ def main():
     else: isClimatology = False
 
     # Define the period to create forcing for
-    start_year  = 2010
-    end_year    = 2010
-    start_month = 1
-    end_month   = 2
+    start_year  = 2009
+    end_year    = 2012
+    start_month = 11
+    end_month   = 12
 
     startdate = datetime(start_year, start_month, 1)
     enddate   = datetime(end_year, end_month, 1)
