@@ -278,11 +278,22 @@ def getGLORYSfilename(year, ID, myvar, dataPath):
         myvar = "2D"
     else:
         myvarPrefix = 'grid'+str(myvar.upper())
+
+    # GLORYS change the name in the middle of the time-series (on December 2010) and we have to
+    # account for that
+    if (year >= 2010 and ID == 12) or ( year >= 2011):
+        production = "R20140520"
+        if (myvar in ['sossheig']):
+            myvarPrefix = 'SSH'
+            myvar = "2D"
+    else:
+        production = "R20130808"
+
     if ID < 10: filename = dataPath + 'dataset-global-reanalysis-phys-001-009-ran-fr-glorys2v3-monthly-' + str(
-        myvar.lower()) + '/GLORYS2V3_ORCA025_' + str(year) + '0' + str(ID) + '15_R20130808_' + str(myvarPrefix) + '.nc'
+        myvar.lower()) + '/GLORYS2V3_ORCA025_' + str(year) + '0' + str(ID) + '15_'+str(production)+'_' + str(myvarPrefix) + '.nc'
 
     if ID >= 10: filename = dataPath + 'dataset-global-reanalysis-phys-001-009-ran-fr-glorys2v3-monthly-' + str(
-        myvar.lower()) + '/GLORYS2V3_ORCA025_' + str(year) + str(ID) + '15_R20130808_' + str(myvarPrefix) + '.nc'
+        myvar.lower()) + '/GLORYS2V3_ORCA025_' + str(year) + str(ID) + '15_'+str(production)+'_' + str(myvarPrefix) + '.nc'
 
     print "Filename in: %s"%(filename)
 

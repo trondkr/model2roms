@@ -97,7 +97,7 @@ def main():
         modelpath = "/work/users/trondk/GLORYS2V3/"
     if mytype == 'NORESM':
         modelpath = "/Users/trondkr/Projects/RegScen/NRCP45AERCN_f19_g16_CLE_01/"
-    #    modelpath = "/work/users/trondk/REGSCEN/NRCP45AERCN_f19_g16_CLE_01/"
+        modelpath = "/work/users/trondk/REGSCEN/NRCP45AERCN_f19_g16_CLE_01/"
     if mytype == 'WOAMONTHLY':
         modelpath = "/Users/trondkr/Projects/is4dvar/createSSS/"
 
