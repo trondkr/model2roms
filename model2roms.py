@@ -732,9 +732,12 @@ def convertMODEL2ROMS(years, allIDS, climName, initName, dataPath, romsgridpath,
             IDS = [i+1 for i in xrange(allIDS.pop(0))]
         else:
             IDforYear = allIDS.pop(0)
-            while IDforYear <= 12:
-                IDS.append(IDforYear)
-                IDforYear += 1
+            if (IDforYear < 12):
+                while IDforYear <= 12:
+                    IDS.append(IDforYear)
+                    IDforYear += 1
+            else:
+                IDS = [i+1 for i in xrange(12)]
 
         for ID in IDS:
 
