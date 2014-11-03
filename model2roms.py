@@ -278,12 +278,13 @@ def getGLORYSfilename(year, ID, myvar, dataPath):
         myvar = "2D"
     else:
         myvarPrefix = 'grid'+str(myvar.upper())
-
+    print myvar, myvarPrefix, year, ID, dataPath
     # GLORYS change the name in the middle of the time-series (on December 2010) and we have to
     # account for that
-    if (year >= 2010 and ID == 12) or ( year >= 2011):
+    if (year >= 2010 and ID == 12) or ( year >= 2011 ):
         production = "R20140520"
-        if (myvar in ['sossheig']):
+
+        if str(myvar)=="2D":
             myvarPrefix = 'SSH'
             myvar = "2D"
     else:
@@ -671,19 +672,19 @@ def get2Ddata(grdROMS, grdMODEL, myvar, mytype, year, ID, varNames, dataPath):
     return data
 
 
-def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, myvars, varNames, show_progress, mytype, gridtype, subset,
+def convertMODEL2ROMS(years, allIDS, climName, initName, dataPath, romsgridpath, myvars, varNames, show_progress, mytype, gridtype, subset,
                       isClimatology, writeIce, useESMF, useFilter, myformat):
     # First opening of input file is just for initialization of grid
     if mytype == 'SODA':
-        fileNameIn = getSODAfilename(years[0], IDS[0], "salinity", dataPath)
+        fileNameIn = getSODAfilename(years[0], allIDS[0], "salinity", dataPath)
     if mytype == 'SODAMONTHLY':
-        fileNameIn = getSODAfilename(years[0], IDS[0], "salinity", dataPath)
+        fileNameIn = getSODAfilename(years[0], allIDS[0], "salinity", dataPath)
     if mytype == 'NORESM':
-        fileNameIn = getNORESMfilename(years[0], IDS[0], "grid", dataPath)
+        fileNameIn = getNORESMfilename(years[0], allIDS[0], "grid", dataPath)
     if mytype == 'WOAMONTHLY':
-        fileNameIn = getWOAMONTHLYfilename(years[0], IDS[0], "temperature", dataPath)
+        fileNameIn = getWOAMONTHLYfilename(years[0], allIDS[0], "temperature", dataPath)
     if mytype == 'GLORYS':
-        fileNameIn = getGLORYSfilename(years[0], IDS[0], "S", dataPath)
+        fileNameIn = getGLORYSfilename(years[0], allIDS[0], "S", dataPath)
 
     # First time in loop, get the essential old grid information
     # MODEL data already at Z-levels. No need to interpolate to fixed depths,
@@ -720,6 +721,20 @@ def convertMODEL2ROMS(years, IDS, climName, initName, dataPath, romsgridpath, my
     time = 0
     firstRun = True
     for year in years:
+
+        # TODO:
+        # Create list of IDS for the specific year. Some years have less months than others (start and end years)
+        # Variable allIDS indicates the start month of the first year, next number of months per year, finally
+        # the last month of the end year. This is all assuming that we are using monthly forcing data and needs to
+        # be changed if you are using anything but monthly values
+        IDS=[]
+        if (len(allIDS)==1):
+            IDS = [i+1 for i in xrange(allIDS.pop(0))]
+        else:
+            IDforYear = allIDS.pop(0)
+            while IDforYear <= 12:
+                IDS.append(IDforYear)
+                IDforYear += 1
 
         for ID in IDS:
 

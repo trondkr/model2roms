@@ -84,7 +84,7 @@ def main():
     # Define what grid type you wnat to interpolate to:
     gridtype = "NS8KM"
     #gridtype = "REGSCEN"
-    #gridtype = "GREENLAND"
+    gridtype = "GREENLAND"
 
     # Define the paths to the input data
     if mytype == 'SODA':
@@ -94,7 +94,7 @@ def main():
     if mytype == 'GLORYS':
         modelpath = "/Volumes/MacintoshHD2/Datasets/GLOBAL_REANALYSIS_PHYS_001_009/"
         modelpath = "/Users/trondkr/Projects/is4dvar/GLORYS2V3/"
-        modelpath = "/work/users/trondk/GLORYS2V3/"
+     #   modelpath = "/work/users/trondk/GLORYS2V3/"
     if mytype == 'NORESM':
         modelpath = "/Users/trondkr/Projects/RegScen/NRCP45AERCN_f19_g16_CLE_01/"
         modelpath = "/work/users/trondk/REGSCEN/NRCP45AERCN_f19_g16_CLE_01/"
@@ -118,10 +118,10 @@ def main():
     else: isClimatology = False
 
     # Define the period to create forcing for
-    start_year  = 2009
-    end_year    = 2012
+    start_year  = 2010
+    end_year    = 2011
     start_month = 11
-    end_month   = 12
+    end_month   = 1
 
     startdate = datetime(start_year, start_month, 1)
     enddate   = datetime(end_year, end_month, 1)
@@ -184,8 +184,6 @@ def main():
         aveDays = 30.0
 
 
-
-
     # NO EDIT BELOW =========================================================
     subset = np.zeros(4); subset[0] = minLat; subset[1] = maxLat; subset[2] = minLon; subset[3] = maxLon
 
@@ -202,17 +200,12 @@ def main():
         import compile
         compile.compileAll()
 
-    start_day_in_start_year = np.round(((startdate - datetime(startdate.year, 1, 1)).days  + 1) / aveDays)
-    end_day_in_end_year = np.round(((enddate - datetime(enddate.year, 1, 1)).days + 1) / aveDays)
 
     years = [(int(startdate.year) + kk) for kk in range(1 + int(enddate.year) - int(startdate.year))]
-
-    loop = int(end_day_in_end_year) - int(start_day_in_start_year)
-
-    if int(start_day_in_start_year) == int(end_day_in_end_year):
-        IDS = [int(start_day_in_start_year) +1]
-    else:
-        IDS = [(i + int(start_day_in_start_year) +1) for i in range(loop + 1)]
+    IDS=[]
+    IDS.append(start_month)
+    [IDS.append(12) for kk in range(int(enddate.year) - int(startdate.year))]
+    IDS.append(end_month)
 
     if isClimatology==True:
         IDS=[i+1 for i in xrange(12)]

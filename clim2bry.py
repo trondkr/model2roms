@@ -230,11 +230,6 @@ def writeBry(grdROMS, year, bryName, climName, writeIce, mytype, myformat):
         # ------- Write out northern boundary variables ------------
 
         f.variables['temp_north'][itime,:,:] = temp_north
-        print
-        print "10 TEMP NORTH: ", temp_north[:,10]
-        print "100 TEMP NORTH: ", temp_north[:,100]
-        print "200 TEMP NORTH: ", temp_north[:,200]
-
         f.variables['salt_north'][itime,:,:] = salt_north
         f.variables['zeta_north'][itime,:]   = ssh_north
         f.variables['u_north'][itime,:,:]    = u_north
