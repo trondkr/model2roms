@@ -1,5 +1,5 @@
 <h1>Model2roms</h1>
-[![GitHub version](https://badge.fury.io/gh/user%2Frepository.svg)](http://badge.fury.io/gh/user%2Frepository)
+[![GitHub version](https://badge.fury.io/gh/user%2Frepository.svg)](http://badge.fury.io/gh/trondkr/model2roms)
 
 Model2roms is a Python toolbox for creating the necessary climatology, boundary, and initial forcing files 
 required to run the ROMS (<a href="http://myroms.org/" target="_blank">Regional Ocean Modeling System</a>) model. The latest version of model2roms can convert several popular model hindcasts and projections including the NORESM (Norways Earth System Model), SODA global re-analysis, HYCOM, World Ocean Atlas (WOA), and GLORYS (Mercator Ocean) to a use as forcing files for a given ROMS grid structure.
