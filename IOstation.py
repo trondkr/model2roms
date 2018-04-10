@@ -1,15 +1,14 @@
 
-import os, sys, datetime
+import datetime
 import numpy as np
 import grd
-import date
 import IOverticalGrid
 from netCDF4 import Dataset
-import os, time
+import time
 import string
 
 __author__   = 'Trond Kristiansen'
-__email__    = 'trond.kristiansen@imr.no'
+__email__    = 'me@trondkristiansen.com'
 __created__  = datetime.datetime(2008, 8, 15)
 __modified__ = datetime.datetime(2008, 8, 19)
 __modified__ = datetime.datetime(2009, 1, 22)
@@ -23,9 +22,9 @@ def getAverage(yyyymmdd,gridIndexes,validIndex,validDis):
     d = string.split(yyyymmdd,'/'); month=int(d[1])
     averageFile='../soda2average/clim/averageSODA1961-1990.nc'
     if os.path.exists(averageFile):
-        print '======================================================================='
-        print 'Average file %s exists so clim values written to file'%(averageFile)  
-        print '======================================================================='
+        print('=======================================================================')
+        print(('Average file %s exists so clim values written to file'%(averageFile)))  
+        print('=======================================================================')
         ave = Dataset(averageFile,'r')
         
         index =(len(ave.variables["depth"][:]))
@@ -43,14 +42,14 @@ def getAverage(yyyymmdd,gridIndexes,validIndex,validDis):
             """The values at a station is calculated by interpolating from the
             numberOfPoints around the station uysing weights (wgt)
             """
-            print "test",i, month, latindex,lonindex, ave.variables["temp"].shape
+            print(("test",i, month, latindex,lonindex, ave.variables["temp"].shape))
             aveTemp[:] = aveTemp[:]  + (ave.variables["temp"][:,latindex,lonindex,month-1])*wgt
             aveSalt[:] = aveSalt[:]  + (ave.variables["salt"][:,latindex,lonindex,month-1])*wgt
             aveUvel[:] = aveUvel[:]  + (ave.variables["uvel"][:,latindex,lonindex,month-1])*wgt
             aveVvel[:] = aveVvel[:]  + (ave.variables["vvel"][:,latindex,lonindex,month-1])*wgt
          
         ave.close()
-        print aveTemp, aveSalt, aveUvel, aveVvel
+        print((aveTemp, aveSalt, aveUvel, aveVvel))
     else:
         average=False
         aveTemp=None; aveSalt=None; aveUvel=None; aveVvel=None; aveTime=None
@@ -109,9 +108,9 @@ def testValidStation(cdf,dis,numberOfPoints,gridIndexes):
             validDis.append(dis[i])
   
     if not validIndex:
-        print 'No valid data found for position'
+        print('No valid data found for position')
         exit()
-    print "Found %s valid surounding grid cells for station"%(len(validIndex))
+    print(("Found %s valid surounding grid cells for station"%(len(validIndex))))
     return validIndex, validDis
 
 def testValidDepth(cdf,numberOfPoints,gridIndexes,depth):
@@ -134,7 +133,7 @@ def testValidDepth(cdf,numberOfPoints,gridIndexes,depth):
                 #if k>deepest:
                 deepest=k
        
-    print "Found deepest valid depth-layer %s which is equivavelnt to %sm\n" %(deepest+1, depth[deepest+1])
+    print(("Found deepest valid depth-layer %s which is equivavelnt to %sm\n" %(deepest+1, depth[deepest+1])))
     """Now we return deepest + 1 as the index is one value more than the counter"""
     return deepest      
     
@@ -142,8 +141,8 @@ def initArrays(years,IDS,deepest,name,lon,lat):
     index=(len(years)*len(IDS),deepest)
     indexSSH=(len(years)*len(IDS))
         
-    print 'Extracting data for station (%s,%s) for the years %s->%s'%(lon,lat,years[0],years[-1])
-    print 'Size of output data array is ->',index
+    print(('Extracting data for station (%s,%s) for the years %s->%s'%(lon,lat,years[0],years[-1])))
+    print(('Size of output data array is ->',index))
    
     stTemp=np.zeros((index),np.float64)
     stSalt=np.zeros((index),np.float64)
@@ -169,7 +168,7 @@ def getStationData(years,IDS,sodapath,latlist,lonlist,stationNames):
     numberOfPoints=4
    
     for lat, lon in zip(latlist, lonlist):
-        print '\n----------------NEW STATION==> %s ------------------------------------------'%(stationNames[station])
+        print(('\n----------------NEW STATION==> %s ------------------------------------------'%(stationNames[station])))
      
         """Now we want to find the indices for our longitude, latitude station pairs in the lat-long list"""
         gridIndexes, dis = getStationIndices(grdMODEL,lon,lat,'SODA',numberOfPoints)
@@ -221,11 +220,11 @@ def getStationData(years,IDS,sodapath,latlist,lonlist,stationNames):
                 time+=1
 
         
-        print 'Total time steps saved to file %s for station %s'%(time,station)
+        print(('Total time steps saved to file %s for station %s'%(time,station)))
         #plotData.contourStationData(stTemp,stTime,stDate,-grdMODEL.depth[0:deepest],stationNames[station])
         
         outfilename='station_'+str(stationNames[station])+'.nc'
-        print 'Results saved to file %s'%(outfilename)
+        print(('Results saved to file %s'%(outfilename)))
         writeStationNETCDF4(stTemp,stSalt,stUvel,stVvel,stSSH,stTauX,stTauY,stTime,
                             grdMODEL.depth[0:deepest],lat,lon,outfilename)
         station+=1
@@ -273,21 +272,21 @@ def getStationIndices(grdObject,st_lon,st_lat,type,numberOfPoints):
        
         listd.pop(0)
   
-    print '' 
-    print '=====getStationIndices======'
+    print('') 
+    print('=====getStationIndices======')
     if NEG is True:
-        print 'Looking for longitude [%3.3f] and latitude [%3.3f]'%(st_lon-360,st_lat)
+        print(('Looking for longitude [%3.3f] and latitude [%3.3f]'%(st_lon-360,st_lat)))
     else:
-        print 'Looking for longitude [%3.3f] and latitude [%3.3f]'%(st_lon,st_lat)
-    print 'Result ===>'
+        print(('Looking for longitude [%3.3f] and latitude [%3.3f]'%(st_lon,st_lat)))
+    print('Result ===>')
     for i in range(numberOfPoints):
-        print 'Found index pair in gridfile',listsIndexes[i]
+        print(('Found index pair in gridfile',listsIndexes[i]))
         if NEG is True:
-            print 'Index corresponds to longitude [%3.3f] and latitude [%3.3f]'%(longitude[listsIndexes[i][0],listsIndexes[i][1]]-360,latitude[listsIndexes[i][0],listsIndexes[i][1]])
+            print(('Index corresponds to longitude [%3.3f] and latitude [%3.3f]'%(longitude[listsIndexes[i][0],listsIndexes[i][1]]-360,latitude[listsIndexes[i][0],listsIndexes[i][1]])))
         else:
-            print 'Index corresponds to longitude [%3.3f] and latitude [%3.3f]'%(longitude[listsIndexes[i][0],listsIndexes[i][1]],latitude[listsIndexes[i][0],listsIndexes[i][1]])
-    print '======================'
-    print ''
+            print(('Index corresponds to longitude [%3.3f] and latitude [%3.3f]'%(longitude[listsIndexes[i][0],listsIndexes[i][1]],latitude[listsIndexes[i][0],listsIndexes[i][1]])))
+    print('======================')
+    print('')
       
     """
     We want to use data interpolated from the 4 surrounding points to get appropriate values at station point.
@@ -307,7 +306,7 @@ def writeStationNETCDF4(t,s,uvel,vvel,ssh,taux,tauy,ntime,depth,lat,lon,outfilen
        
     if os.path.exists(outfilename):
         os.remove(outfilename)
-    print 'Writing first results to file %s'%(outfilename)
+    print(('Writing first results to file %s'%(outfilename)))
     
     f1 = Dataset(outfilename, mode='w', format='NETCDF4')
     f1.description="This is a station (lat=%3.2f,lon=%3.2f) file from SODA data"%(lat,lon)

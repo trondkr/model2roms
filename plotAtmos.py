@@ -9,7 +9,7 @@ def contourMap(grdROMS, tlon, tlat, mydata1, mydata2, mydata3, var, mytype, curr
     map = Basemap(lon_0=25,boundinglat=50,
                       resolution='l',area_thresh=100.,projection='npstere')
     
-    x, y = map(tlon,tlat)
+    x, y = list(map(tlon,tlat))
 
     map.drawcoastlines()
     map.fillcontinents(color='grey')
@@ -34,5 +34,5 @@ def contourMap(grdROMS, tlon, tlat, mydata1, mydata2, mydata3, var, mytype, curr
     if not os.path.exists('figures'):
         os.makedirs('figure')
     plt.savefig(plotfile)
-    print "Saved figure: %s"%(plotfile)
+    print("Saved figure: %s"%(plotfile))
    # plt.show()

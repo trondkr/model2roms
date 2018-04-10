@@ -34,7 +34,7 @@ def contourMap(grdROMS, tlon, tlat, mydata, depthlevel, var):
         levels = np.arange(-2.0, 20.0, 0.5)
 
     if grdROMS.grdName=='KINO':
-        print "KINO"
+        print("KINO")
         map = Basemap(llcrnrlon=-18.0,
                       llcrnrlat=46.0,
                       urcrnrlon=25.5,
@@ -71,7 +71,7 @@ def contourMap(grdROMS, tlon, tlat, mydata, depthlevel, var):
                       resolution='i',projection='tmerc',lon_0=-25,lat_0=60,area_thresh=200.)
         levels = np.arange(-2.0, 20.0, 0.5)
 
-    x, y = map(tlon,tlat)
+    x, y = list(map(tlon,tlat))
 
     map.drawcoastlines()
     map.fillcontinents(color='grey')
@@ -112,7 +112,7 @@ def contourMap(grdROMS, tlon, tlat, mydata, depthlevel, var):
     if not os.path.exists('figures'):
         os.makedirs('figure')
     plt.savefig(plotfile)
-    print "Saved figure: %s"%(plotfile)
+    print("Saved figure: %s"%(plotfile))
     plt.show()
 
 def contourStationData(data,timedata,datedata,depthdata,stationName):

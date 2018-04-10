@@ -28,15 +28,15 @@ def createGrid(grdROMS,infilename,outfilename,decimate):
         deltaETA=0
         startindex=0;endindex=-1
 
-    print 'Old dimensions were  (XI_RHO, ETA_RHO)   : %ix%i'%(int(grdROMS.xi_rho)-deltaXI,int(grdROMS.eta_rho)-deltaETA)
-    print 'Old dimensions were  (XI_U, ETA_U)       : %ix%i'%(int(grdROMS.xi_u)-deltaXI,int(grdROMS.eta_u)-deltaETA)
-    print 'Old dimensions were  (XI_V, ETA_V)       : %ix%i'%(int(grdROMS.xi_v)-deltaXI,int(grdROMS.eta_v)-deltaETA)
-    print 'Old dimensions were  (XI_PSI, ETA_PSI)   : %ix%i'%(int(grdROMS.xi_psi)-deltaXI,int(grdROMS.eta_psi)-deltaETA)
+    print('Old dimensions were  (XI_RHO, ETA_RHO)   : %ix%i'%(int(grdROMS.xi_rho)-deltaXI,int(grdROMS.eta_rho)-deltaETA))
+    print('Old dimensions were  (XI_U, ETA_U)       : %ix%i'%(int(grdROMS.xi_u)-deltaXI,int(grdROMS.eta_u)-deltaETA))
+    print('Old dimensions were  (XI_V, ETA_V)       : %ix%i'%(int(grdROMS.xi_v)-deltaXI,int(grdROMS.eta_v)-deltaETA))
+    print('Old dimensions were  (XI_PSI, ETA_PSI)   : %ix%i'%(int(grdROMS.xi_psi)-deltaXI,int(grdROMS.eta_psi)-deltaETA))
      
-    print 'New dimensions will be (XI_RHO, ETA_RHO) : %ix%i'%(((int(grdROMS.xi_rho)-deltaXI)/decimate),((int(grdROMS.eta_rho)-deltaETA)/decimate))
-    print 'New dimensions will be (XI_U, ETA_U)     : %ix%i'%(((int(grdROMS.xi_u)-deltaXI)/decimate),((int(grdROMS.eta_u)-deltaETA)/decimate))
-    print 'New dimensions will be (XI_V, ETA_V)     : %ix%i'%(((int(grdROMS.xi_v)-deltaXI)/decimate),((int(grdROMS.eta_v)-deltaETA)/decimate))
-    print 'New dimensions will be (XI_PSI, ETA_PSI) : %ix%i'%(((int(grdROMS.xi_psi)-deltaXI)/decimate),((int(grdROMS.eta_psi)-deltaETA)/decimate))
+    print('New dimensions will be (XI_RHO, ETA_RHO) : %ix%i'%(((int(grdROMS.xi_rho)-deltaXI)/decimate),((int(grdROMS.eta_rho)-deltaETA)/decimate)))
+    print('New dimensions will be (XI_U, ETA_U)     : %ix%i'%(((int(grdROMS.xi_u)-deltaXI)/decimate),((int(grdROMS.eta_u)-deltaETA)/decimate)))
+    print('New dimensions will be (XI_V, ETA_V)     : %ix%i'%(((int(grdROMS.xi_v)-deltaXI)/decimate),((int(grdROMS.eta_v)-deltaETA)/decimate)))
+    print('New dimensions will be (XI_PSI, ETA_PSI) : %ix%i'%(((int(grdROMS.xi_psi)-deltaXI)/decimate),((int(grdROMS.eta_psi)-deltaETA)/decimate)))
     
     # Define dimensions
     xi_rho=(int(grdROMS.xi_rho)-deltaXI)/decimate
@@ -194,7 +194,7 @@ def createGrid(grdROMS,infilename,outfilename,decimate):
     vnc.field = "pm, scalar"
     vnc[:,:] = pm
 
-    print "Average DX in meters: ",1/np.average(pm,axis=None)
+    print("Average DX in meters: ",1/np.average(pm,axis=None))
      
     vnc = f1.createVariable('pn', 'd', ('eta_rho','xi_rho',),zlib=False)
     vnc.long_name = 'curvilinear coordinate metric in ETA'
@@ -202,7 +202,7 @@ def createGrid(grdROMS,infilename,outfilename,decimate):
     vnc.field = "pn, scalar"
     vnc[:,:] = pn
 
-    print "Average DY in meters: ",1/np.average(pn,axis=None)
+    print("Average DY in meters: ",1/np.average(pn,axis=None))
     
     vnc = f1.createVariable('dmde', 'd', ('eta_rho','xi_rho',),zlib=False)
     vnc.long_name = 'XI derivative of inverse metric factor pn'
@@ -239,7 +239,7 @@ def createGrid(grdROMS,infilename,outfilename,decimate):
         i=int(float(l[0].strip()))
         j=int(float(l[1].strip()))
         m=float(l[2].strip())
-        print "Changing %s %s from %s to %s"%(j,i,values[j,i],m)
+        print("Changing %s %s from %s to %s"%(j,i,values[j,i],m))
         values[j,i]=m
     vnc[:,:]=values[:,:]
 
@@ -330,7 +330,7 @@ def createGrid(grdROMS,infilename,outfilename,decimate):
 
     f1.close()
 
-    print "Creating new decimated grid file: %s"%(outfilename)  
+    print("Creating new decimated grid file: %s"%(outfilename))  
     
 
 

@@ -6,7 +6,7 @@ import time
 import os
 
 __author__ = 'Trond Kristiansen'
-__email__ = 'trond.kristiansen@imr.no'
+__email__ = 'me@trondkristiansen.com'
 __created__ = datetime(2009, 3, 2)
 __modified__ = datetime(2014, 10, 23)
 __version__ = "1.1"
@@ -426,7 +426,7 @@ def writeClimFile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
         if myvar == grdROMS.vars[0]:
 
             if (grdROMS.timeunits[0:7]=="seconds"):
-                print "time units ",grdROMS.timeunits, grdROMS.timeunits[0:7]
+                print("time units ",grdROMS.timeunits, grdROMS.timeunits[0:7])
                 f1.variables['ocean_time'][ntime] = grdROMS.time
                 d = num2date(grdROMS.time, units=f1.variables['ocean_time'].long_name,
                      calendar=f1.variables['ocean_time'].calendar)
@@ -438,7 +438,7 @@ def writeClimFile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
             grdROMS.message = d
     
         if myvar == 'temperature':
-            print "INSIDE TEMP",data1
+            print("INSIDE TEMP",data1)
             f1.variables['temp'][ntime, :, :, :] = data1
         if myvar == 'salinity':
             f1.variables['salt'][ntime, :, :, :] = data1
@@ -455,12 +455,12 @@ def writeClimFile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
             if myvar == "ageice":
                 #print "NOTE! Setting values of ageice to ZERO! (IOWrite.py)"
                 data1 = np.where(abs(data1)>100,0,data1)
-                print "AGEICE:",np.min(data1),np.max(data1),np.mean(data1),myvar
+                print("AGEICE:",np.min(data1),np.max(data1),np.mean(data1),myvar)
                 f1.variables['ageice'][ntime, :, :] = data1
 
             if myvar=='uice':
                 data1 = np.where(abs(data1)>120,0,data1)
-                print "UICE:",np.min(data1*0.01),np.max(data1*0.01),np.mean(data1*0.01),myvar
+                print("UICE:",np.min(data1*0.01),np.max(data1*0.01),np.mean(data1*0.01),myvar)
                 f1.variables['uice'][ntime, :, :] = data1*0.01 # NorESM is cm/s divide by 100 to get m/s
                 f1.variables['sfwat'][ntime, :, :] = 0.
                 f1.variables['tisrf'][ntime, :, :] = 0.

@@ -10,11 +10,11 @@ import extrapolate as ex
 try:
     import ESMF
 except ImportError:
-    print "Could not find module ESMF. Required"
+    print("Could not find module ESMF. Required")
     sys.exit()
 
 _author_   = 'Trond Kristiansen'
-_email_    = 'trond.kristiansen@imr.no'
+_email_    = 'me@trondkristiansen.com'
 _created_  = datetime(2014, 12, 16)
 _modified_ = datetime(2014, 12, 16)
 _version_  = "0.1.0"
@@ -65,14 +65,14 @@ def getNORESMfilename(year,month,day,myvar,dataPath):
                     filename = dataPath + 'NRCP45AERCN_f19_g16_CLE_01.cam2.h5.'+str(year)+'-'+str(month)+'-0'+str(day)+'-00000.nc'
                 else:
                     filename = dataPath + 'NRCP45AERCN_f19_g16_CLE_01.cam2.h5.'+str(year)+'-'+str(month)+'-'+str(day)+'-00000.nc'
-        print filename
+        print(filename)
     return filename
 
 
 def createAtmosFileUV(grdROMS,modelpath,atmospath,startdate,enddate,useESMF,myformat,abbreviation,mytype,gridtype,show_progress):
 
     # Setup 
-    print "\nGenerating atmospheric forcing for: %s to %s\n"%(startdate, enddate)
+    print("\nGenerating atmospheric forcing for: %s to %s\n"%(startdate, enddate))
     years = [(int(startdate.year) + kk) for kk in range(1 + int(enddate.year) - int(startdate.year))]
    
     if show_progress is True:
@@ -95,7 +95,7 @@ def createAtmosFileUV(grdROMS,modelpath,atmospath,startdate,enddate,useESMF,myfo
     IOatmos.createNetCDFFileUV(grdROMS, outfilename, myformat, mytype)
     
     # Setup ESMF for interpolation (calculates weights)
-    print "  -> regridSrc2Dst at RHO points"
+    print("  -> regridSrc2Dst at RHO points")
     grdMODEL.fieldSrc = ESMF.Field(grdMODEL.esmfgrid, "fieldSrc", staggerloc=ESMF.StaggerLoc.CENTER)
     grdMODEL.fieldDst_rho = ESMF.Field(grdROMS.esmfgrid, "fieldDst", staggerloc=ESMF.StaggerLoc.CENTER)
     grdMODEL.regridSrc2Dst_rho = ESMF.Regrid(grdMODEL.fieldSrc, grdMODEL.fieldDst_rho, regrid_method=ESMF.RegridMethod.BILINEAR)
@@ -124,9 +124,9 @@ def createAtmosFileUV(grdROMS,modelpath,atmospath,startdate,enddate,useESMF,myfo
         scrv = np.zeros((len(time_in),np.shape(grdROMS.lat_rho)[0],np.shape(grdROMS.lat_rho)[1]))
   
         # Loop over each time-step in current file
-        for t in xrange(len(time_in)):
+        for t in range(len(time_in)):
             currentdate=num2date(time_in[t], units=time_units,calendar=time_calendar)
-            print "Interpolating date: ",currentdate
+            print("Interpolating date: ",currentdate)
             
             # Eastward wind
             grdMODEL.fieldSrc[:,:]=np.flipud(np.rot90(np.squeeze(windE[t,:,:])))
@@ -155,11 +155,11 @@ def createAtmosFileUV(grdROMS,modelpath,atmospath,startdate,enddate,useESMF,myfo
             magnitude = magnitude*grdROMS.mask_rho
            
             import plotAtmos
-            print "Interpolated range: ", np.min(magnitude), np.max(magnitude)
-            print "Original range: ", np.min(magstr), np.max(magstr)
+            print("Interpolated range: ", np.min(magnitude), np.max(magnitude))
+            print("Original range: ", np.min(magstr), np.max(magstr))
             
             grdROMS.time+=1
-            print np.shape(windE), np.shape(grdMODEL.lon), np.shape(grdMODEL.lat)
+            print(np.shape(windE), np.shape(grdMODEL.lon), np.shape(grdMODEL.lat))
             plotAtmos.contourMap(grdROMS, grdROMS.lon_rho, grdROMS.lat_rho, fieldE, fieldN, magnitude, 
                 'wind','REGSCEN',currentdate)
             plotAtmos.contourMap(grdMODEL, 

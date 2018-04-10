@@ -9,7 +9,7 @@ import numpy as np
 import atmosForcing
 
 __author__ = 'Trond Kristiansen'
-__email__ = 'trond.kristiansen@imr.no'
+__email__ = 'me@trondkristiansen.com'
 __created__ = datetime(2015, 7, 7)
 __modified__ = datetime(2015, 7, 7)
 __version__ = "1.0"

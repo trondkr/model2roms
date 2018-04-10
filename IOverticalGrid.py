@@ -4,7 +4,7 @@ import numpy as np
 import warnings
 
 __author__   = 'Trond Kristiansen'
-__email__    = 'trond.kristiansen@imr.no'
+__email__    = 'me@trondkristiansen.com'
 __created__  = datetime(2008, 8, 15)
 __modified__ = datetime(2015, 7, 25)
 __version__  = "1.5"
@@ -20,7 +20,7 @@ vgrid.py function copied from https://github.com/kshedstrom/pyroms (Frederic Cas
 '''
 
 def calculateVgrid(self):
-    print "--->Setting up vertical coordinates using self.vtransform: %s self.vstretching: %s"%(self.vtransform,self.vstretching)
+    print(("--->Setting up vertical coordinates using self.vtransform: %s self.vstretching: %s"%(self.vtransform,self.vstretching)))
     if self.vtransform == 1:
         vgrid = s_coordinate(self.h, self.theta_b, self.theta_s, self.Tcline, self.Nlevels, self.vtransform, self.vstretching, zeta=None)
     elif self.vtransform == 2 and self.vstretching == 2:
@@ -28,7 +28,7 @@ def calculateVgrid(self):
     elif self.vtransform == 2 and self.vstretching == 4:
         vgrid = s_coordinate_4(self.h, self.theta_b, self.theta_s, self.Tcline, self.Nlevels, self.vtransform, self.vstretching, zeta=None)
     else:
-        raise Warning, 'Unknow vertical transformation Vtrans'
+        raise Warning('Unknow vertical transformation Vtrans')
     self.z_r = vgrid.z_r[0,:]
     self.z_w = vgrid.z_w[0,:]
     self.Cs_rho = vgrid.Cs_r
@@ -378,6 +378,6 @@ def get_z_levels(self):
     self.z_r=-self.h
 
     if len(self.z_r)==0:
-        print "No depth matrix found in file %s"%(self.selffilename)
+        print(("No depth matrix found in file %s"%(self.selffilename)))
 
 

@@ -6,7 +6,7 @@ from netCDF4 import num2date
 import numpy as np
 
 __author__   = 'Trond Kristiansen'
-__email__    = 'trond.kristiansen@imr.no'
+__email__    = 'me@trondkristiansen.com'
 __created__  = datetime(2009, 3, 16)
 __modified__ = datetime(2014, 10, 23)
 __version__  = "1.0"
@@ -355,21 +355,21 @@ def createInitFile(grdROMS, ntime, outfilename, var, writeIce, mytype, myformat,
             v_somk.field = "salinity, scalar, series"
             v_somk.missing_value = grdROMS.fill_value
 
-        print "grdROMS.time: ", grdROMS.time
+        print(("grdROMS.time: ", grdROMS.time))
         if (grdROMS.timeunits[0:7]=="seconds"):
             d= num2date(grdROMS.time, units=v_time.long_name,calendar=v_time.calendar)
         else:
             d= num2date(grdROMS.time * 86400.0,units=v_time.long_name,calendar=v_time.calendar)
 
-        print '\n'
-        print '========================================================================='
-        print 'Created INIT file'
-        print 'set initTime in grd.py for time-index to print (current=%s)'%(grdROMS.initTime)
-        print 'The time stamp for ROMS .in file saved to initial file is=> %s'%(d)
-        print 'DSTART   = %s'%(grdROMS.time)
-        print 'TIME_REF = %s'%(v_time.long_name)
-        print '========================================================================='
-        print '\n'
+        print('\n')
+        print('=========================================================================')
+        print('Created INIT file')
+        print(('set initTime in grd.py for time-index to print (current=%s)'%(grdROMS.initTime)))
+        print(('The time stamp for ROMS .in file saved to initial file is=> %s'%(d)))
+        print(('DSTART   = %s'%(grdROMS.time)))
+        print(('TIME_REF = %s'%(v_time.long_name)))
+        print('=========================================================================')
+        print('\n')
     else:
         f1 = Dataset(outfilename, mode='a', format=myformat)
 

@@ -6,11 +6,11 @@ import extrapolate as ex
 try:
     import ESMF
 except ImportError:
-    print "Could not find module ESMF"
+    print("Could not find module ESMF")
     pass
 
 __author__   = 'Trond Kristiansen'
-__email__    = 'trond.kristiansen@imr.no'
+__email__    = 'me@trondkristiansen.com'
 __created__  = datetime.datetime(2008, 12, 4)
 __modified__ = datetime.datetime(2014, 8, 20)
 __version__  = "1.3"
@@ -46,7 +46,7 @@ def doHorInterpolationRegularGrid(myvar, grdROMS, grdMODEL, mydata, show_progres
     indexROMS_Z_ST = (grdMODEL.Nlevels, grdROMS.eta_rho, grdROMS.xi_rho)
     array1=np.zeros((indexROMS_Z_ST), dtype=np.float64)
 
-    for k in xrange(grdMODEL.Nlevels):
+    for k in range(grdMODEL.Nlevels):
 
         if (grdMODEL.useESMF):
 

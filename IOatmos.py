@@ -5,7 +5,7 @@ from netCDF4 import Dataset
 import numpy as np
 
 _author_   = 'Trond Kristiansen'
-_email_    = 'trond.kristiansen@imr.no'
+_email_    = 'me@trondkristiansen.com'
 _created_  = datetime(2014, 12, 16)
 _modified_ = datetime(2014, 12, 16)
 _version_  = "0.1.0"
@@ -31,7 +31,7 @@ def createNetCDFFileUV(grdROMS, outfilename, myformat, mytype):
 
     if os.path.exists(outfilename):
         os.remove(outfilename)
-    print 'Creating atmospheric forcing file for UV wind - %s'%(outfilename)
+    print(('Creating atmospheric forcing file for UV wind - %s'%(outfilename)))
 
     f1 = Dataset(outfilename, mode='w', format=myformat)
     f1.title="Atmospheric frocing file used by the ROMS model"

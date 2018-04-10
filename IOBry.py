@@ -5,7 +5,7 @@ from netCDF4 import Dataset
 import numpy as np
 
 _author_   = 'Trond Kristiansen'
-_email_    = 'trond.kristiansen@imr.no'
+_email_    = 'me@trondkristiansen.com'
 _created_  = datetime(2009, 3, 2)
 _modified_ = datetime(2014, 4, 7)
 _version_  = "0.1.0"
@@ -38,7 +38,7 @@ def createBryFile(grdROMS, outfilename, writeIce, mytype, myformat):
 
     if os.path.exists(outfilename):
         os.remove(outfilename)
-    print '\n=>Creating initial Boundary (BRY) file %s'%(outfilename)
+    print(('\n=>Creating initial Boundary (BRY) file %s'%(outfilename)))
 
     f1 = Dataset(outfilename, mode='w', format=myformat)
     f1.title="Boundary forcing file (BRY) used for forcing of the ROMS model"
