@@ -27,9 +27,9 @@ def main():
            # manager = ESMF.Manager(debug=False)
 
         if confM2R.createoceanforcing:
-          #  model2roms.convertMODEL2ROMS(confM2R)
+            model2roms.convertMODEL2ROMS(confM2R)
 
-            clim2bry.writeBry(confM2R)
+          #  clim2bry.writeBry(confM2R)
 
         if confM2R.createatmosforcing:
             atmosForcing.createAtmosFileUV(confM2R)
@@ -38,7 +38,7 @@ def main():
         decimateGrid.createGrid(confM2R.grdROMS, "/Users/trondkr/Projects/KINO/GRID/kino_1600m_18072015.nc",
                                 "/Users/trondkr/Projects/KINO/GRID/kino_1600m_18072015v2.nc", 2)
 
-    if confM2R.extractStations:
+    if confM2R.extractstations:
         print("Running in station mode and extracting pre-defined station locations")
         IOstation.getStationData(confM2R)
 
