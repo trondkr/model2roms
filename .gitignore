@@ -1,4 +1,6 @@
 *.so
 *.dSYM
+*.pyc
+*.nc
 .idea
 .vscode
