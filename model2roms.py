@@ -474,7 +474,7 @@ def get3Ddata(grdROMS, grdMODEL, myvar, indatatype, year, month, day, dataPath):
             filename = getSODA3filename(year, month, day, grdROMS.varNames[varN], dataPath)
             cdf = Dataset(filename)
             print("=>Extracting data for month %s from SODA3 %s "%(month-1,filename))
-            data = cdf.variables[grdROMS.varNames[varN]][month-1,:,:,:]
+            data = cdf.variables[grdROMS.vars[varN]][month-1,:,:,:]
 
         if indatatype == "SODAMONTHLY":
             filename = getSODAMONTHLYfilename(year, month, day, None, dataPath)
@@ -889,12 +889,13 @@ def convertMODEL2ROMS(confM2R):
     if confM2R.useesmf:
         print("\n=>Turning on debugging for ESMF")
         #ESMF.Manager(logkind=ESMF.LogKind.MULTI, debug=True)
-    
-    # First opening of input file is just for initialization of grid
+    startdate=confM2R.startdate
+    dataPath=confM2R.modelpath
+# First opening of input file is just for initialization of grid
     if confM2R.indatatype == 'SODA':
         fileNameIn = getSODAfilename(startdate.year, startdate.month, startdate.day, "salinity", dataPath)
     if confM2R.indatatype == 'SODA3':
-        fileNameIn = getSODA3filename(startdate.year, startdate.month, startdate.day, "salinity", dataPath)
+        fileNameIn = getSODA3filename(confM2R.startdate.year, startdate.month, startdate.day, "salinity", dataPath)
     if confM2R.indatatype == 'SODAMONTHLY':
         fileNameIn = getSODAfilename(startdate.year, startdate.month, startdate.day, "salinity", dataPath)
     if confM2R.indatatype == 'NORESM':
@@ -912,11 +913,12 @@ def convertMODEL2ROMS(confM2R):
 
 
     # Finalize creating the model grd object now that we know the filename for input data
+    print fileNameIn
     confM2R.grdMODEL.openNetCDF(fileNameIn)
     confM2R.grdMODEL.createObject()
     confM2R.grdMODEL.getDims()
 
-    if (confM2R.useESMF):
+    if (confM2R.useesmf):
         print("=>Creating the interpolation weights and indexes using ESMF (this may take some time....):")
 
         print("  -> regridSrc2Dst at RHO points")
@@ -986,16 +988,16 @@ def convertMODEL2ROMS(confM2R):
 
                         STdata = np.where(abs(STdata) > 1000, confM2R.grdROMS.fill_value, STdata)
 
-                        IOwrite.writeClimFile(confM2R.grdROMS, time, cconfM2R.limName, myvar,confM2R. isclimatology, confM2R.writeice,
+                        IOwrite.writeClimFile(confM2R.grdROMS, time, confM2R.climname, myvar,confM2R. isclimatology, confM2R.writeice,
                                               confM2R.indatatype, confM2R.myformat, STdata)
                         if time == confM2R.grdROMS.initTime and confM2R.grdROMS.write_init is True:
-                            IOinitial.createInitFile(confM2R.grdROMS, time, confM2R.initName, myvar, confM2R.writeIce,
+                            IOinitial.createInitFile(confM2R.grdROMS, time, confM2R.initname, myvar, confM2R.writeice,
                                                      confM2R.indatatype, confM2R.myformat, STdata)
 
                     if myvar in ['ssh', 'ageice', 'aice', 'hice', 'snow_thick']:
                         SSHdata = array1[0, :, :]
 
-                        SSHdata = np.where(grdROMS.mask_rho == 0, confM2R.grdROMS.fill_value, SSHdata)
+                        SSHdata = np.where(confM2R.grdROMS.mask_rho == 0, confM2R.grdROMS.fill_value, SSHdata)
                         SSHdata = np.where(abs(SSHdata) > 100, confM2R.grdROMS.fill_value, SSHdata)
                         SSHdata = np.where(abs(SSHdata) == 0, confM2R.grdROMS.fill_value, SSHdata)
 
@@ -1006,7 +1008,7 @@ def convertMODEL2ROMS(confM2R):
                                               confM2R.writeice, confM2R.indatatype,
                                               confM2R.myformat, SSHdata)
                         if time == confM2R.grdROMS.initTime:
-                            IOinitial.createInitFile(confM2R.grdROMS, time, confM2R.initName, myvar, confM2R.writeIce,
+                            IOinitial.createInitFile(confM2R.grdROMS, time, confM2R.initname, myvar, confM2R.writeice,
                                                      confM2R.indatatype, confM2R.myformat,  SSHdata)
 
                     # The following are special routines used to calculate the u and v velocity
@@ -1038,7 +1040,7 @@ def convertMODEL2ROMS(confM2R):
                                                          confM2R.writeice, confM2R.indatatype,
                                                          confM2R.myformat,  SSHdata)
                             if myvar == 'vice':
-                                IOinitial.createInitFile(confM2R.grdROMS, time, confM2R.initName, 'vice',
+                                IOinitial.createInitFile(confM2R.grdROMS, time, confM2R.initname, 'vice',
                                                          confM2R.writeice, confM2R.indatatype,
                                                          confM2R.myformat, SSHdata)
 
@@ -1063,9 +1065,9 @@ def convertMODEL2ROMS(confM2R):
 
                         Udata = np.where(confM2R.grdROMS.mask_u == 0, confM2R.grdROMS.fill_value, Udata)
                         Udata = np.where(abs(Udata) > 1000, confM2R.grdROMS.fill_value, Udata)
-                        Vdata = np.where(gconfM2R.rdROMS.mask_v == 0, confM2R.grdROMS.fill_value, Vdata)
+                        Vdata = np.where(confM2R.grdROMS.mask_v == 0, confM2R.grdROMS.fill_value, Vdata)
                         Vdata = np.where(abs(Vdata) > 1000, confM2R.grdROMS.fill_value, Vdata)
-                        UBARdata = np.where(gconfM2R.rdROMS.mask_u == 0, confM2R.grdROMS.fill_value, UBARdata)
+                        UBARdata = np.where(confM2R.grdROMS.mask_u == 0, confM2R.grdROMS.fill_value, UBARdata)
                         UBARdata = np.where(abs(UBARdata) > 1000, confM2R.grdROMS.fill_value, UBARdata)
                         VBARdata = np.where(confM2R.grdROMS.mask_v == 0, confM2R.grdROMS.fill_value, VBARdata)
                         VBARdata = np.where(abs(VBARdata) > 1000, confM2R.grdROMS.fill_value, VBARdata)

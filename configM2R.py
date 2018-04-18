@@ -87,7 +87,7 @@ class Model2romsConfig(object):
     def defineglobalvarnames(self):
 
         return {'SODA': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel'],
-                'SODA3': ['temperature', 'salinity', 'uvel', 'vvel'],
+                'SODA3': ['temperature', 'salinity','ssh', 'uvel', 'vvel'],
                 'GLORYS': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel', 'uice', 'vice', 'aice', 'hice'],
                 'WOAMONTHLY': ['temperature', 'salinity'],
                 'NORESM': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel', 'ageice', 'uice', 'vice', 'aice', 'hice']}[
@@ -108,10 +108,10 @@ class Model2romsConfig(object):
 
     def defineromsgridpath(self):
         return {'A20': '/home/trondk/Projects/A20/Grid/A20niva_grd_v1.nc',
-                'ROHO800': '/Users/trondkr/Dropbox/NIVA/ROHO800/Grid/ROHO800_grid.nc'}[self.outgrid]
+                'ROHO800': '/global/homes/a/abarthel/data/forcingfields/fromTrond/ROHO800_grid.nc'}[self.outgrid]
 
     def defineforcingdatapath(self):
-        return {'SODA3': "/Volumes/DATASETS/SODAsi3/",
+        return {'SODA3': "/global/homes/a/abarthel/data/forcingfields/fromTrond/",
                 'NORESM': "/Volumes/MacintoshHD2/Datasets",
                 'WOAMONTHLY': "/Users/trondkr/Projects/is4dvar/createSSS/"}[self.indatatype]
 
@@ -148,7 +148,7 @@ class Model2romsConfig(object):
         # each time run
         self.decimategridfile = False
         # Write ice values to file (for Arctic regions)
-        self.writeIce = True
+        self.writeice = True
         # Use ESMF for the interpolation. This requires that you have ESMF and ESMPy installed (import ESMF)
         self.useesmf = True
         # Apply filter to smooth the 2D fields after interpolation (time consuming but enhances results)
@@ -174,9 +174,9 @@ class Model2romsConfig(object):
 
         # Define the names of ythe geographical variables in the input files
         self.grdType = 'regular'
-        self.lonName = "nav_lon"
-        self.latName = "nav_lat"
-        self.depthName = "deptht"
+        self.lonName = "longitude"
+        self.latName = "latitude"
+        self.depthName = "depth"
         self.fill_value = -1.e+20
 
         # OUT GRIDTYPES ------------------------------------------------------------------------------
@@ -187,8 +187,8 @@ class Model2romsConfig(object):
 
         # Subset input data. If you have global data you may want to seubset these to speed up reading. Make
         # sure that your input data are cartesian (0-360 or -180:180, -90:90)
-        self.subsetIndata = False
-        if self.subsetIndata:
+        self.subsetindata = False
+        if self.subsetindata:
             self.subset = self.definesubsetforindata()
 
         # Define nmber of output depth levels
@@ -215,12 +215,12 @@ class Model2romsConfig(object):
 
         # DATE AND TIME DETAILS ---------------------------------------------------------
         # Define the period to create forcing for
-        self.start_year = 2012
+        self.start_year = 2013
         self.end_year = 2013
-        self.start_month = 3
+        self.start_month = 1
         self.end_month = 12
-        self.start_day = 15
-        self.end_day = 15
+        self.start_day = 1
+        self.end_day = 1
 
         if int(calendar.monthrange(self.start_year, self.start_month)[1]) < self.start_day:
             self.start_day = int(calendar.monthrange(self.start_year, self.start_month)[1])
@@ -228,6 +228,7 @@ class Model2romsConfig(object):
         if int(calendar.monthrange(self.end_year, self.end_month)[1]) < self.end_day:
             self.end_day = int(calendar.monthrange(self.end_year, self.end_month)[1])
 
+	print "hello, startdate here"
         self.startdate = datetime(self.start_year, self.start_month, self.start_day)
         self.enddate = datetime(self.end_year, self.end_month, self.end_day)
         self.years = [self.start_year + year for year in range(self.end_year + 1 - self.start_year)]
@@ -251,7 +252,7 @@ class Model2romsConfig(object):
             self.climname, self.initname, self.bryname = self.defineoutputfilenames()
 
             if self.isclimatology is True:
-                self.climName = self.abbreviation + '_' + str(self.indatatype) + '_climatology.nc'
+                self.climname = self.abbreviation + '_' + str(self.indatatype) + '_climatology.nc'
 
             self.showinfo()
 
@@ -287,20 +288,20 @@ class Model2romsConfig(object):
             self.grdMODEL.depthName = self.depthName
             self.grdMODEL.fill_value = self.fill_value
 
-            if self.createoceanforcing:
-                model2roms.convertMODEL2ROMS()
+            #if self.createoceanforcing:
+            #    model2roms.convertMODEL2ROMS()
 
-                clim2bry.writeBry(grdROMS, start_year, bryName, climName, writeIce, indatatype, myformat)
+            #    clim2bry.writeBry(grdROMS, start_year, bryName, climname, writeice, indatatype, myformat)
 
-            if createAtmosForcing:
-                atmosForcing.createAtmosFileUV(grdROMS, modelpath, atmospath, startdate, enddate, useESMF,
-                                               myformat, abbreviation, indatatype, gridtype, show_progress)
+            #if self.createAtmosForcing:
+            #    atmosForcing.createAtmosFileUV(grdROMS, modelpath, atmospath, startdate, enddate, useESMF,
+            #                                   myformat, abbreviation, indatatype, gridtype, show_progress)
 
-        if decimateGridfile:
+        if self.decimategridfile:
             decimateGrid.createGrid(grdROMS, "/Users/trondkr/Projects/KINO/GRID/kino_1600m_18072015.nc",
                                     "/Users/trondkr/Projects/KINO/GRID/kino_1600m_18072015v2.nc", 2)
 
-        if extractStations:
+        if self.extractstations:
             print("Running in station mode and extracting pre-defined station locations")
             IOstation.getStationData(years, IDS, modelpath, latlist, lonlist, stationNames)
 
