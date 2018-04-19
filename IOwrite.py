@@ -16,8 +16,8 @@ __status__ = "Development"
 def help():
     """
     This function generates a CLIM file from scratch. The variables created include:
-    salt, temp, u, v, ubar, vbar, zeta, and time. Time dimension for each variable is ocean_time which is days
-    since 1948/1/1.
+    salt, temp, u, v, ubar, vbar, zeta, and time. Time dimension for each variable is ocean_time which is set to
+    seconds since 1948/1/1.
 
     This file is netcdf CF compliant and to check the CLIM file for CF compliancy:
     http://titania.badc.rl.ac.uk/cgi-bin/cf-checker.pl?cfversion=1.0
@@ -423,7 +423,7 @@ def writeClimFile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
         f1 = Dataset(outfilename, mode='a', format=myformat)
 
     if isClimatology is False:
-        if myvar == grdROMS.vars[0]:
+        if myvar == grdROMS.varNames[0]:
 
             if (grdROMS.timeunits[0:7]=="seconds"):
                 print("time units ",grdROMS.timeunits, grdROMS.timeunits[0:7])
@@ -493,7 +493,7 @@ def writeClimFile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
         # Climatological time starts at the 15th of each month
         d = datetime(2012, int(ntime) + 1, 1)
         tt = d.timetuple()
-        if myvar == grdROMS.vars[0]:
+        if myvar == grdROMS.varNames[0]:
             f1.variables['clim_time'][ntime] = tt.tm_yday + 15
 
         grdROMS.message = tt.tm_yday + 15
