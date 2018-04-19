@@ -27,7 +27,7 @@ def main():
            # manager = ESMF.Manager(debug=False)
 
         if confM2R.createoceanforcing:
-           # model2roms.convertMODEL2ROMS(confM2R)
+            model2roms.convertMODEL2ROMS(confM2R)
 
             clim2bry.writeBry(confM2R)
 
