@@ -28,7 +28,7 @@ def help():
     """
 
 
-def writeClimFile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, mytype, myformat, data1=None, data2=None, data3=None, data4=None):
+def writeclimfile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, mytype, myformat, data1=None, data2=None, data3=None, data4=None):
 
     if (myformat=='NETCDF4'):
         myzlib = True
@@ -195,9 +195,9 @@ def writeClimFile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
         vnc[:, :, :] = grdROMS.z_w
 
         vnc = f1.createVariable('Tcline', 'd')
-        vnc.long_name = "S-coordinate surface/bottom layer width";
+        vnc.long_name = "S-coordinate surface/bottom layer width"
         vnc.units = "meter"
-        vnc[:] = grdROMS.Tcline
+        vnc[:] = grdROMS.tcline
 
         vnc = f1.createVariable('theta_s', 'd')
         vnc.long_name = "S-coordinate surface control parameter"

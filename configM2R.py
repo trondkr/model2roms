@@ -111,7 +111,7 @@ class Model2romsConfig(object):
                 'ROHO800': '/Users/trondkr/Dropbox/NIVA/ROHO800/Grid/ROHO800_grid.nc'}[self.outgrid]
 
     def defineforcingdatapath(self):
-        return {'SODA3': "/Volumes/DATASETS/SODAsi3/",
+        return {'SODA3': "/Users/trondkr/Dropbox/NIVA/ROHO800/Grid/",
                 'NORESM': "/Volumes/MacintoshHD2/Datasets",
                 'WOAMONTHLY': "/Users/trondkr/Projects/is4dvar/createSSS/"}[self.indatatype]
 
@@ -172,11 +172,13 @@ class Model2romsConfig(object):
         # 1. SIGMA (not prpoerly implemented yet), 2. ZLEVEL
         self.ingridtype = "SIGMA"
 
-        # Define the names of ythe geographical variables in the input files
-        self.grdType = 'regular'
-        self.lonName = "nav_lon"
-        self.latName = "nav_lat"
-        self.depthName = "deptht"
+        # Define the names of the geographical variables in the input files
+        self.grdtype = 'regular'
+        self.lonname = "longitude"
+        self.latname = "latitude"
+        self.depthname = "depth"
+        self.timename = "time"
+        self.realm = "ocean"
         self.fill_value = -1.e+20
 
         # OUT GRIDTYPES ------------------------------------------------------------------------------
@@ -187,8 +189,8 @@ class Model2romsConfig(object):
 
         # Subset input data. If you have global data you may want to seubset these to speed up reading. Make
         # sure that your input data are cartesian (0-360 or -180:180, -90:90)
-        self.subsetIndata = False
-        if self.subsetIndata:
+        self.subsetindata = False
+        if self.subsetindata:
             self.subset = self.definesubsetforindata()
 
         # Define nmber of output depth levels
@@ -215,9 +217,9 @@ class Model2romsConfig(object):
 
         # DATE AND TIME DETAILS ---------------------------------------------------------
         # Define the period to create forcing for
-        self.start_year = 2012
+        self.start_year = 2013
         self.end_year = 2013
-        self.start_month = 3
+        self.start_month = 1
         self.end_month = 12
         self.start_day = 15
         self.end_day = 15
@@ -262,50 +264,25 @@ class Model2romsConfig(object):
 
 
             # Create the grid object for the output grid
-            self.grdROMS = grd.Grd("ROMS", self.outgridtype, self.useesmf, 'ocean', self.outgrid)
-            self.grdROMS.Nlevels =self.nlevels
+            self.grdROMS = grd.Grd("ROMS", self)
+            self.grdROMS.nlevels =self.nlevels
             self.grdROMS.vstretching = self.vstretching
             self.grdROMS.vtransform = self.vtransform
             self.grdROMS.theta_s = self.theta_s
             self.grdROMS.theta_b = self.theta_b
-            self.grdROMS.Tcline = self.tcline
+            self.grdROMS.tcline = self.tcline
             self.grdROMS.hc = self.hc
-            self.grdROMS.vars = self.inputdatavarnames
-            self.grdROMS.varNames = self.globalvarnames
-            self.grdROMS.lonName = 'lon_rho'
-            self.grdROMS.latName = 'lat_rho'
+            self.grdROMS.lonname = 'lon_rho'
+            self.grdROMS.latname = 'lat_rho'
 
             self.grdROMS.openNetCDF(self.romsgridpath)
-            self.grdROMS.createObject()
+            self.grdROMS.createObject(self)
             self.grdROMS.getDims()
 
             # Create the grid object for the input grid
-            self.grdMODEL = grd.Grd("FORCINGDATA", self.outgridtype, self.useesmf, 'ocean', self.outgrid)
-            self.grdMODEL.grdType = self.grdType
-            self.grdMODEL.lonName = self.lonName
-            self.grdMODEL.latName = self.latName
-            self.grdMODEL.depthName = self.depthName
+            self.grdMODEL = grd.Grd("FORCINGDATA", self)
+            self.grdMODEL.grdType = self.grdtype
+            self.grdMODEL.lonName = self.lonname
+            self.grdMODEL.latName = self.latname
+            self.grdMODEL.depthName = self.depthname
             self.grdMODEL.fill_value = self.fill_value
-
-            if self.createoceanforcing:
-                model2roms.convertMODEL2ROMS()
-
-                clim2bry.writeBry(grdROMS, start_year, bryName, climName, writeIce, indatatype, myformat)
-
-            if createAtmosForcing:
-                atmosForcing.createAtmosFileUV(grdROMS, modelpath, atmospath, startdate, enddate, useESMF,
-                                               myformat, abbreviation, indatatype, gridtype, show_progress)
-
-        if decimateGridfile:
-            decimateGrid.createGrid(grdROMS, "/Users/trondkr/Projects/KINO/GRID/kino_1600m_18072015.nc",
-                                    "/Users/trondkr/Projects/KINO/GRID/kino_1600m_18072015v2.nc", 2)
-
-        if extractStations:
-            print("Running in station mode and extracting pre-defined station locations")
-            IOstation.getStationData(years, IDS, modelpath, latlist, lonlist, stationNames)
-
-        print('Finished ' + time.ctime(time.time()))
-
-
-if __name__ == "__main__":
-    main()

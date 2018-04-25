@@ -25,23 +25,25 @@ __status__ = "Development"
 
 class Grd:
 
-    def __init__(self, type, name, useESMF, realm, outgrid):
+    def __init__(self, grdtype, confM2R):
         """
         The object is initialised and created through the __init__ method
         As an example of how to use, these lines return a grid object called grdTEST:
         => import grd
         => grdTEST = grd.grdClass("grdfilename","ROMS")
         """
-        self.type = type
-        self.grdName = outgrid
-        self.useESMF = useESMF
-        self.realm = realm
-        print("Creating init for grid object", outgrid)
+        self.type = grdtype
+        self.grdName = confM2R.outgrid
+        self.realm = confM2R.realm
+        self.grdfilename = None
+
+        print("Creating init for grid object", confM2R.outgrid)
         print('---> Initialized GRD object for grid type %s' % (self.type))
 
     def openNetCDF(self, grdfilename):
+
         self.grdfilename = grdfilename
-        print(grdfilename)
+        print(self.grdfilename)
         """Open the netCDF file and store the contents in arrays associated with variable names"""
         try:
             self.cdf = Dataset(self.grdfilename, "r")
@@ -51,7 +53,7 @@ class Grd:
             print('Could not open file %s' % (self.grdfilename))
             print('Exception caught in: openNetCDF(grdfilename)')
 
-    def createObject(self):
+    def createObject(self, confM2R):
         """
         This method creates a new object by reading the grd input file. All
         dimensions (eta, xi, lon, lat etc.) are defined here and used througout these scripts.
@@ -64,13 +66,13 @@ class Grd:
         Trond Kristiansen, 18.11.2009, edited 03.01.2017
         """
         if self.type == 'FORCINGDATA':
-            print('---> Assuming %s grid type for %s' % (self.grdType, self.type))
-            print("---> Using dimension names %s and %s and %s" % (self.lonName, self.latName, self.depthName))
+            print('---> Assuming %s grid type for %s' % (confM2R.grdtype, self.type))
+            print("---> Using dimension names %s and %s and %s" % (confM2R.lonname, confM2R.latname, confM2R.depthname))
 
-            self.lon = self.cdf.variables[str(self.lonName)][:]
-            self.lat = self.cdf.variables[str(self.latName)][:]
-            self.h = self.cdf.variables[str(self.depthName)][:]
-            self.Nlevels = len(self.h)
+            self.lon = self.cdf.variables[str(confM2R.lonname)][:]
+            self.lat = self.cdf.variables[str(confM2R.latname)][:]
+            self.h = self.cdf.variables[str(confM2R.depthname)][:]
+            self.nlevels = len(self.h)
             self.fill_value = -9.99e+33
 
             if np.rank(self.lon) == 1:
@@ -79,23 +81,29 @@ class Grd:
             IOverticalGrid.get_z_levels(self)
 
             # Create grid for ESMF interpolation
-            if (self.useESMF):
+            if confM2R.useesmf:
                 print("self.grdfilename", self.grdfilename)
                 self.esmfgrid = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
-                                          is_sphere=True, coord_names=[str(self.lonName), str(self.latName)],
+                                          is_sphere=True, coord_names=[str(confM2R.lonname), str(confM2R.latname)],
                                           add_mask=False)
-                print("ESMF FORCING GRID", self.grdfilename, self.lonName, self.latName)
+                print("ESMF FORCING GRID", self.grdfilename, confM2R.lonname, confM2R.latname)
                 print("=>", self.esmfgrid.coords)
                 print("=>", self.esmfgrid.coord_sys)
                 print("=>", self.esmfgrid.lower_bounds)
                 print("=>", self.esmfgrid.upper_bounds)
 
-        if self.type == 'WOAMONTHLY': self.fill_value = 9.96921e+36
-        if self.type == 'SODA': self.fill_value = -9.99e+33
-        if self.type == 'SODA3': self.fill_value = -1.e+20
-        if self.type == 'SODAMONTHLY': self.fill_value = -9.99e+33
-        if self.type == 'GLORYS': self.fill_value = 9.96921e+36
-        if self.type == 'NS8KMZ': self.fill_value = 9.96921e+36
+        if self.type == 'WOAMONTHLY':
+            self.fill_value = 9.96921e+36
+        if self.type == 'SODA':
+            self.fill_value = -9.99e+33
+        if self.type == 'SODA3':
+            self.fill_value = -1.e+20
+        if self.type == 'SODAMONTHLY':
+            self.fill_value = -9.99e+33
+        if self.type == 'GLORYS':
+            self.fill_value = 9.96921e+36
+        if self.type == 'NS8KMZ':
+            self.fill_value = 9.96921e+36
 
         if self.type == 'NORESM':
             # self.h = self.cdf.variables["depth"][:]
@@ -107,10 +115,10 @@ class Grd:
                                  6000, 6250, 6500, 6750])
 
         if self.type == 'STATION':
-            self.lon = self.cdf.variables[self.lonName][:]
-            self.lat = self.cdf.variables[self.latName][:]
-            self.h = self.cdf.variables[self.depthName][:]
-            self.time = self.cdf.variables[self.timeName][:]
+            self.lon = self.cdf.variables[confM2R.lonname][:]
+            self.lat = self.cdf.variables[confM2R.latname][:]
+            self.h = self.cdf.variables[confM2R.depthname][:]
+            self.time = self.cdf.variables[confM2R.timename][:]
 
             self.Lp = 1
             self.Mp = 1
@@ -123,13 +131,13 @@ class Grd:
             self.write_init = True
             self.write_stations = False
 
-            self.lonName = 'lon_rho'
-            self.latName = 'lat_rho'
+            self.lonname = 'lon_rho'
+            self.latname = 'lat_rho'
 
             """Set initTime to 1 if you dont want the first timestep to be
             the initial field (no ubar and vbar if time=0)"""
 
-            self.initTime = 0
+            self.inittime = 0
             self.ocean_time = 0
             self.NT = 2
             self.tracer = self.NT
@@ -137,21 +145,21 @@ class Grd:
             self.message = None  # Used to store the date for printing to screen (IOwrite.py)
             self.time = 0
             self.reftime = 0
-            self.grdType = 'regular'
+            self.grdtype = 'regular'
             self.mask_rho = self.cdf.variables["mask_rho"][:, :]
             self.lon_rho = self.cdf.variables["lon_rho"][:, :]
             self.lat_rho = self.cdf.variables["lat_rho"][:, :]
             self.h = self.cdf.variables["h"][:, :]
             self.hmin = self.h[self.h > 0].min()
             if self.vtransform == 1:
-                self.hc = min(self.hmin, self.Tcline)
-                self.hc = self.Tcline
-                if (self.Tcline > self.hmin):
+                self.hc = min(self.hmin, self.tcline)
+                self.hc = self.tcline
+                if (self.tcline > self.hmin):
                     print('Vertical transformation parameters are not defined correctly in either gridid.txt or in the history files: \n Tc\
-line = %d and hmin = %d. \n You need to make sure that Tcline <= hmin when using transformation 1.' % (
-                    self.Tcline, self.hmin))
+line = %d and hmin = %d. \n You need to make sure that tcline <= hmin when using transformation 1.' % (
+                    self.tcline, self.hmin))
             else:
-                self.hc = self.Tcline
+                self.hc = self.tcline
 
             zeta = None
             if zeta is None:
@@ -250,13 +258,13 @@ line = %d and hmin = %d. \n You need to make sure that Tcline <= hmin when using
             """Setup the vertical coordinate system"""
             IOverticalGrid.calculateVgrid(self)
             print("PLING")
-            if (self.useESMF):
+            if (confM2R.useesmf):
                 self.esmfgrid_u = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
                                             coord_names=['lon_u', 'lat_u'], add_mask=False)
                 self.esmfgrid_v = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
                                             is_sphere=True, coord_names=['lon_v', 'lat_v'], add_mask=False)
                 self.esmfgrid = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
-                                          is_sphere=True, coord_names=[self.lonName, self.latName], add_mask=False)
+                                          is_sphere=True, coord_names=[self.lonname, self.latname], add_mask=False)
 
     def getDims(self):
         if self.type in ["ROMS"]:

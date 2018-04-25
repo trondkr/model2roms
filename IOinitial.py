@@ -25,7 +25,7 @@ def help ():
     Edited by Trond Kristiansen, 16.3.2009, 11.11.2009, 20.11.2009
     """
 
-def createInitFile(grdROMS, ntime, outfilename, var, writeIce, mytype, myformat,  data1=None, data2=None, data3=None, data4=None):
+def createinitfile(grdROMS, ntime, outfilename, var, writeIce, mytype, myformat,  data1=None, data2=None, data3=None, data4=None):
 
     # Create initial file for use with ROMS. This is the same as extracting time 0 from
     # the climatology file.

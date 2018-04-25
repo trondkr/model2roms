@@ -170,9 +170,9 @@ def createBryFile(grdROMS, outfilename, writeIce, mytype, myformat):
     vnc[:,:,:]=grdROMS.z_r
 
     vnc=f1.createVariable('Tcline','d')
-    vnc.long_name = "S-coordinate surface/bottom layer width" ;
+    vnc.long_name = "S-coordinate surface/bottom layer width"
     vnc.units = "meter"
-    vnc[:]=grdROMS.Tcline
+    vnc[:]=grdROMS.tcline
 
     vnc=f1.createVariable('theta_s','d')
     vnc.long_name = "S-coordinate surface control parameter"
