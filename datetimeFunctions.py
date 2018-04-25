@@ -5,9 +5,9 @@ import calendar
 __author__ = 'Trond Kristiansen'
 __email__ = 'me@trondkristiansen.com'
 __created__ = datetime(2015, 8, 11)
-__modified__ = datetime(2015, 8, 11)
+__modified__ = datetime(2018, 4, 19)
 __version__ = "1.5"
-__status__ = "Development, modified on 11.08.2015"
+__status__ = "Development, modified on 19.04.2018 by A.Barthel"
 
 # Methods for returning list of months and days for the given time-step.
 
@@ -28,7 +28,7 @@ def createListOfMonths(currentyear,startdate,enddate,isClimatology):
         
     if startdate.year == enddate.year:
         # months from first month to last month of last year
-        IDS = [startdate.month + m for m in range(enddate.month - startdate.month)]
+        IDS = [startdate.month + m for m in range(enddate.month - startdate.month +1)]
         
     print("Months for year %s : %s"%(currentyear,IDS))
 

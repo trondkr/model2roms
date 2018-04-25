@@ -26,10 +26,10 @@ __status__ = "Development, modified on 15.08.2008,01.10.2009,07.01.2010, 15.07.2
 
 
 def VerticalInterpolation(myvar, array1, array2, grdROMS, grdMODEL):
-    outINDEX_ST = (grdROMS.Nlevels, grdROMS.eta_rho, grdROMS.xi_rho)
-    outINDEX_U = (grdROMS.Nlevels, grdROMS.eta_u, grdROMS.xi_u)
+    outINDEX_ST = (grdROMS.nlevels, grdROMS.eta_rho, grdROMS.xi_rho)
+    outINDEX_U = (grdROMS.nlevels, grdROMS.eta_u, grdROMS.xi_u)
     outINDEX_UBAR = (grdROMS.eta_u, grdROMS.xi_u)
-    outINDEX_V = (grdROMS.Nlevels, grdROMS.eta_v, grdROMS.xi_v)
+    outINDEX_V = (grdROMS.nlevels, grdROMS.eta_v, grdROMS.xi_v)
     outINDEX_VBAR = (grdROMS.eta_v, grdROMS.xi_v)
 
     if myvar in ['salinity', 'temperature']:
@@ -41,8 +41,8 @@ def VerticalInterpolation(myvar, array1, array2, grdROMS, grdMODEL):
                                                    np.asarray(grdROMS.h, order='Fortran'),
                                                    np.asarray(grdROMS.z_r, order='Fortran'),
                                                    np.asarray(grdMODEL.z_r, order='Fortran'),
-                                                   int(grdROMS.Nlevels),
-                                                   int(grdMODEL.Nlevels),
+                                                   int(grdROMS.nlevels),
+                                                   int(grdMODEL.nlevels),
                                                    int(grdROMS.xi_rho),
                                                    int(grdROMS.eta_rho),
                                                    int(grdROMS.xi_rho),
@@ -67,8 +67,8 @@ def VerticalInterpolation(myvar, array1, array2, grdROMS, grdMODEL):
                                                     np.asarray(grdROMS.h, order='Fortran'),
                                                     np.asarray(grdROMS.z_r, order='Fortran'),
                                                     np.asarray(grdMODEL.z_r, order='Fortran'),
-                                                    int(grdROMS.Nlevels),
-                                                    int(grdMODEL.Nlevels),
+                                                    int(grdROMS.nlevels),
+                                                    int(grdMODEL.nlevels),
                                                     int(grdROMS.xi_u),
                                                     int(grdROMS.eta_u),
                                                     int(grdROMS.xi_rho),
@@ -85,8 +85,8 @@ def VerticalInterpolation(myvar, array1, array2, grdROMS, grdMODEL):
                                                     np.asarray(grdROMS.h, order='Fortran'),
                                                     np.asarray(grdROMS.z_r, order='Fortran'),
                                                     np.asarray(grdMODEL.z_r, order='Fortran'),
-                                                    int(grdROMS.Nlevels),
-                                                    int(grdMODEL.Nlevels),
+                                                    int(grdROMS.nlevels),
+                                                    int(grdMODEL.nlevels),
                                                     int(grdROMS.xi_v),
                                                     int(grdROMS.eta_v),
                                                     int(grdROMS.xi_rho),
@@ -94,14 +94,14 @@ def VerticalInterpolation(myvar, array1, array2, grdROMS, grdMODEL):
 
         outdataV = np.ma.masked_where(abs(outdataV) > 1000, outdataV)
 
-        z_wu = np.zeros((grdROMS.Nlevels + 1, grdROMS.eta_u, grdROMS.xi_u), dtype=np.float64)
-        z_wv = np.zeros((grdROMS.Nlevels + 1, grdROMS.eta_v, grdROMS.xi_v), dtype=np.float64)
+        z_wu = np.zeros((grdROMS.nlevels + 1, grdROMS.eta_u, grdROMS.xi_u), dtype=np.float64)
+        z_wv = np.zeros((grdROMS.nlevels + 1, grdROMS.eta_v, grdROMS.xi_v), dtype=np.float64)
 
         outdataUBAR = barotropic.velocity.ubar(np.asarray(outdataU, order='Fortran'),
                                                np.asarray(outdataUBAR, order='Fortran'),
                                                np.asarray(grdROMS.z_w, order='Fortran'),
                                                np.asarray(z_wu, order='Fortran'),
-                                               grdROMS.Nlevels,
+                                               grdROMS.nlevels,
                                                grdROMS.xi_u,
                                                grdROMS.eta_u,
                                                grdROMS.xi_rho,
@@ -114,7 +114,7 @@ def VerticalInterpolation(myvar, array1, array2, grdROMS, grdMODEL):
                                                np.asarray(outdataVBAR, order='Fortran'),
                                                np.asarray(grdROMS.z_w, order='Fortran'),
                                                np.asarray(z_wv, order='Fortran'),
-                                               grdROMS.Nlevels,
+                                               grdROMS.nlevels,
                                                grdROMS.xi_v,
                                                grdROMS.eta_v,
                                                grdROMS.xi_rho,
@@ -126,15 +126,15 @@ def VerticalInterpolation(myvar, array1, array2, grdROMS, grdMODEL):
         return outdataU, outdataV, outdataUBAR, outdataVBAR
 
 
-def HorizontalInterpolation(myvar, grdROMS, grdMODEL, data, show_progress, useFilter):
-    print('Start %s horizontal interpolation for %s' % (grdMODEL.grdType, myvar))
+def HorizontalInterpolation(confM2R, myvar, data):
+    print('Start %s horizontal interpolation for %s' % (confM2R.grdtype, myvar))
 
     if myvar in ['temperature', 'salinity']:
-        array1 = interp2D.doHorInterpolationRegularGrid(myvar, grdROMS, grdMODEL, data, show_progress, useFilter)
+        array1 = interp2D.doHorInterpolationRegularGrid(confM2R, data)
     if myvar in ['ssh', 'ageice', 'uice', 'vice', 'aice', 'hice', 'snow_thick']:
-        array1 = interp2D.doHorInterpolationSSHRegularGrid(myvar, grdROMS, grdMODEL, data, useFilter)
+        array1 = interp2D.doHorInterpolationSSHRegularGrid(confM2R, data)
     if myvar in ['uvel', 'vvel']:
-        array1 = interp2D.doHorInterpolationRegularGrid(myvar, grdROMS, grdMODEL, data, show_progress, useFilter)
+        array1 = interp2D.doHorInterpolationRegularGrid(confM2R, data)
 
     return array1
 
@@ -145,8 +145,8 @@ def rotate(grdROMS, grdMODEL, data, u, v):
     the rho point values to U and V points and save the result
     """
 
-    urot = np.zeros((int(grdMODEL.Nlevels), int(grdROMS.eta_rho), int(grdROMS.xi_rho)), np.float64)
-    vrot = np.zeros((int(grdMODEL.Nlevels), int(grdROMS.eta_rho), int(grdROMS.xi_rho)), np.float64)
+    urot = np.zeros((int(grdMODEL.nlevels), int(grdROMS.eta_rho), int(grdROMS.xi_rho)), np.float64)
+    vrot = np.zeros((int(grdMODEL.nlevels), int(grdROMS.eta_rho), int(grdROMS.xi_rho)), np.float64)
 
     urot, vrot = interp.interpolation.rotate(np.asarray(urot, order='Fortran'),
                                              np.asarray(vrot, order='Fortran'),
@@ -155,13 +155,13 @@ def rotate(grdROMS, grdMODEL, data, u, v):
                                              np.asarray(grdROMS.angle, order='Fortran'),
                                              int(grdROMS.xi_rho),
                                              int(grdROMS.eta_rho),
-                                             int(grdMODEL.Nlevels))
+                                             int(grdMODEL.nlevels))
     return urot, vrot
 
 
 def interpolate2UV(grdROMS, grdMODEL, urot, vrot):
-    Zu = np.zeros((int(grdMODEL.Nlevels), int(grdROMS.eta_u), int(grdROMS.xi_u)), np.float64)
-    Zv = np.zeros((int(grdMODEL.Nlevels), int(grdROMS.eta_v), int(grdROMS.xi_v)), np.float64)
+    Zu = np.zeros((int(grdMODEL.nlevels), int(grdROMS.eta_u), int(grdROMS.xi_u)), np.float64)
+    Zv = np.zeros((int(grdMODEL.nlevels), int(grdROMS.eta_v), int(grdROMS.xi_v)), np.float64)
 
     # Interpolate from RHO points to U and V points for velocities
 
@@ -169,7 +169,7 @@ def interpolate2UV(grdROMS, grdMODEL, urot, vrot):
                                     np.asarray(urot, order='Fortran'),
                                     int(grdROMS.xi_rho),
                                     int(grdROMS.eta_rho),
-                                    int(grdMODEL.Nlevels))
+                                    int(grdMODEL.nlevels))
 
     # plotData.contourMap(grdROMS,grdMODEL,Zu[0,:,:],"1",'urot')
 
@@ -177,7 +177,7 @@ def interpolate2UV(grdROMS, grdMODEL, urot, vrot):
                                     np.asarray(vrot, order='Fortran'),
                                     int(grdROMS.xi_rho),
                                     int(grdROMS.eta_rho),
-                                    int(grdMODEL.Nlevels))
+                                    int(grdMODEL.nlevels))
 
     # plotData.contourMap(grdROMS,grdMODEL,Zv[0,:,:],"1",'vrot')
 
@@ -441,7 +441,7 @@ def get3ddata(confM2R, myvar, year, month, day):
             filename = getSODA3filename(confM2R, year, month, confM2R.inputdatavarnames[varN])
             cdf = Dataset(filename)
             print("=>Extracting data for month %s from SODA3 %s " % (month - 1, filename))
-            data = cdf.variables[confM2R.grdROMS.varNames[varN]][month - 1, :, :, :]
+            data = cdf.variables[confM2R.inputdatavarnames[varN]][month - 1, :, :, :]
 
         if confM2R.indatatype == "SODAMONTHLY":
             filename = getSODAMONTHLYfilename(confM2R, year, month, confM2R.inputdatavarnames[varN])
@@ -467,7 +467,7 @@ def get3ddata(confM2R, myvar, year, month, day):
             cdf = Dataset(filename)
             print("Reading from one file %s" % (readFromOneFile))
 
-            myunits = cdf.variables[str(confM2R.grdROMS.varNames[varN])].units
+            myunits = cdf.variables[str(confM2R.inputdatavarnames[varN])].units
             if (readFromOneFile):
                 currentdate = datetime(year, month, day, 12)
                 jd = date2num(currentdate, cdf.variables["time"].units, calendar="gregorian")
@@ -708,7 +708,7 @@ def convertMODEL2ROMS(confM2R):
 
             for day in days:
                 # Get the current date for given timestep 
-                getTime(confM2R.modelpath, confM2R.indatatype, confM2R.grdROMS, confM2R.grdMODEL, year, month, day)
+                getTime(confM2R, year, month, day)
 
                 # Each MODEL file consist only of one time step. Get the subset data selected, and
                 # store that time step in a new array:
@@ -733,8 +733,9 @@ def convertMODEL2ROMS(confM2R):
                         data = get2ddata(confM2R, myvar, year, month, day)
 
                     # Take the input data and horizontally interpolate to your grid
-                    array1 = HorizontalInterpolation(myvar, confM2R.grdROMS, confM2R.grdMODEL, data,
-                                                     confM2R.showprogress, confM2R.usefilter)
+
+                    array1 = HorizontalInterpolation(confM2R, myvar, data)
+
                     if myvar in ['temperature', 'salinity']:
                         STdata = VerticalInterpolation(myvar, array1, array1, confM2R.grdROMS, confM2R.grdMODEL)
 
@@ -744,12 +745,9 @@ def convertMODEL2ROMS(confM2R):
 
                         STdata = np.where(abs(STdata) > 1000, confM2R.grdROMS.fill_value, STdata)
 
-                        IOwrite.writeclimfile(confM2R.grdROMS, time, confM2R.limName, myvar, confM2R.isclimatology,
-                                              confM2R.writeice,
-                                              confM2R.indatatype, confM2R.myformat, STdata)
-                        if time == confM2R.grdROMS.initTime and confM2R.grdROMS.write_init is True:
-                            IOinitial.createinitfile(confM2R.grdROMS, time, confM2R.initName, myvar, confM2R.writeIce,
-                                                     confM2R.indatatype, confM2R.myformat, STdata)
+                        IOwrite.writeclimfile(confM2R, time, myvar, STdata)
+                        if time == confM2R.grdROMS.inittime and confM2R.grdROMS.write_init is True:
+                            IOinitial.createinitfile(confM2R, time, myvar, STdata)
 
                     if myvar in ['ssh', 'ageice', 'aice', 'hice', 'snow_thick']:
                         SSHdata = array1[0, :, :]
@@ -761,12 +759,10 @@ def convertMODEL2ROMS(confM2R):
                         # Specific for ROMs. We set 0 where we should have fillvalue for ice otherwise ROMS blows up.
                         SSHdata = np.where(abs(SSHdata) == confM2R.grdROMS.fill_value, 0, SSHdata)
 
-                        IOwrite.writeClimFile(confM2R.grdROMS, time, confM2R.climname, myvar, confM2R.isclimatology,
-                                              confM2R.writeice, confM2R.indatatype,
-                                              confM2R.myformat, SSHdata)
-                        if time == confM2R.grdROMS.initTime:
-                            IOinitial.createinitfile(confM2R.grdROMS, time, confM2R.initName, myvar, confM2R.writeIce,
-                                                     confM2R.indatatype, confM2R.myformat, SSHdata)
+                        IOwrite.writeclimfile(confM2R, time,  myvar, SSHdata)
+
+                        if time == confM2R.grdROMS.inittime:
+                            IOinitial.createinitfile(confM2R, time,  myvar, SSHdata)
 
                     # The following are special routines used to calculate the u and v velocity
                     # of ice based on the transport, which is divided by snow and ice thickenss
@@ -774,7 +770,7 @@ def convertMODEL2ROMS(confM2R):
                     if myvar in ['uice', 'vice']:
                         SSHdata = array1[0, :, :]
 
-                        if myvar == "uice": mymask = confM2R.rdROMS.mask_u
+                        if myvar == "uice": mymask = confM2R.grdROMS.mask_u
                         if myvar == "vice": mymask = confM2R.grdROMS.mask_v
 
                         SSHdata = np.where(mymask == 0, confM2R.grdROMS.fill_value, SSHdata)
@@ -793,13 +789,9 @@ def convertMODEL2ROMS(confM2R):
 
                         if time == confM2R.grdROMS.initTime:
                             if myvar == 'uice':
-                                IOinitial.createinitfile(confM2R.grdROMS, time, confM2R.initname, 'uice',
-                                                         confM2R.writeice, confM2R.indatatype,
-                                                         confM2R.myformat, SSHdata)
+                                IOinitial.createinitfile(confM2R, time,  myvar, SSHdata)
                             if myvar == 'vice':
-                                IOinitial.createinitfile(confM2R.grdROMS, time, confM2R.initName, 'vice',
-                                                         confM2R.writeice, confM2R.indatatype,
-                                                         confM2R.myformat, SSHdata)
+                                IOinitial.createinitfile(confM2R, time,  myvar, SSHdata)
 
                     if myvar == 'uvel':
                         array2 = array1
@@ -823,9 +815,9 @@ def convertMODEL2ROMS(confM2R):
 
                         Udata = np.where(confM2R.grdROMS.mask_u == 0, confM2R.grdROMS.fill_value, Udata)
                         Udata = np.where(abs(Udata) > 1000, confM2R.grdROMS.fill_value, Udata)
-                        Vdata = np.where(confM2R.rdROMS.mask_v == 0, confM2R.grdROMS.fill_value, Vdata)
+                        Vdata = np.where(confM2R.grdROMS.mask_v == 0, confM2R.grdROMS.fill_value, Vdata)
                         Vdata = np.where(abs(Vdata) > 1000, confM2R.grdROMS.fill_value, Vdata)
-                        UBARdata = np.where(confM2R.rdROMS.mask_u == 0, confM2R.grdROMS.fill_value, UBARdata)
+                        UBARdata = np.where(confM2R.grdROMS.mask_u == 0, confM2R.grdROMS.fill_value, UBARdata)
                         UBARdata = np.where(abs(UBARdata) > 1000, confM2R.grdROMS.fill_value, UBARdata)
                         VBARdata = np.where(confM2R.grdROMS.mask_v == 0, confM2R.grdROMS.fill_value, VBARdata)
                         VBARdata = np.where(abs(VBARdata) > 1000, confM2R.grdROMS.fill_value, VBARdata)

@@ -28,25 +28,26 @@ def help():
     """
 
 
-def writeclimfile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, mytype, myformat, data1=None, data2=None, data3=None, data4=None):
-
-    if (myformat=='NETCDF4'):
+def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, data4=None):
+    if confM2R.myformat == 'NETCDF4':
         myzlib = True
     else:
         myzlib = False
 
-    if grdROMS.ioClimInitialized is False:
-        grdROMS.ioClimInitialized = True
-        if os.path.exists(outfilename):
-            os.remove(outfilename)
+    if confM2R.grdROMS.ioClimInitialized is False:
+        confM2R.grdROMS.ioClimInitialized = True
+        if os.path.exists(confM2R.climname):
+            os.remove(confM2R.climname)
 
-        f1 = Dataset(outfilename, mode='w', format=myformat)
+        grdROMS = confM2R.grdROMS
+
+        f1 = Dataset(confM2R.climname, mode='w', format=confM2R.myformat)
         f1.title = "Climatology forcing file (CLIM) used for forcing the ROMS model"
-        f1.description = "Created for grid file: %s" % (grdROMS.grdName)
-        f1.grd_file = "Gridfile: %s" % (grdROMS.grdfilename)
+        f1.description = "Created for grid file: %s" % (confM2R.romsgridpath)
+        f1.grd_file = "Gridfile: %s" % (confM2R.romsgridpath)
         f1.history = "Created " + time.ctime(time.time())
-        f1.source = "Trond Kristiansen (trond.kristiansen@imr.no)"
-        f1.type = "File in %s format created using MODEL2ROMS"%(myformat)
+        f1.source = "Trond Kristiansen (me@trondkristiansen.com)"
+        f1.type = "File in %s format created using MODEL2ROMS" % (confM2R.myformat)
         f1.link = "https://github.com/trondkr/model2roms"
         f1.Conventions = "CF-1.0"
 
@@ -61,11 +62,10 @@ def writeclimfile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
         f1.createDimension('eta_psi', grdROMS.eta_psi)
         f1.createDimension('s_rho', len(grdROMS.s_rho))
         f1.createDimension('s_w', len(grdROMS.s_w))
-        if isClimatology is False:
-            f1.createDimension('ocean_time', None)
-
-        if isClimatology is True:
+        if confM2R.isclimatology:
             f1.createDimension('clim_time', 12)
+        else:
+            f1.createDimension('ocean_time', None)
 
         vnc = f1.createVariable('lon_rho', 'd', ('eta_rho', 'xi_rho',), zlib=myzlib, fill_value=grdROMS.fill_value)
         vnc.long_name = 'Longitude of RHO-points'
@@ -213,9 +213,9 @@ def writeclimfile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
         vnc[:, :] = grdROMS.angle
 
         # Now start creating variables for regular climatology/bry/init creations
-        if isClimatology is False:
+        if not confM2R.isclimatology:
             v_time = f1.createVariable('ocean_time', 'd', ('ocean_time',), zlib=myzlib, fill_value=grdROMS.fill_value)
-            if (mytype=="NORESM"):
+            if confM2R.indatatype == "NORESM":
                 v_time.long_name = 'seconds since 1800-01-01 00:00:00'
                 v_time.units = 'seconds since 1800-01-01 00:00:00'
                 v_time.field = 'time, scalar, series'
@@ -281,9 +281,9 @@ def writeclimfile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
             v_vbar.field = "v2-D velocity, scalar, series"
             v_vbar.missing_value = grdROMS.fill_value
 
-            if writeIce:
+            if confM2R.writeice:
                 ageice = f1.createVariable('ageice', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
-                                       fill_value=grdROMS.fill_value)
+                                           fill_value=grdROMS.fill_value)
                 ageice.long_name = "time-averaged age of the ice"
                 ageice.units = "years"
                 ageice.time = "ocean_time"
@@ -291,7 +291,7 @@ def writeclimfile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
                 ageice.missing_value = grdROMS.fill_value
 
                 uice = f1.createVariable('uice', 'd', ('ocean_time', 'eta_u', 'xi_u',), zlib=myzlib,
-                                       fill_value=grdROMS.fill_value)
+                                         fill_value=grdROMS.fill_value)
                 uice.long_name = "time-averaged u-component of ice velocity"
                 uice.units = "meter second-1"
                 uice.time = "ocean_time"
@@ -299,7 +299,7 @@ def writeclimfile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
                 uice.missing_value = grdROMS.fill_value
 
                 vice = f1.createVariable('vice', 'd', ('ocean_time', 'eta_v', 'xi_v',), zlib=myzlib,
-                                       fill_value=grdROMS.fill_value)
+                                         fill_value=grdROMS.fill_value)
 
                 vice.long_name = "time-averaged v-component of ice velocity"
                 vice.units = "meter second-1"
@@ -308,7 +308,7 @@ def writeclimfile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
                 vice.missing_value = grdROMS.fill_value
 
                 aice = f1.createVariable('aice', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
-                                       fill_value=grdROMS.fill_value)
+                                         fill_value=grdROMS.fill_value)
 
                 aice.long_name = "time-averaged fraction of cell covered by ice"
                 aice.time = "ocean_time"
@@ -316,7 +316,7 @@ def writeclimfile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
                 aice.missing_value = grdROMS.fill_value
 
                 hice = f1.createVariable('hice', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
-                                       fill_value=grdROMS.fill_value)
+                                         fill_value=grdROMS.fill_value)
                 hice.long_name = "time-averaged average ice thickness in cell"
                 hice.units = "meter"
                 hice.time = "ocean_time"
@@ -324,7 +324,7 @@ def writeclimfile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
                 hice.missing_value = grdROMS.fill_value
 
                 snow_thick = f1.createVariable('snow_thick', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
-                                       fill_value=grdROMS.fill_value)
+                                               fill_value=grdROMS.fill_value)
 
                 snow_thick.long_name = "time-averaged thickness of snow cover"
                 snow_thick.units = "meter"
@@ -342,7 +342,7 @@ def writeclimfile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
                 ti.missing_value = grdROMS.fill_value
 
                 sfwat = f1.createVariable('sfwat', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
-                                       fill_value=grdROMS.fill_value)
+                                          fill_value=grdROMS.fill_value)
 
                 sfwat.long_name = "time-averaged surface melt water thickness on ice"
                 sfwat.units = "meter"
@@ -351,16 +351,15 @@ def writeclimfile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
                 sfwat.missing_value = grdROMS.fill_value
 
                 tisrf = f1.createVariable('tisrf', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
-                                       fill_value=grdROMS.fill_value)
+                                          fill_value=grdROMS.fill_value)
                 tisrf.long_name = "time-averaged temperature of ice surface"
                 tisrf.units = "degrees Celcius"
                 tisrf.time = "ocean_time"
                 tisrf.field = "surface temperature, scalar, series"
                 tisrf.missing_value = grdROMS.fill_value
 
-
                 sig11 = f1.createVariable('sig11', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
-                                       fill_value=grdROMS.fill_value)
+                                          fill_value=grdROMS.fill_value)
 
                 sig11.long_name = "time-averaged internal ice stress 11 component"
                 sig11.units = "Newton meter-1"
@@ -369,7 +368,7 @@ def writeclimfile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
                 sig11.missing_value = grdROMS.fill_value
 
                 sig12 = f1.createVariable('sig12', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
-                                       fill_value=grdROMS.fill_value)
+                                          fill_value=grdROMS.fill_value)
 
                 sig12.long_name = "time-averaged internal ice stress 12 component"
                 sig12.units = "Newton meter-1"
@@ -378,7 +377,7 @@ def writeclimfile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
                 sig12.missing_value = grdROMS.fill_value
 
                 sig22 = f1.createVariable('sig22', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
-                                       fill_value=grdROMS.fill_value)
+                                          fill_value=grdROMS.fill_value)
 
                 sig22.long_name = "time-averaged internal ice stress 22 component"
                 sig22.units = "Newton meter-1"
@@ -386,16 +385,13 @@ def writeclimfile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
                 sig22.field = "ice stress 22, scalar, series"
                 sig22.missing_value = grdROMS.fill_value
 
-
-
-
         # If we are creating climatology files with loops every 360 days, then create these variables here
-        if isClimatology is True:
+        if confM2R.isclimatology:
             v_time = f1.createVariable('clim_time', 'd', ('clim_time',), zlib=myzlib, fill_value=grdROMS.fill_value)
             v_time.units = 'day'
             v_time.field = 'time, scalar, series'
             v_time.calendar = 'standard'
-            v_time.cycle_length = 360.;
+            v_time.cycle_length = 360.
 
             v_salt = f1.createVariable('salt', 'f', ('clim_time', 's_rho', 'eta_rho', 'xi_rho',), zlib=myzlib,
                                        fill_value=grdROMS.fill_value)
@@ -420,25 +416,24 @@ def writeclimfile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
             v_temp.missing_value = grdROMS.fill_value
 
     else:
-        f1 = Dataset(outfilename, mode='a', format=myformat)
+        f1 = Dataset(confM2R.climname, mode='a', format=confM2R.myformat)
 
-    if isClimatology is False:
-        if myvar == grdROMS.vars[0]:
+    if confM2R.isclimatology is False:
+        if myvar == confM2R.globalvarnames[0]:
 
-            if (grdROMS.timeunits[0:7]=="seconds"):
-                print("time units ",grdROMS.timeunits, grdROMS.timeunits[0:7])
+            if grdROMS.timeunits[0:7] == "seconds":
+                print("time units ", grdROMS.timeunits, grdROMS.timeunits[0:7])
                 f1.variables['ocean_time'][ntime] = grdROMS.time
                 d = num2date(grdROMS.time, units=f1.variables['ocean_time'].long_name,
-                     calendar=f1.variables['ocean_time'].calendar)
+                             calendar=f1.variables['ocean_time'].calendar)
             else:
                 f1.variables['ocean_time'][ntime] = grdROMS.time * 86400.0
 
                 d = num2date(grdROMS.time * 86400.0, units=f1.variables['ocean_time'].long_name,
-                     calendar=f1.variables['ocean_time'].calendar)
+                             calendar=f1.variables['ocean_time'].calendar)
             grdROMS.message = d
-    
+
         if myvar == 'temperature':
-            print("INSIDE TEMP",data1)
             f1.variables['temp'][ntime, :, :, :] = data1
         if myvar == 'salinity':
             f1.variables['salt'][ntime, :, :, :] = data1
@@ -450,18 +445,18 @@ def writeclimfile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
 
             f1.variables['ubar'][ntime, :, :] = data3
             f1.variables['vbar'][ntime, :, :] = data4
-        
-        if writeIce:
+
+        if confM2R.writeice:
             if myvar == "ageice":
-                #print "NOTE! Setting values of ageice to ZERO! (IOWrite.py)"
-                data1 = np.where(abs(data1)>100,0,data1)
-                print("AGEICE:",np.min(data1),np.max(data1),np.mean(data1),myvar)
+                # print "NOTE! Setting values of ageice to ZERO! (IOWrite.py)"
+                data1 = np.where(abs(data1) > 100, 0, data1)
+                print("AGEICE:", np.min(data1), np.max(data1), np.mean(data1), myvar)
                 f1.variables['ageice'][ntime, :, :] = data1
 
-            if myvar=='uice':
-                data1 = np.where(abs(data1)>120,0,data1)
-                print("UICE:",np.min(data1*0.01),np.max(data1*0.01),np.mean(data1*0.01),myvar)
-                f1.variables['uice'][ntime, :, :] = data1*0.01 # NorESM is cm/s divide by 100 to get m/s
+            if myvar == 'uice':
+                data1 = np.where(abs(data1) > 120, 0, data1)
+                print("UICE:", np.min(data1 * 0.01), np.max(data1 * 0.01), np.mean(data1 * 0.01), myvar)
+                f1.variables['uice'][ntime, :, :] = data1 * 0.01  # NorESM is cm/s divide by 100 to get m/s
                 f1.variables['sfwat'][ntime, :, :] = 0.
                 f1.variables['tisrf'][ntime, :, :] = 0.
                 f1.variables['ti'][ntime, :, :] = 0.
@@ -469,27 +464,27 @@ def writeclimfile(grdROMS, ntime, outfilename, myvar, isClimatology, writeIce, m
                 f1.variables['sig12'][ntime, :, :] = 0.
                 f1.variables['sig22'][ntime, :, :] = 0.
 
-                if mytype == 'GLORYS':
+                if confM2R.indatatype == 'GLORYS':
                     # Special care for GLORYS as dataset does not contain sea ice age and snow thickness
                     f1.variables['ageice'][ntime, :, :] = 0.
                     f1.variables['snow_thick'][ntime, :, :] = 0
 
-            if myvar=='vice':
-                data1 = np.where(abs(data1)>120,0,data1)
-                f1.variables['vice'][ntime, :, :] = data1*0.01 # NorESM is cm/s divide by 100 to get m/s
-            if myvar=='aice':
-                data1 = np.where(abs(data1)>120,0,data1)
-                f1.variables['aice'][ntime, :, :] = data1*0.01 #NorESM is % divide by 100 to get fraction
-            if myvar=='hice':
-                data1 = np.where(abs(data1)>10,0,data1)
-                #data1 = np.ma.masked_where(abs(data1) > 10, data1)
+            if myvar == 'vice':
+                data1 = np.where(abs(data1) > 120, 0, data1)
+                f1.variables['vice'][ntime, :, :] = data1 * 0.01  # NorESM is cm/s divide by 100 to get m/s
+            if myvar == 'aice':
+                data1 = np.where(abs(data1) > 120, 0, data1)
+                f1.variables['aice'][ntime, :, :] = data1 * 0.01  # NorESM is % divide by 100 to get fraction
+            if myvar == 'hice':
+                data1 = np.where(abs(data1) > 10, 0, data1)
+                # data1 = np.ma.masked_where(abs(data1) > 10, data1)
                 f1.variables['hice'][ntime, :, :] = data1
-            if myvar=='snow_thick':
-                #data1 = np.ma.masked_where(abs(data1) > 100, data1)
-                data1 = np.where(abs(data1)>10,0,data1)
+            if myvar == 'snow_thick':
+                # data1 = np.ma.masked_where(abs(data1) > 100, data1)
+                data1 = np.where(abs(data1) > 10, 0, data1)
                 f1.variables['snow_thick'][ntime, :, :] = data1
 
-    if isClimatology is True:
+    if confM2R.isclimatology:
         # Climatological time starts at the 15th of each month
         d = datetime(2012, int(ntime) + 1, 1)
         tt = d.timetuple()

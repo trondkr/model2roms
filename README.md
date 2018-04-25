@@ -40,9 +40,9 @@ Without filter            | With filter
 <h3>Optional settings</h3>
 Prior to run model2roms you have to specify a number of settings so that the program can identify where input and grid files can be found. In addition, you can specify what sort of run you are doing by turning options on and off. Most of the general settings are found in `main.py`, a few definitions for variable names are found in `model2roms.py`, and finally some settings for the grid specifications re found in `grd.py`. Eventually, all of the settings will be moved to one file. Still, the main settings are the following:
 ``` python
-    # Set show_progress to "False" if you do not want to see the progress
+    # Set showprogress to "False" if you do not want to see the progress
     # indicator for horizontal interpolation.
-    show_progress = True
+    showprogress = True
     
     # Set compileAll to True if you want automatic re-compilation of all the
     # fortran files necessary to run soda2roms. You need to edit compile.py for this

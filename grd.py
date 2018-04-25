@@ -75,22 +75,16 @@ class Grd:
             self.nlevels = len(self.h)
             self.fill_value = -9.99e+33
 
-            if np.rank(self.lon) == 1:
+            if self.lon.ndim == 1:
                 self.lon, self.lat = np.meshgrid(self.lon, self.lat)
 
             IOverticalGrid.get_z_levels(self)
 
             # Create grid for ESMF interpolation
             if confM2R.useesmf:
-                print("self.grdfilename", self.grdfilename)
                 self.esmfgrid = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
                                           is_sphere=True, coord_names=[str(confM2R.lonname), str(confM2R.latname)],
                                           add_mask=False)
-                print("ESMF FORCING GRID", self.grdfilename, confM2R.lonname, confM2R.latname)
-                print("=>", self.esmfgrid.coords)
-                print("=>", self.esmfgrid.coord_sys)
-                print("=>", self.esmfgrid.lower_bounds)
-                print("=>", self.esmfgrid.upper_bounds)
 
         if self.type == 'WOAMONTHLY':
             self.fill_value = 9.96921e+36
@@ -250,14 +244,14 @@ line = %d and hmin = %d. \n You need to make sure that tcline <= hmin when using
             self.ioClimInitialized = False
             self.ioInitInitialized = False
 
-            if np.rank(self.lon_rho) == 1:
+            if self.lon_rho.ndim == 1:
                 self.lon_rho, self.lat_rho = np.meshgrid(self.lon_rho, self.lat_rho)
                 self.lon_u, self.lat_u = np.meshgrid(self.lon_u, self.lat_u)
                 self.lon_v, self.lat_v = np.meshgrid(self.lon_v, self.lat_v)
 
             """Setup the vertical coordinate system"""
             IOverticalGrid.calculateVgrid(self)
-            print("PLING")
+
             if (confM2R.useesmf):
                 self.esmfgrid_u = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
                                             coord_names=['lon_u', 'lat_u'], add_mask=False)

@@ -120,9 +120,9 @@ class Model2romsConfig(object):
         print('Started ' + time.ctime(time.time()))
 
         # EDIT ===================================================================
-        # Set show_progress to "False" if you do not want to see the progress
+        # Set showprogress to "False" if you do not want to see the progress
         # indicator for horizontal interpolation.
-        self.showprogress = True
+        self.showprogress = False
         # Set compileAll to True if you want automatic re-compilation of all the
         # fortran files necessary to run model2roms. Options are "gfortran" or "ifort". Edit
         # compile.py to add other Fortran compilers.
@@ -148,7 +148,7 @@ class Model2romsConfig(object):
         # each time run
         self.decimategridfile = False
         # Write ice values to file (for Arctic regions)
-        self.writeIce = True
+        self.writeice = True
         # Use ESMF for the interpolation. This requires that you have ESMF and ESMPy installed (import ESMF)
         self.useesmf = True
         # Apply filter to smooth the 2D fields after interpolation (time consuming but enhances results)
@@ -206,7 +206,6 @@ class Model2romsConfig(object):
         # PATH TO FORCINGDATA --------------------------------------------------------------------
         # Define the path to the input data
         self.modelpath = self.defineforcingdatapath()
-        print("model path ", self.modelpath)
 
         # PATH TO GRID -----------------------------------------------------------------------------
         # Define the path to the grid file
@@ -253,7 +252,7 @@ class Model2romsConfig(object):
             self.climname, self.initname, self.bryname = self.defineoutputfilenames()
 
             if self.isclimatology is True:
-                self.climName = self.abbreviation + '_' + str(self.indatatype) + '_climatology.nc'
+                self.climname = self.abbreviation + '_' + str(self.indatatype) + '_climatology.nc'
 
             self.showinfo()
 
