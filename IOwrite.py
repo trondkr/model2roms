@@ -34,19 +34,19 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
     else:
         myzlib = False
 
+    grdROMS = confM2R.grdROMS
+
     if confM2R.grdROMS.ioClimInitialized is False:
         confM2R.grdROMS.ioClimInitialized = True
         if os.path.exists(confM2R.climname):
             os.remove(confM2R.climname)
-
-        grdROMS = confM2R.grdROMS
 
         f1 = Dataset(confM2R.climname, mode='w', format=confM2R.myformat)
         f1.title = "Climatology forcing file (CLIM) used for forcing the ROMS model"
         f1.description = "Created for grid file: %s" % (confM2R.romsgridpath)
         f1.grd_file = "Gridfile: %s" % (confM2R.romsgridpath)
         f1.history = "Created " + time.ctime(time.time())
-        f1.source = "Trond Kristiansen (me@trondkristiansen.com)"
+        f1.source = "{} ({})".format(confM2R.authorname,confM2R.authoremail)
         f1.type = "File in %s format created using MODEL2ROMS" % (confM2R.myformat)
         f1.link = "https://github.com/trondkr/model2roms"
         f1.Conventions = "CF-1.0"
@@ -67,79 +67,79 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
         else:
             f1.createDimension('ocean_time', None)
 
-        vnc = f1.createVariable('lon_rho', 'd', ('eta_rho', 'xi_rho',), zlib=myzlib, fill_value=grdROMS.fill_value)
+        vnc = f1.createVariable('lon_rho', 'd', ('eta_rho', 'xi_rho',), zlib=myzlib, fill_value=grdROMS.fillval)
         vnc.long_name = 'Longitude of RHO-points'
         vnc.units = 'degree_east'
         vnc.standard_name = 'longitude'
         vnc[:, :] = grdROMS.lon_rho
 
-        vnc = f1.createVariable('lat_rho', 'd', ('eta_rho', 'xi_rho',), zlib=myzlib, fill_value=grdROMS.fill_value)
+        vnc = f1.createVariable('lat_rho', 'd', ('eta_rho', 'xi_rho',), zlib=myzlib, fill_value=grdROMS.fillval)
         vnc.long_name = 'Latitude of RHO-points'
         vnc.units = 'degree_north'
         vnc.standard_name = 'latitude'
         vnc[:, :] = grdROMS.lat_rho
 
-        vnc = f1.createVariable('lon_u', 'd', ('eta_u', 'xi_u',), zlib=myzlib, fill_value=grdROMS.fill_value)
+        vnc = f1.createVariable('lon_u', 'd', ('eta_u', 'xi_u',), zlib=myzlib, fill_value=grdROMS.fillval)
         vnc.long_name = 'Longitude of U-points'
         vnc.units = 'degree_east'
         vnc.standard_name = 'longitude'
         vnc[:, :] = grdROMS.lon_u
 
-        vnc = f1.createVariable('lat_u', 'd', ('eta_u', 'xi_u',), zlib=myzlib, fill_value=grdROMS.fill_value)
+        vnc = f1.createVariable('lat_u', 'd', ('eta_u', 'xi_u',), zlib=myzlib, fill_value=grdROMS.fillval)
         vnc.long_name = 'Latitude of U-points'
         vnc.units = 'degree_north'
         vnc.standard_name = 'latitude'
         vnc[:, :] = grdROMS.lat_u
 
-        vnc = f1.createVariable('lon_v', 'd', ('eta_v', 'xi_v',), zlib=myzlib, fill_value=grdROMS.fill_value)
+        vnc = f1.createVariable('lon_v', 'd', ('eta_v', 'xi_v',), zlib=myzlib, fill_value=grdROMS.fillval)
         vnc.long_name = 'Longitude of V-points'
         vnc.units = 'degree_east'
         vnc.standard_name = 'longitude'
         vnc[:, :] = grdROMS.lon_v
 
-        vnc = f1.createVariable('lat_v', 'd', ('eta_v', 'xi_v',), zlib=myzlib, fill_value=grdROMS.fill_value)
+        vnc = f1.createVariable('lat_v', 'd', ('eta_v', 'xi_v',), zlib=myzlib, fill_value=grdROMS.fillval)
         vnc.long_name = 'Latitude of V-points'
         vnc.units = 'degree_north'
         vnc.standard_name = 'latitude'
         vnc[:, :] = grdROMS.lat_v
 
-        vnc = f1.createVariable('lat_psi', 'd', ('eta_psi', 'xi_psi',), zlib=myzlib, fill_value=grdROMS.fill_value)
+        vnc = f1.createVariable('lat_psi', 'd', ('eta_psi', 'xi_psi',), zlib=myzlib, fill_value=grdROMS.fillval)
         vnc.long_name = 'Latitude of PSI-points'
         vnc.units = 'degree_north'
         vnc.standard_name = 'latitude'
         vnc[:, :] = grdROMS.lat_psi
 
-        vnc = f1.createVariable('lon_psi', 'd', ('eta_psi', 'xi_psi',), zlib=myzlib, fill_value=grdROMS.fill_value)
+        vnc = f1.createVariable('lon_psi', 'd', ('eta_psi', 'xi_psi',), zlib=myzlib, fill_value=grdROMS.fillval)
         vnc.long_name = 'Longitude of PSI-points'
         vnc.units = 'degree_east'
         vnc.standard_name = 'longitude'
         vnc[:, :] = grdROMS.lon_psi
 
-        vnc = f1.createVariable('h', 'd', ('eta_rho', 'xi_rho',), zlib=myzlib, fill_value=grdROMS.fill_value)
+        vnc = f1.createVariable('h', 'd', ('eta_rho', 'xi_rho',), zlib=myzlib, fill_value=grdROMS.fillval)
         vnc.long_name = 'Bathymetry at RHO-points'
         vnc.units = 'meter'
         vnc.field = "bath, scalar"
         vnc[:, :] = grdROMS.h
 
-        vnc = f1.createVariable('f', 'd', ('eta_rho', 'xi_rho',), zlib=myzlib, fill_value=grdROMS.fill_value)
+        vnc = f1.createVariable('f', 'd', ('eta_rho', 'xi_rho',), zlib=myzlib, fill_value=grdROMS.fillval)
         vnc.long_name = 'Coriolis parameter at RHO-points'
         vnc.units = 'second-1'
         vnc.field = "Coriolis, scalar"
         vnc[:, :] = grdROMS.f
 
-        vnc = f1.createVariable('pm', 'd', ('eta_rho', 'xi_rho',), zlib=myzlib, fill_value=grdROMS.fill_value)
+        vnc = f1.createVariable('pm', 'd', ('eta_rho', 'xi_rho',), zlib=myzlib, fill_value=grdROMS.fillval)
         vnc.long_name = 'curvilinear coordinate metric in XI'
         vnc.units = 'meter-1'
         vnc.field = "pm, scalar"
         vnc[:, :] = grdROMS.pm
 
-        vnc = f1.createVariable('pn', 'd', ('eta_rho', 'xi_rho',), zlib=myzlib, fill_value=grdROMS.fill_value)
+        vnc = f1.createVariable('pn', 'd', ('eta_rho', 'xi_rho',), zlib=myzlib, fill_value=grdROMS.fillval)
         vnc.long_name = 'curvilinear coordinate metric in ETA'
         vnc.units = 'meter-1'
         vnc.field = "pn, scalar"
         vnc[:, :] = grdROMS.pn
 
-        vnc = f1.createVariable('s_rho', 'd', ('s_rho',), zlib=myzlib, fill_value=grdROMS.fill_value)
+        vnc = f1.createVariable('s_rho', 'd', ('s_rho',), zlib=myzlib, fill_value=grdROMS.fillval)
         vnc.long_name = "S-coordinate at RHO-points"
         vnc.valid_min = -1.
         vnc.valid_max = 0.
@@ -152,7 +152,7 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
         vnc.field = "s_rho, scalar"
         vnc[:] = grdROMS.s_rho
 
-        vnc = f1.createVariable('s_w', 'd', ('s_w',), zlib=myzlib, fill_value=grdROMS.fill_value)
+        vnc = f1.createVariable('s_w', 'd', ('s_w',), zlib=myzlib, fill_value=grdROMS.fillval)
         vnc.long_name = "S-coordinate at W-points"
         vnc.valid_min = -1.
         vnc.valid_max = 0.
@@ -165,14 +165,14 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
         vnc.field = "s_w, scalar"
         vnc[:] = grdROMS.s_w
 
-        vnc = f1.createVariable('Cs_r', 'd', ('s_rho',), zlib=myzlib, fill_value=grdROMS.fill_value)
+        vnc = f1.createVariable('Cs_r', 'd', ('s_rho',), zlib=myzlib, fill_value=grdROMS.fillval)
         vnc.long_name = "S-coordinate stretching curves at RHO-points"
         vnc.valid_min = -1.
         vnc.valid_max = 0.
         vnc.field = "s_rho, scalar"
         vnc[:] = grdROMS.Cs_rho
 
-        vnc = f1.createVariable('Cs_w', 'd', ('s_w',), zlib=myzlib, fill_value=grdROMS.fill_value)
+        vnc = f1.createVariable('Cs_w', 'd', ('s_w',), zlib=myzlib, fill_value=grdROMS.fillval)
         vnc.long_name = "S-coordinate stretching curves at W-points"
         vnc.valid_min = -1.
         vnc.valid_max = 0.
@@ -184,12 +184,12 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
         vnc.units = "meter"
         vnc[:] = grdROMS.hc
 
-        vnc = f1.createVariable('z_r', 'd', ('s_rho', 'eta_rho', 'xi_rho',), zlib=myzlib, fill_value=grdROMS.fill_value)
+        vnc = f1.createVariable('z_r', 'd', ('s_rho', 'eta_rho', 'xi_rho',), zlib=myzlib, fill_value=grdROMS.fillval)
         vnc.long_name = "Sigma layer to depth matrix";
         vnc.units = "meter"
         vnc[:, :, :] = grdROMS.z_r
 
-        vnc = f1.createVariable('z_w', 'd', ('s_w', 'eta_rho', 'xi_rho',), zlib=myzlib, fill_value=grdROMS.fill_value)
+        vnc = f1.createVariable('z_w', 'd', ('s_w', 'eta_rho', 'xi_rho',), zlib=myzlib, fill_value=grdROMS.fillval)
         vnc.long_name = "Sigma layer to depth matrix";
         vnc.units = "meter"
         vnc[:, :, :] = grdROMS.z_w
@@ -207,14 +207,14 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
         vnc.long_name = "S-coordinate bottom control parameter"
         vnc[:] = grdROMS.theta_b
 
-        vnc = f1.createVariable('angle', 'd', ('eta_rho', 'xi_rho',), zlib=myzlib, fill_value=grdROMS.fill_value)
+        vnc = f1.createVariable('angle', 'd', ('eta_rho', 'xi_rho',), zlib=myzlib, fill_value=grdROMS.fillval)
         vnc.long_name = "angle between xi axis and east"
         vnc.units = "radian"
         vnc[:, :] = grdROMS.angle
 
         # Now start creating variables for regular climatology/bry/init creations
         if not confM2R.isclimatology:
-            v_time = f1.createVariable('ocean_time', 'd', ('ocean_time',), zlib=myzlib, fill_value=grdROMS.fill_value)
+            v_time = f1.createVariable('ocean_time', 'd', ('ocean_time',), zlib=myzlib, fill_value=grdROMS.fillval)
             if confM2R.indatatype == "NORESM":
                 v_time.long_name = 'seconds since 1800-01-01 00:00:00'
                 v_time.units = 'seconds since 1800-01-01 00:00:00'
@@ -227,193 +227,193 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
                 v_time.calendar = 'standard'
 
             v_u = f1.createVariable('u', 'f', ('ocean_time', 's_rho', 'eta_u', 'xi_u',), zlib=myzlib,
-                                    fill_value=grdROMS.fill_value)
+                                    fill_value=grdROMS.fillval)
             v_u.long_name = "u-momentum component"
             v_u.units = "meter second-1"
             v_u.time = "ocean_time"
             v_u.field = "u-velocity, scalar, series"
-            v_u.missing_value = grdROMS.fill_value
+            v_u.missing_value = grdROMS.fillval
 
             v_v = f1.createVariable('v', 'f', ('ocean_time', 's_rho', 'eta_v', 'xi_v',), zlib=myzlib,
-                                    fill_value=grdROMS.fill_value)
+                                    fill_value=grdROMS.fillval)
             v_v.long_name = "v-momentum component"
             v_v.units = "meter second-1"
             v_v.time = "ocean_time"
             v_v.field = "v-velocity, scalar, series"
-            v_v.missing_value = grdROMS.fill_value
+            v_v.missing_value = grdROMS.fillval
 
             v_salt = f1.createVariable('salt', 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho',), zlib=myzlib,
-                                       fill_value=grdROMS.fill_value)
+                                       fill_value=grdROMS.fillval)
             v_salt.long_name = "salinity"
             v_salt.time = "ocean_time"
             v_salt.field = "salinity, scalar, series"
-            v_salt.missing_value = grdROMS.fill_value
+            v_salt.missing_value = grdROMS.fillval
 
             v_temp = f1.createVariable('temp', 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho',), zlib=myzlib,
-                                       fill_value=grdROMS.fill_value)
+                                       fill_value=grdROMS.fillval)
             v_temp.long_name = "potential temperature"
             v_temp.units = "Celsius"
             v_temp.time = "ocean_time"
             v_temp.field = "temperature, scalar, series"
-            v_temp.missing_value = grdROMS.fill_value
+            v_temp.missing_value = grdROMS.fillval
 
             v_ssh = f1.createVariable('zeta', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
-                                      fill_value=grdROMS.fill_value)
+                                      fill_value=grdROMS.fillval)
             v_ssh.long_name = "sea level"
             v_ssh.units = "meter"
             v_ssh.time = "ocean_time"
             v_ssh.field = "sea level, scalar, series"
-            v_ssh.missing_value = grdROMS.fill_value
+            v_ssh.missing_value = grdROMS.fillval
 
             v_ubar = f1.createVariable('ubar', 'f', ('ocean_time', 'eta_u', 'xi_u',), zlib=myzlib,
-                                       fill_value=grdROMS.fill_value)
+                                       fill_value=grdROMS.fillval)
             v_ubar.long_name = "u-2D momentum"
             v_ubar.units = "meter second-1"
             v_ubar.time = "ocean_time"
             v_ubar.field = "u2-D velocity, scalar, series"
-            v_ubar.missing_value = grdROMS.fill_value
+            v_ubar.missing_value = grdROMS.fillval
 
             v_vbar = f1.createVariable('vbar', 'f', ('ocean_time', 'eta_v', 'xi_v',), zlib=myzlib,
-                                       fill_value=grdROMS.fill_value)
+                                       fill_value=grdROMS.fillval)
             v_vbar.long_name = "v-2D momentum"
             v_vbar.units = "meter second-1"
             v_vbar.time = "ocean_time"
             v_vbar.field = "v2-D velocity, scalar, series"
-            v_vbar.missing_value = grdROMS.fill_value
+            v_vbar.missing_value = grdROMS.fillval
 
             if confM2R.writeice:
                 ageice = f1.createVariable('ageice', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
-                                           fill_value=grdROMS.fill_value)
+                                           fill_value=grdROMS.fillval)
                 ageice.long_name = "time-averaged age of the ice"
                 ageice.units = "years"
                 ageice.time = "ocean_time"
                 ageice.field = "ice age, scalar, series"
-                ageice.missing_value = grdROMS.fill_value
+                ageice.missing_value = grdROMS.fillval
 
                 uice = f1.createVariable('uice', 'd', ('ocean_time', 'eta_u', 'xi_u',), zlib=myzlib,
-                                         fill_value=grdROMS.fill_value)
+                                         fill_value=grdROMS.fillval)
                 uice.long_name = "time-averaged u-component of ice velocity"
                 uice.units = "meter second-1"
                 uice.time = "ocean_time"
                 uice.field = "u-component of ice velocity, scalar, series"
-                uice.missing_value = grdROMS.fill_value
+                uice.missing_value = grdROMS.fillval
 
                 vice = f1.createVariable('vice', 'd', ('ocean_time', 'eta_v', 'xi_v',), zlib=myzlib,
-                                         fill_value=grdROMS.fill_value)
+                                         fill_value=grdROMS.fillval)
 
                 vice.long_name = "time-averaged v-component of ice velocity"
                 vice.units = "meter second-1"
                 vice.time = "ocean_time"
                 vice.field = "v-component of ice velocity, scalar, series"
-                vice.missing_value = grdROMS.fill_value
+                vice.missing_value = grdROMS.fillval
 
                 aice = f1.createVariable('aice', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
-                                         fill_value=grdROMS.fill_value)
+                                         fill_value=grdROMS.fillval)
 
                 aice.long_name = "time-averaged fraction of cell covered by ice"
                 aice.time = "ocean_time"
                 aice.field = "ice concentration, scalar, series"
-                aice.missing_value = grdROMS.fill_value
+                aice.missing_value = grdROMS.fillval
 
                 hice = f1.createVariable('hice', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
-                                         fill_value=grdROMS.fill_value)
+                                         fill_value=grdROMS.fillval)
                 hice.long_name = "time-averaged average ice thickness in cell"
                 hice.units = "meter"
                 hice.time = "ocean_time"
                 hice.field = "ice thickness, scalar, series"
-                hice.missing_value = grdROMS.fill_value
+                hice.missing_value = grdROMS.fillval
 
                 snow_thick = f1.createVariable('snow_thick', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
-                                               fill_value=grdROMS.fill_value)
+                                               fill_value=grdROMS.fillval)
 
                 snow_thick.long_name = "time-averaged thickness of snow cover"
                 snow_thick.units = "meter"
                 snow_thick.time = "ocean_time"
                 snow_thick.field = "snow thickness, scalar, series"
-                snow_thick.missing_value = grdROMS.fill_value
+                snow_thick.missing_value = grdROMS.fillval
 
                 ti = f1.createVariable('ti', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
-                                       fill_value=grdROMS.fill_value)
+                                       fill_value=grdROMS.fillval)
 
                 ti.long_name = "time-averaged interior ice temperature"
                 ti.units = "degrees Celcius"
                 ti.time = "ocean_time"
                 ti.field = "interior temperature, scalar, series"
-                ti.missing_value = grdROMS.fill_value
+                ti.missing_value = grdROMS.fillval
 
                 sfwat = f1.createVariable('sfwat', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
-                                          fill_value=grdROMS.fill_value)
+                                          fill_value=grdROMS.fillval)
 
                 sfwat.long_name = "time-averaged surface melt water thickness on ice"
                 sfwat.units = "meter"
                 sfwat.time = "ocean_time"
                 sfwat.field = "melt water thickness, scalar, series"
-                sfwat.missing_value = grdROMS.fill_value
+                sfwat.missing_value = grdROMS.fillval
 
                 tisrf = f1.createVariable('tisrf', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
-                                          fill_value=grdROMS.fill_value)
+                                          fill_value=grdROMS.fillval)
                 tisrf.long_name = "time-averaged temperature of ice surface"
                 tisrf.units = "degrees Celcius"
                 tisrf.time = "ocean_time"
                 tisrf.field = "surface temperature, scalar, series"
-                tisrf.missing_value = grdROMS.fill_value
+                tisrf.missing_value = grdROMS.fillval
 
                 sig11 = f1.createVariable('sig11', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
-                                          fill_value=grdROMS.fill_value)
+                                          fill_value=grdROMS.fillval)
 
                 sig11.long_name = "time-averaged internal ice stress 11 component"
                 sig11.units = "Newton meter-1"
                 sig11.time = "ocean_time"
                 sig11.field = "ice stress 11, scalar, series"
-                sig11.missing_value = grdROMS.fill_value
+                sig11.missing_value = grdROMS.fillval
 
                 sig12 = f1.createVariable('sig12', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
-                                          fill_value=grdROMS.fill_value)
+                                          fill_value=grdROMS.fillval)
 
                 sig12.long_name = "time-averaged internal ice stress 12 component"
                 sig12.units = "Newton meter-1"
                 sig12.time = "ocean_time"
                 sig12.field = "ice stress 12, scalar, series"
-                sig12.missing_value = grdROMS.fill_value
+                sig12.missing_value = grdROMS.fillval
 
                 sig22 = f1.createVariable('sig22', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
-                                          fill_value=grdROMS.fill_value)
+                                          fill_value=grdROMS.fillval)
 
                 sig22.long_name = "time-averaged internal ice stress 22 component"
                 sig22.units = "Newton meter-1"
                 sig22.time = "ocean_time"
                 sig22.field = "ice stress 22, scalar, series"
-                sig22.missing_value = grdROMS.fill_value
+                sig22.missing_value = grdROMS.fillval
 
         # If we are creating climatology files with loops every 360 days, then create these variables here
         if confM2R.isclimatology:
-            v_time = f1.createVariable('clim_time', 'd', ('clim_time',), zlib=myzlib, fill_value=grdROMS.fill_value)
+            v_time = f1.createVariable('clim_time', 'd', ('clim_time',), zlib=myzlib, fill_value=grdROMS.fillval)
             v_time.units = 'day'
             v_time.field = 'time, scalar, series'
             v_time.calendar = 'standard'
             v_time.cycle_length = 360.
 
             v_salt = f1.createVariable('salt', 'f', ('clim_time', 's_rho', 'eta_rho', 'xi_rho',), zlib=myzlib,
-                                       fill_value=grdROMS.fill_value)
+                                       fill_value=grdROMS.fillval)
             v_salt.long_name = "salinity"
             v_salt.time = "clim_time"
             v_salt.field = "salinity, scalar, series"
-            v_salt.missing_value = grdROMS.fill_value
+            v_salt.missing_value = grdROMS.fillval
 
             v_salt = f1.createVariable('SSS', 'f', ('clim_time', 's_rho', 'eta_rho', 'xi_rho',), zlib=myzlib,
-                                       fill_value=grdROMS.fill_value)
+                                       fill_value=grdROMS.fillval)
             v_salt.long_name = "salinity"
             v_salt.time = "clim_time"
             v_salt.field = "salinity, scalar, series"
-            v_salt.missing_value = grdROMS.fill_value
+            v_salt.missing_value = grdROMS.fillval
 
             v_temp = f1.createVariable('temp', 'f', ('clim_time', 's_rho', 'eta_rho', 'xi_rho',), zlib=myzlib,
-                                       fill_value=grdROMS.fill_value)
+                                       fill_value=grdROMS.fillval)
             v_temp.long_name = "potential temperature"
             v_temp.units = "Celsius"
             v_temp.time = "clim_time"
             v_temp.field = "temperature, scalar, series"
-            v_temp.missing_value = grdROMS.fill_value
+            v_temp.missing_value = grdROMS.fillval
 
     else:
         f1 = Dataset(confM2R.climname, mode='a', format=confM2R.myformat)

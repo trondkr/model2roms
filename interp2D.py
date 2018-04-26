@@ -1,6 +1,6 @@
+from __future__ import print_function
 import numpy as np
 import datetime
-# import mpl_toolkits.basemap as mp
 import extrapolate as ex
 
 try:
@@ -17,7 +17,7 @@ __version__ = "1.5"
 __status__ = "Development"
 
 
-def laplaceFilter(field, threshold, toxi, toeta):
+def laplacefilter(field, threshold, toxi, toeta):
     undef = 2.0e+35
     tx = 0.9 * undef
     critx = 0.01
@@ -35,7 +35,7 @@ def laplaceFilter(field, threshold, toxi, toeta):
     return field
 
 
-def doHorInterpolationRegularGrid(confM2R, mydata):
+def dohorinterpolationregulargrid(confM2R, mydata):
     if confM2R.showprogress is True:
         import progressbar
         # http://progressbar-2.readthedocs.org/en/latest/examples.html
@@ -57,7 +57,7 @@ def doHorInterpolationRegularGrid(confM2R, mydata):
             field = np.fliplr(np.rot90(field.data, 3))
 
         if confM2R.usefilter:
-            field = laplaceFilter(field, 1000, confM2R.grdROMS.xi_rho, confM2R.grdROMS.eta_rho)
+            field = laplacefilter(field, 1000, confM2R.grdROMS.xi_rho, confM2R.grdROMS.eta_rho)
         #  field=field*grdROMS.mask_rho
 
         array1[k, :, :] = field
@@ -74,7 +74,7 @@ def doHorInterpolationRegularGrid(confM2R, mydata):
     return array1
 
 
-def doHorInterpolationSSHRegularGrid(confM2R, myvar, mydata):
+def dohorinterpolationsshregulargrid(confM2R, myvar, mydata):
     if myvar in ["uice"]:
         indexROMS_Z_ST = (confM2R.grdMODEL.nlevels, confM2R.grdROMS.eta_u, confM2R.grdROMS.xi_u)
         toxi = confM2R.grdROMS.xi_u
@@ -111,7 +111,7 @@ def doHorInterpolationSSHRegularGrid(confM2R, myvar, mydata):
 
     # Smooth the output
     if confM2R.usefilter:
-        field = laplaceFilter(field, 1000, toxi, toeta)
+        field = laplacefilter(field, 1000, toxi, toeta)
     field = field * mymask
     array1[0, :, :] = field
 

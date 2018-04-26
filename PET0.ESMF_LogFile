@@ -1,8 +1,8 @@
-20180425 172243.113 INFO             PET0 Running with ESMF Version 7.1.0r
-20180425 172243.205 ERROR            PET0 ESMF_IOGridspec.F90:258 ESMF_GridspecInq Failure  - - Duplicate longitude variables defined
-20180425 172243.205 ERROR            PET0 ESMF_IO_Gridspec_C.F90:56 f_esmf_gridspec_inq Failure  - Internal subroutine call returned Error
-20180425 172243.209 ERROR            PET0 ESMF_IOGridspec.F90:258 ESMF_GridspecInq Failure  - - Duplicate longitude variables defined
-20180425 172243.209 ERROR            PET0 ESMF_IO_Gridspec_C.F90:56 f_esmf_gridspec_inq Failure  - Internal subroutine call returned Error
-20180425 172243.212 ERROR            PET0 ESMF_IOGridspec.F90:258 ESMF_GridspecInq Failure  - - Duplicate longitude variables defined
-20180425 172243.212 ERROR            PET0 ESMF_IO_Gridspec_C.F90:56 f_esmf_gridspec_inq Failure  - Internal subroutine call returned Error
-20180425 172307.256 INFO             PET0 Finalizing ESMF
+20180426 102310.088 INFO             PET0 Running with ESMF Version 7.1.0r
+20180426 102310.183 ERROR            PET0 ESMF_IOGridspec.F90:258 ESMF_GridspecInq Failure  - - Duplicate longitude variables defined
+20180426 102310.183 ERROR            PET0 ESMF_IO_Gridspec_C.F90:56 f_esmf_gridspec_inq Failure  - Internal subroutine call returned Error
+20180426 102310.186 ERROR            PET0 ESMF_IOGridspec.F90:258 ESMF_GridspecInq Failure  - - Duplicate longitude variables defined
+20180426 102310.186 ERROR            PET0 ESMF_IO_Gridspec_C.F90:56 f_esmf_gridspec_inq Failure  - Internal subroutine call returned Error
+20180426 102310.189 ERROR            PET0 ESMF_IOGridspec.F90:258 ESMF_GridspecInq Failure  - - Duplicate longitude variables defined
+20180426 102310.189 ERROR            PET0 ESMF_IO_Gridspec_C.F90:56 f_esmf_gridspec_inq Failure  - Internal subroutine call returned Error
+20180426 102456.298 INFO             PET0 Finalizing ESMF

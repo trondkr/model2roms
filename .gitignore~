@@ -1,2 +1,4 @@
 *.so
 *.dSYM
+.idea
+.vscode

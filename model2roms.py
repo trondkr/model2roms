@@ -1,12 +1,10 @@
+from __future__ import print_function
 from netCDF4 import Dataset, datetime, date2num, num2date
 import numpy as np
 import interp2D
 import interpolation as interp
 import IOwrite
 import os
-import calendar
-
-import grd
 import barotropic
 import IOinitial
 import IOsubset
@@ -130,11 +128,11 @@ def HorizontalInterpolation(confM2R, myvar, data):
     print('Start %s horizontal interpolation for %s' % (confM2R.grdtype, myvar))
 
     if myvar in ['temperature', 'salinity']:
-        array1 = interp2D.doHorInterpolationRegularGrid(confM2R, data)
+        array1 = interp2D.dohorinterpolationregulargrid(confM2R, data)
     if myvar in ['ssh', 'ageice', 'uice', 'vice', 'aice', 'hice', 'snow_thick']:
-        array1 = interp2D.doHorInterpolationSSHRegularGrid(confM2R, data)
+        array1 = interp2D.dohorinterpolationsshregulargrid(confM2R, data)
     if myvar in ['uvel', 'vvel']:
-        array1 = interp2D.doHorInterpolationRegularGrid(confM2R, data)
+        array1 = interp2D.dohorinterpolationregulargrid(confM2R, data)
 
     return array1
 
@@ -457,8 +455,7 @@ def get3ddata(confM2R, myvar, year, month, day):
             cdf = Dataset(getNORESMfilename(confM2R, year, month, confM2R.inputdatavarnames[varN]))
             myunits = cdf.variables[str(confM2R.inputdatavarnames[varN])].units
             data = np.squeeze(cdf.variables[str(confM2R.inputdatavarnames[varN])][0, :, :, :])
-            data = np.where(data.mask, confM2R.grdROMS.fill_value, data)
-            # data = np.where(abs(data)>=32768 , grdROMS.fill_value, data)
+            data = np.where(data.mask, confM2R.grdROMS.fillval, data)
 
             print("Data range", np.min(data), np.max(data))
 
@@ -479,13 +476,13 @@ def get3ddata(confM2R, myvar, year, month, day):
             else:
                 data = np.squeeze(cdf.variables[str(confM2R.inputdatavarnames[varN])][0, :, :, :])
                 print("Range of data", varN, np.min(data), np.max(data))
-            data = np.where(data.mask, confM2R.grdROMS.fill_value, data)
+            data = np.where(data.mask, confM2R.grdROMS.fillval, data)
 
         if confM2R.indatatype == "GLORYS":
             cdf = Dataset(getGLORYSfilename(confM2R, year, month, confM2R.inputdatavarnames[varN]))
             myunits = cdf.variables[str(confM2R.inputdatavarnames[varN])].units
             data = np.squeeze(cdf.variables[str(confM2R.inputdatavarnames[varN])][0, :, :, :])
-            data = np.where(data.mask, confM2R.grdROMS.fill_value, data)
+            data = np.where(data.mask, confM2R.grdROMS.fillval, data)
 
         cdf.close()
 
@@ -493,12 +490,12 @@ def get3ddata(confM2R, myvar, year, month, day):
 
         if myunits == "degree_Kelvin" or myunits == "K":
             if confM2R.indatatype in ["GLORYS"]:
-                data = np.where(data <= -32.767, confM2R.grdROMS.fill_value, data)
+                data = np.where(data <= -32.767, confM2R.grdROMS.fillval, data)
             data = data - 273.15
 
     if confM2R.indatatype == "GLORYS":
-        data = np.where(data <= -32.767, confM2R.grdROMS.fill_value, data)
-        data = np.ma.masked_where(data <= confM2R.grdROMS.fill_value, data)
+        data = np.where(data <= -32.767, confM2R.grdROMS.fillval, data)
+        data = np.ma.masked_where(data <= confM2R.grdROMS.fillval, data)
 
     if __debug__:
         print("Data range of %s just after extracting from netcdf file: %s - %s" % (str(confM2R.inputdatavarnames[varN]),
@@ -599,12 +596,12 @@ def get2ddata(confM2R, myvar, year, month, day):
                 data = np.squeeze(cdf.variables[str(confM2R.inputdatavarnames[varN])][month - 1, :, :])
             else:
                 data = np.squeeze(cdf.variables[str(confM2R.inputdatavarnames[varN])][0, :, :])
-            data = np.where(data.mask, confM2R.grdROMS.fill_value, data)
+            data = np.where(data.mask, confM2R.grdROMS.fillval, data)
 
         if confM2R.indatatype == "GLORYS":
             cdf = Dataset(getGLORYSfilename(confM2R, year, month, confM2R.inputdatavarnames[varN]))
             data = np.squeeze(cdf.variables[str(confM2R.inputdatavarnames[varN])][0, :, :])
-            data = np.where(data.mask, confM2R.grdROMS.fill_value, data)
+            data = np.where(data.mask, confM2R.grdROMS.fillval, data)
 
         if confM2R.indatatype == "NS8KMZ":
             filename, readFromOneFile = getNS8KMZfilename(confM2R, year, month, confM2R.inputdatavarnames[varN])
@@ -622,7 +619,7 @@ def get2ddata(confM2R, myvar, year, month, day):
             else:
                 data = np.squeeze(cdf.variables[str(confM2R.inputdatavarnames[varN])][0, :, :])
 
-            data = np.where(data.mask, confM2R.grdROMS.fill_value, data)
+            data = np.where(data.mask, confM2R.grdROMS.fillval, data)
 
             print("Extracted raw data: %s min: %s max: %s" % (myvar, np.min(data), np.max(data)))
         cdf.close()
@@ -657,9 +654,9 @@ def convertMODEL2ROMS(confM2R):
         fileNameIn, readFromOneFile = getNS8KMZfilename(confM2R, confM2R.start_year, confM2R.start_month, "S")
 
     # Finalize creating the model grd object now that we know the filename for input data
-    confM2R.grdMODEL.openNetCDF(fileNameIn)
-    confM2R.grdMODEL.createObject(confM2R)
-    confM2R.grdMODEL.getDims()
+    confM2R.grdMODEL.opennetcdf(fileNameIn)
+    confM2R.grdMODEL.createobject(confM2R)
+    confM2R.grdMODEL.getdims()
 
     if confM2R.useesmf:
         print("=>Creating the interpolation weights and indexes using ESMF (this may take some time....):")
@@ -694,17 +691,18 @@ def convertMODEL2ROMS(confM2R):
         IOsubset.findSubsetIndices(confM2R.grdMODEL, min_lat=confM2R.subset[0], max_lat=confM2R.subset[1],
                                    min_lon=confM2R.subset[2], max_lon=confM2R.subset[3])
 
-    print('Initializing done')
+    print('==> Initializing done')
     print('\n--------------------------')
-    time = 0;
-    firstRun = True
+    print('==> Starting loop over time')
+
+    time = 0
+    firstrun = True
 
     for year in confM2R.years:
-        months = datetimeFunctions.createListOfMonths(year, confM2R.startdate, confM2R.enddate, confM2R.isclimatology)
+        months = datetimeFunctions.createlistofmonths(confM2R, year)
 
         for month in months:
-            days = datetimeFunctions.createListOfDays(year, month, confM2R.startdate, confM2R.enddate,
-                                                      confM2R.isclimatology, confM2R.timefrequencyofinputdata)
+            days = datetimeFunctions.createlistofdays(confM2R, year, month)
 
             for day in days:
                 # Get the current date for given timestep 
@@ -713,11 +711,11 @@ def convertMODEL2ROMS(confM2R):
                 # Each MODEL file consist only of one time step. Get the subset data selected, and
                 # store that time step in a new array:
 
-                if firstRun is True:
-                    print("=>NOTE! Make sure that these two arrays are in sequential order:")
-                    print("==>myvars:     %s" % confM2R.inputdatavarnames)
-                    print("==>varNames    %s" % confM2R.globalvarnames)
-                    firstRun = False
+                if firstrun:
+                    print("=> NOTE! Make sure that these two arrays are in sequential order:")
+                    print("==> myvars:     %s" % confM2R.inputdatavarnames)
+                    print("==> varNames    %s" % confM2R.globalvarnames)
+                    firstrun = False
 
                     if confM2R.subsetindata:
                         # The first iteration we want to organize the subset indices we want to extract
@@ -740,10 +738,10 @@ def convertMODEL2ROMS(confM2R):
                         STdata = VerticalInterpolation(myvar, array1, array1, confM2R.grdROMS, confM2R.grdMODEL)
 
                         for dd in range(len(STdata[:, 0, 0])):
-                            STdata[dd, :, :] = np.where(confM2R.grdROMS.mask_rho == 0, confM2R.grdROMS.fill_value,
+                            STdata[dd, :, :] = np.where(confM2R.grdROMS.mask_rho == 0, confM2R.grdROMS.fillval,
                                                         STdata[dd, :, :])
 
-                        STdata = np.where(abs(STdata) > 1000, confM2R.grdROMS.fill_value, STdata)
+                        STdata = np.where(abs(STdata) > 1000, confM2R.grdROMS.fillval, STdata)
 
                         IOwrite.writeclimfile(confM2R, time, myvar, STdata)
                         if time == confM2R.grdROMS.inittime and confM2R.grdROMS.write_init is True:
@@ -752,12 +750,12 @@ def convertMODEL2ROMS(confM2R):
                     if myvar in ['ssh', 'ageice', 'aice', 'hice', 'snow_thick']:
                         SSHdata = array1[0, :, :]
 
-                        SSHdata = np.where(confM2R.grdROMS.mask_rho == 0, confM2R.grdROMS.fill_value, SSHdata)
-                        SSHdata = np.where(abs(SSHdata) > 100, confM2R.grdROMS.fill_value, SSHdata)
-                        SSHdata = np.where(abs(SSHdata) == 0, confM2R.grdROMS.fill_value, SSHdata)
+                        SSHdata = np.where(confM2R.grdROMS.mask_rho == 0, confM2R.grdROMS.fillval, SSHdata)
+                        SSHdata = np.where(abs(SSHdata) > 100, confM2R.grdROMS.fillval, SSHdata)
+                        SSHdata = np.where(abs(SSHdata) == 0, confM2R.grdROMS.fillval, SSHdata)
 
                         # Specific for ROMs. We set 0 where we should have fillvalue for ice otherwise ROMS blows up.
-                        SSHdata = np.where(abs(SSHdata) == confM2R.grdROMS.fill_value, 0, SSHdata)
+                        SSHdata = np.where(abs(SSHdata) == confM2R.grdROMS.fillval, 0, SSHdata)
 
                         IOwrite.writeclimfile(confM2R, time,  myvar, SSHdata)
 
@@ -773,21 +771,19 @@ def convertMODEL2ROMS(confM2R):
                         if myvar == "uice": mymask = confM2R.grdROMS.mask_u
                         if myvar == "vice": mymask = confM2R.grdROMS.mask_v
 
-                        SSHdata = np.where(mymask == 0, confM2R.grdROMS.fill_value, SSHdata)
-                        SSHdata = np.where(abs(SSHdata) > 100, confM2R.grdROMS.fill_value, SSHdata)
-                        SSHdata = np.where(abs(SSHdata) == 0, confM2R.grdROMS.fill_value, SSHdata)
-                        SSHdata = np.where(abs(SSHdata) == confM2R.grdROMS.fill_value, 0, SSHdata)
+                        SSHdata = np.where(mymask == 0, confM2R.grdROMS.fillval, SSHdata)
+                        SSHdata = np.where(abs(SSHdata) > 100, confM2R.grdROMS.fillval, SSHdata)
+                        SSHdata = np.where(abs(SSHdata) == 0, confM2R.grdROMS.fillval, SSHdata)
+                        SSHdata = np.where(abs(SSHdata) == confM2R.grdROMS.fillval, 0, SSHdata)
 
                         # SSHdata = np.ma.masked_where(abs(SSHdata) > 1000, SSHdata)
 
                         print("Data range of %s after interpolation: %3.3f to %3.3f" % (
                         myvar, SSHdata.min(), SSHdata.max()))
 
-                        IOwrite.writeClimFile(confM2R.grdROMS, time, confM2R.climname, myvar,
-                                              confM2R.isclimatology, confM2R.writeice,
-                                              confM2R.indatatype, confM2R.myformat, SSHdata)
+                        IOwrite.writeclimfile(confM2R, time, myvar, SSHdata)
 
-                        if time == confM2R.grdROMS.initTime:
+                        if time == confM2R.grdROMS.inittime:
                             if myvar == 'uice':
                                 IOinitial.createinitfile(confM2R, time,  myvar, SSHdata)
                             if myvar == 'vice':
@@ -813,23 +809,19 @@ def convertMODEL2ROMS(confM2R):
                         #   print "Data range of U after interpolation: %3.3f to %3.3f - V after scaling: %3.3f to %3.3f" % (
                         #      Udata.min(), Udata.max(), Vdata.min(), Vdata.max())
 
-                        Udata = np.where(confM2R.grdROMS.mask_u == 0, confM2R.grdROMS.fill_value, Udata)
-                        Udata = np.where(abs(Udata) > 1000, confM2R.grdROMS.fill_value, Udata)
-                        Vdata = np.where(confM2R.grdROMS.mask_v == 0, confM2R.grdROMS.fill_value, Vdata)
-                        Vdata = np.where(abs(Vdata) > 1000, confM2R.grdROMS.fill_value, Vdata)
-                        UBARdata = np.where(confM2R.grdROMS.mask_u == 0, confM2R.grdROMS.fill_value, UBARdata)
-                        UBARdata = np.where(abs(UBARdata) > 1000, confM2R.grdROMS.fill_value, UBARdata)
-                        VBARdata = np.where(confM2R.grdROMS.mask_v == 0, confM2R.grdROMS.fill_value, VBARdata)
-                        VBARdata = np.where(abs(VBARdata) > 1000, confM2R.grdROMS.fill_value, VBARdata)
+                        Udata = np.where(confM2R.grdROMS.mask_u == 0, confM2R.grdROMS.fillval, Udata)
+                        Udata = np.where(abs(Udata) > 1000, confM2R.grdROMS.fillval, Udata)
+                        Vdata = np.where(confM2R.grdROMS.mask_v == 0, confM2R.grdROMS.fillval, Vdata)
+                        Vdata = np.where(abs(Vdata) > 1000, confM2R.grdROMS.fillval, Vdata)
+                        UBARdata = np.where(confM2R.grdROMS.mask_u == 0, confM2R.grdROMS.fillval, UBARdata)
+                        UBARdata = np.where(abs(UBARdata) > 1000, confM2R.grdROMS.fillval, UBARdata)
+                        VBARdata = np.where(confM2R.grdROMS.mask_v == 0, confM2R.grdROMS.fillval, VBARdata)
+                        VBARdata = np.where(abs(VBARdata) > 1000, confM2R.grdROMS.fillval, VBARdata)
 
-                        IOwrite.writeclimfile(confM2R.grdROMS, time, confM2R.climname,
-                                              myvar, confM2R.isclimatology, confM2R.writeice,
-                                              confM2R.indatatype, confM2R.myformat, Udata, Vdata,
-                                              UBARdata, VBARdata)
-                        if time == confM2R.grdROMS.initTime:
+                        IOwrite.writeclimfile(confM2R, time, myvar,  Udata, Vdata, UBARdata, VBARdata)
+
+                        if time == confM2R.grdROMS.inittime:
                             # We print time=initTime to init file so that we have values for ubar and vbar (not present at time=1)
-                            IOinitial.createinitfile(confM2R.grdROMS, time, confM2R.initname, myvar,
-                                                     confM2R.writeice, confM2R.indatatype,
-                                                     confM2R.myformat, Udata, Vdata, UBARdata, VBARdata)
+                            IOinitial.createinitfile(confM2R, time, myvar, Udata, Vdata, UBARdata, VBARdata)
 
                 time += 1

@@ -48,7 +48,7 @@ class Model2romsConfig(object):
             print('\n=>Conversions run for climatological months')
         else:
             print('\n=>Conversions run from %s to year %s' % (self.start_year, self.end_year))
-        print('==>The following variables will be converted:')
+        print('==> The following variables will be converted:')
         for myvar in self.globalvarnames:
             print('===> %s' % myvar)
         if self.useesmf:
@@ -166,6 +166,10 @@ class Model2romsConfig(object):
         # 1. SODA, 2. SODAMONTHLY, 3.WOAMONTHLY, 4. NORESM, 4. GLORYS, 5. SODA3
         self.indatatype = 'SODA3'
 
+        # Define contact info for final NetCDF files
+        self.authorname = "Trond Kristiansen"
+        self.authoremail = "me (at) trondkristiansen.com"
+
         # Define what grid type you wnat to interpolate from: Can be Z for SIGMA for ROMS
         # vertical coordinate system or ZLEVEL. also define the name of the dimensions in the input files.
         # Options:
@@ -179,7 +183,7 @@ class Model2romsConfig(object):
         self.depthname = "depth"
         self.timename = "time"
         self.realm = "ocean"
-        self.fill_value = -1.e+20
+        self.fillvaluein = -1.e20
 
         # OUT GRIDTYPES ------------------------------------------------------------------------------
         # Define what grid type you wnat to interpolate to
@@ -274,9 +278,9 @@ class Model2romsConfig(object):
             self.grdROMS.lonname = 'lon_rho'
             self.grdROMS.latname = 'lat_rho'
 
-            self.grdROMS.openNetCDF(self.romsgridpath)
-            self.grdROMS.createObject(self)
-            self.grdROMS.getDims()
+            self.grdROMS.opennetcdf(self.romsgridpath)
+            self.grdROMS.createobject(self)
+            self.grdROMS.getdims()
 
             # Create the grid object for the input grid
             self.grdMODEL = grd.Grd("FORCINGDATA", self)
@@ -284,4 +288,4 @@ class Model2romsConfig(object):
             self.grdMODEL.lonName = self.lonname
             self.grdMODEL.latName = self.latname
             self.grdMODEL.depthName = self.depthname
-            self.grdMODEL.fill_value = self.fill_value
+            self.grdMODEL.fillval = self.fillvaluein

@@ -40,20 +40,20 @@ class Grd:
         print("Creating init for grid object", confM2R.outgrid)
         print('---> Initialized GRD object for grid type %s' % (self.type))
 
-    def openNetCDF(self, grdfilename):
+    def opennetcdf(self, grdfilename):
 
         self.grdfilename = grdfilename
         print(self.grdfilename)
         """Open the netCDF file and store the contents in arrays associated with variable names"""
         try:
             self.cdf = Dataset(self.grdfilename, "r")
-            print('GRD file : openNetCDF opened file %s' % (self.grdfilename))
+            print('GRD file : opennetcdf opened file {}'.format(self.grdfilename))
 
         except IOError:
-            print('Could not open file %s' % (self.grdfilename))
-            print('Exception caught in: openNetCDF(grdfilename)')
+            print('Could not open file {}'.format(self.grdfilename))
+            print('Exception caught in: opennetcdf(grdfilename)')
 
-    def createObject(self, confM2R):
+    def createobject(self, confM2R):
         """
         This method creates a new object by reading the grd input file. All
         dimensions (eta, xi, lon, lat etc.) are defined here and used througout these scripts.
@@ -73,7 +73,7 @@ class Grd:
             self.lat = self.cdf.variables[str(confM2R.latname)][:]
             self.h = self.cdf.variables[str(confM2R.depthname)][:]
             self.nlevels = len(self.h)
-            self.fill_value = -9.99e+33
+            self.fillval = -9.99e+33
 
             if self.lon.ndim == 1:
                 self.lon, self.lat = np.meshgrid(self.lon, self.lat)
@@ -87,17 +87,17 @@ class Grd:
                                           add_mask=False)
 
         if self.type == 'WOAMONTHLY':
-            self.fill_value = 9.96921e+36
+            self.fillval = 9.96921e+36
         if self.type == 'SODA':
-            self.fill_value = -9.99e+33
+            self.fillval = -9.99e+33
         if self.type == 'SODA3':
-            self.fill_value = -1.e+20
+            self.fillval = -1.e+20
         if self.type == 'SODAMONTHLY':
-            self.fill_value = -9.99e+33
+            self.fillval = -9.99e+33
         if self.type == 'GLORYS':
-            self.fill_value = 9.96921e+36
+            self.fillval = 9.96921e+36
         if self.type == 'NS8KMZ':
-            self.fill_value = 9.96921e+36
+            self.fillval = 9.96921e+36
 
         if self.type == 'NORESM':
             # self.h = self.cdf.variables["depth"][:]
@@ -116,7 +116,7 @@ class Grd:
 
             self.Lp = 1
             self.Mp = 1
-            self.fill_value = -9.99e+33
+            self.fillval = -9.99e+33
 
         if self.type in ['ROMS']:
 
@@ -229,7 +229,7 @@ line = %d and hmin = %d. \n You need to make sure that tcline <= hmin when using
             self.Lp = len(self.lat_rho[1, :])
             self.Mp = len(self.lat_rho[:, 1])
 
-            self.fill_value = -9.99e+33
+            self.fillval = -9.99e33
 
             self.eta_rho = self.Mp
             self.eta_u = self.Mp
@@ -260,7 +260,7 @@ line = %d and hmin = %d. \n You need to make sure that tcline <= hmin when using
                 self.esmfgrid = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
                                           is_sphere=True, coord_names=[self.lonname, self.latname], add_mask=False)
 
-    def getDims(self):
+    def getdims(self):
         if self.type in ["ROMS"]:
             self.Lp = len(self.lat_rho[1, :])
             self.Mp = len(self.lat_rho[:, 1])

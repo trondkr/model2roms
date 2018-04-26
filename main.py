@@ -29,11 +29,11 @@ def main():
       #  if confM2R.createAtmosForcing:
       #      atmosForcing.createAtmosFileUV(confM2R)
 
-    if confM2R.decimateGridfile:
+    if confM2R.decimategridfile:
         decimateGrid.createGrid(confM2R.grdROMS, "/Users/trondkr/Projects/KINO/GRID/kino_1600m_18072015.nc",
                                 "/Users/trondkr/Projects/KINO/GRID/kino_1600m_18072015v2.nc", 2)
 
-    if confM2R.extractStations:
+    if confM2R.extractstations:
         print("Running in station mode and extracting pre-defined station locations")
         IOstation.getStationData(confM2R)
 
