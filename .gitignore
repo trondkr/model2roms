@@ -4,3 +4,4 @@
 .vscode
 *.nc
 *_LogFile
+*.pyc
