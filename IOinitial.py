@@ -197,49 +197,49 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
         v_temp.long_name = "potential temperature"
         v_temp.units = "Celsius"
         v_temp.time = "ocean_time"
-        v_temp.missing_value = grdROMS.fillval
+        #v_temp.missing_value = grdROMS.fillval
 
         v_salt = f1.createVariable('salt', 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho',), zlib=myzlib,
                                    fill_value=grdROMS.fillval)
         v_salt.long_name = "salinity"
         v_salt.time = "ocean_time"
         v_salt.field = "salinity, scalar, series"
-        v_salt.missing_value = grdROMS.fillval
+        #v_salt.missing_value = grdROMS.fillval
 
         v_ssh = f1.createVariable('zeta', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
                                   fill_value=grdROMS.fillval)
         v_ssh.long_name = "sea level"
         v_ssh.units = "meter"
         v_ssh.time = "ocean_time"
-        v_ssh.missing_value = grdROMS.fillval
+        #v_ssh.missing_value = grdROMS.fillval
 
         v_u = f1.createVariable('u', 'f', ('ocean_time', 's_rho', 'eta_u', 'xi_u',), zlib=myzlib,
                                 fill_value=grdROMS.fillval)
         v_u.long_name = "U-velocity, scalar, series"
         v_u.units = "meter second-1"
         v_u.time = "ocean_time"
-        v_u.missing_value = grdROMS.fillval
+        #v_u.missing_value = grdROMS.fillval
 
         v_v = f1.createVariable('v', 'f', ('ocean_time', 's_rho', 'eta_v', 'xi_v',), zlib=myzlib,
                                 fill_value=grdROMS.fillval)
         v_v.long_name = "V-velocity, scalar, series"
         v_v.units = "meter second-1"
         v_v.time = "ocean_time"
-        v_v.missing_value = grdROMS.fillval
+        #v_v.missing_value = grdROMS.fillval
 
         v_vbar = f1.createVariable('vbar', 'f', ('ocean_time', 'eta_v', 'xi_v',), zlib=myzlib,
                                    fill_value=grdROMS.fillval)
         v_vbar.long_name = "Barotropic V-velocity, scalar, series"
         v_vbar.units = "meter second-1"
         v_vbar.time = "ocean_time"
-        v_vbar.missing_value = grdROMS.fillval
+        #v_vbar.missing_value = grdROMS.fillval
 
         v_ubar = f1.createVariable('ubar', 'f', ('ocean_time', 'eta_u', 'xi_u',), zlib=myzlib,
                                    fill_value=grdROMS.fillval)
         v_ubar.long_name = "Barotropic U-velocity, scalar, series"
         v_ubar.units = "meter second-1"
         v_ubar.time = "ocean_time"
-        v_ubar.missing_value = grdROMS.fillval
+        #v_ubar.missing_value = grdROMS.fillval
 
         if confM2R.writeice:
             ageice = f1.createVariable('ageice', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
@@ -248,7 +248,7 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
             ageice.units = "years"
             ageice.time = "ocean_time"
             ageice.field = "ice age, scalar, series"
-            ageice.missing_value = grdROMS.fillval
+         #   ageice.missing_value = grdROMS.fillval
 
             uice = f1.createVariable('uice', 'f', ('ocean_time', 'eta_u', 'xi_u',), zlib=myzlib,
                                      fill_value=grdROMS.fillval)
@@ -256,7 +256,7 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
             uice.units = "meter second-1"
             uice.time = "ocean_time"
             uice.field = "u-component of ice velocity, scalar, series"
-            uice.missing_value = grdROMS.fillval
+          #  uice.missing_value = grdROMS.fillval
 
             vice = f1.createVariable('vice', 'f', ('ocean_time', 'eta_v', 'xi_v',), zlib=myzlib,
                                      fill_value=grdROMS.fillval)
@@ -265,7 +265,7 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
             vice.units = "meter second-1"
             vice.time = "ocean_time"
             vice.field = "v-component of ice velocity, scalar, series"
-            vice.missing_value = grdROMS.fillval
+           # vice.missing_value = grdROMS.fillval
 
             aice = f1.createVariable('aice', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
                                      fill_value=grdROMS.fillval)
@@ -273,7 +273,7 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
             aice.long_name = "time-averaged fraction of cell covered by ice"
             aice.time = "ocean_time"
             aice.field = "ice concentration, scalar, series"
-            aice.missing_value = grdROMS.fillval
+            #aice.missing_value = grdROMS.fillval
 
             hice = f1.createVariable('hice', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
                                      fill_value=grdROMS.fillval)
@@ -281,7 +281,7 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
             hice.units = "meter"
             hice.time = "ocean_time"
             hice.field = "ice thickness, scalar, series"
-            hice.missing_value = grdROMS.fillval
+            #hice.missing_value = grdROMS.fillval
 
             snow_thick = f1.createVariable('snow_thick', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
                                            fill_value=grdROMS.fillval)
@@ -290,7 +290,7 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
             snow_thick.units = "meter"
             snow_thick.time = "ocean_time"
             snow_thick.field = "snow thickness, scalar, series"
-            snow_thick.missing_value = grdROMS.fillval
+            #snow_thick.missing_value = grdROMS.fillval
 
             ti = f1.createVariable('ti', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
                                    fill_value=grdROMS.fillval)
@@ -299,7 +299,7 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
             ti.units = "degrees Celcius"
             ti.time = "ocean_time"
             ti.field = "interior temperature, scalar, series"
-            ti.missing_value = grdROMS.fillval
+            #ti.missing_value = grdROMS.fillval
 
             sfwat = f1.createVariable('sfwat', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
                                       fill_value=grdROMS.fillval)
@@ -308,7 +308,7 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
             sfwat.units = "meter"
             sfwat.time = "ocean_time"
             sfwat.field = "melt water thickness, scalar, series"
-            sfwat.missing_value = grdROMS.fillval
+            #sfwat.missing_value = grdROMS.fillval
 
             tisrf = f1.createVariable('tisrf', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
                                       fill_value=grdROMS.fillval)
@@ -316,7 +316,7 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
             tisrf.units = "degrees Celcius"
             tisrf.time = "ocean_time"
             tisrf.field = "surface temperature, scalar, series"
-            tisrf.missing_value = grdROMS.fillval
+            #tisrf.missing_value = grdROMS.fillval
 
             sig11 = f1.createVariable('sig11', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
                                       fill_value=grdROMS.fillval)
@@ -325,7 +325,7 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
             sig11.units = "Newton meter-1"
             sig11.time = "ocean_time"
             sig11.field = "ice stress 11, scalar, series"
-            sig11.missing_value = grdROMS.fillval
+            #sig11.missing_value = grdROMS.fillval
 
             sig12 = f1.createVariable('sig12', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
                                       fill_value=grdROMS.fillval)
@@ -334,7 +334,7 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
             sig12.units = "Newton meter-1"
             sig12.time = "ocean_time"
             sig12.field = "ice stress 12, scalar, series"
-            sig12.missing_value = grdROMS.fillval
+            #sig12.missing_value = grdROMS.fillval
 
             sig22 = f1.createVariable('sig22', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
                                       fill_value=grdROMS.fillval)
@@ -343,7 +343,7 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
             sig22.units = "Newton meter-1"
             sig22.time = "ocean_time"
             sig22.field = "ice stress 22, scalar, series"
-            sig22.missing_value = grdROMS.fillval
+            #sig22.missing_value = grdROMS.fillval
 
             vnc = f1.createVariable('tau_iw', 'd')
             vnc.long_name = "Tau_iw";
@@ -358,14 +358,14 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
             v_tomk.long_name = "t0mk potential temperature"
             v_tomk.units = "Celsius"
             v_tomk.time = "ocean_time"
-            v_tomk.missing_value = grdROMS.fillval
+            #v_tomk.missing_value = grdROMS.fillval
 
             v_somk = f1.createVariable('s0mk', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
                                        fill_value=grdROMS.fillval)
             v_somk.long_name = "s0mk salinity"
             v_somk.time = "ocean_time"
             v_somk.field = "salinity, scalar, series"
-            v_somk.missing_value = grdROMS.fillval
+            #v_somk.missing_value = grdROMS.fillval
 
         print(("grdROMS.time: ", grdROMS.time))
         if grdROMS.timeunits[0:7] == "seconds":

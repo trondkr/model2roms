@@ -23,7 +23,7 @@ __version__ = "1.5"
 __status__ = "Development, modified on 15.08.2008,01.10.2009,07.01.2010, 15.07.2014, 01.12.2014, 07.08.2015"
 
 
-def VerticalInterpolation(myvar, array1, array2, grdROMS, grdMODEL):
+def verticalinterpolation(myvar, array1, array2, grdROMS, grdMODEL):
     outINDEX_ST = (grdROMS.nlevels, grdROMS.eta_rho, grdROMS.xi_rho)
     outINDEX_U = (grdROMS.nlevels, grdROMS.eta_u, grdROMS.xi_u)
     outINDEX_UBAR = (grdROMS.eta_u, grdROMS.xi_u)
@@ -124,17 +124,18 @@ def VerticalInterpolation(myvar, array1, array2, grdROMS, grdMODEL):
         return outdataU, outdataV, outdataUBAR, outdataVBAR
 
 
-def HorizontalInterpolation(confM2R, myvar, data):
+def horizontalinterpolation(confM2R, myvar, data):
     print('Start %s horizontal interpolation for %s' % (confM2R.grdtype, myvar))
-
-    if myvar in ['temperature', 'salinity']:
-        array1 = interp2D.dohorinterpolationregulargrid(confM2R, data)
-    if myvar in ['ssh', 'ageice', 'uice', 'vice', 'aice', 'hice', 'snow_thick']:
-        array1 = interp2D.dohorinterpolationsshregulargrid(confM2R, data)
-    if myvar in ['uvel', 'vvel']:
-        array1 = interp2D.dohorinterpolationregulargrid(confM2R, data)
-
-    return array1
+    try:
+        if myvar in ['temperature', 'salinity']:
+            return interp2D.dohorinterpolationregulargrid(confM2R, data)
+        elif myvar in ['ssh', 'ageice', 'uice', 'vice', 'aice', 'hice', 'snow_thick']:
+            return interp2D.dohorinterpolationsshregulargrid(confM2R, data)
+        elif myvar in ['uvel', 'vvel']:
+            return interp2D.dohorinterpolationregulargrid(confM2R, data)
+    except IOError as error:
+        print("An error occurred in horizontalinterpolation: {}".format(error))
+        raise
 
 
 def rotate(grdROMS, grdMODEL, data, u, v):
@@ -157,7 +158,7 @@ def rotate(grdROMS, grdMODEL, data, u, v):
     return urot, vrot
 
 
-def interpolate2UV(grdROMS, grdMODEL, urot, vrot):
+def interpolate2uv(grdROMS, grdMODEL, urot, vrot):
     Zu = np.zeros((int(grdMODEL.nlevels), int(grdROMS.eta_u), int(grdROMS.xi_u)), np.float64)
     Zv = np.zeros((int(grdMODEL.nlevels), int(grdROMS.eta_v), int(grdROMS.xi_v)), np.float64)
 
@@ -284,9 +285,9 @@ def getTime(confM2R, year, month, day):
     confM2R.grdROMS.reftime = jdref
     confM2R.grdROMS.timeunits = myunits
     cdf.close()
-
+    print("-------------------------------")
     print('\nCurrent time of %s file : %s' % (confM2R.indatatype, currentdate))
-
+    print("-------------------------------")
 
 def getGLORYSfilename(confM2R, year, month, myvar):
     # Month indicates month
@@ -624,7 +625,6 @@ def get2ddata(confM2R, myvar, year, month, day):
             print("Extracted raw data: %s min: %s max: %s" % (myvar, np.min(data), np.max(data)))
         cdf.close()
 
-
         if __debug__:
             print("Data range of %s just after extracting from netcdf file: %s - %s" % (str(grdROMS.varNames[varN]),
                                                                                         data.min(), data.max()))
@@ -635,26 +635,26 @@ def get2ddata(confM2R, myvar, year, month, day):
 def convertMODEL2ROMS(confM2R):
     # First opening of input file is just for initialization of grid
     if confM2R.indatatype == 'SODA':
-        fileNameIn = getSODAfilename(confM2R, confM2R.start_year, confM2R.start_month, "salinity")
+        filenamein = getSODAfilename(confM2R, confM2R.start_year, confM2R.start_month, "salinity")
     if confM2R.indatatype == 'SODA3':
-        fileNameIn = getSODA3filename(confM2R, confM2R.start_year, confM2R.start_month, "salinity")
+        filenamein = getSODA3filename(confM2R, confM2R.start_year, confM2R.start_month, "salinity")
     if confM2R.indatatype == 'SODAMONTHLY':
-        fileNameIn = getSODAfilename(confM2R, confM2R.start_year, confM2R.start_month, "salinity")
+        filenamein = getSODAfilename(confM2R, confM2R.start_year, confM2R.start_month, "salinity")
     if confM2R.indatatype == 'NORESM':
-        fileNameIn = getNORESMfilename(confM2R, confM2R.start_year, confM2R.start_month, "grid")
+        filenamein = getNORESMfilename(confM2R, confM2R.start_year, confM2R.start_month, "grid")
     if confM2R.indatatype == 'WOAMONTHLY':
-        fileNameIn = getWOAMONTHLYfilename(confM2R, confM2R.start_year, confM2R.start_month, "temperature")
+        filenamein = getWOAMONTHLYfilename(confM2R, confM2R.start_year, confM2R.start_month, "temperature")
     if confM2R.indatatype == 'GLORYS':
-        fileNameIn = getGLORYSfilename(confM2R, confM2R.start_year, confM2R.start_month, "S")
+        filenamein = getGLORYSfilename(confM2R, confM2R.start_year, confM2R.start_month, "S")
     if confM2R.indatatype == 'GLORYS':
-        fileNameIn = getGLORYSfilename(confM2R, confM2R.start_year, confM2R.start_month, "S")
+        filenamein = getGLORYSfilename(confM2R, confM2R.start_year, confM2R.start_month, "S")
     if confM2R.indatatype == 'NS8KM':
-        fileNameIn = getNS8KMfilename(confM2R, confM2R.start_year, confM2R.start_month, "S")
+        filenamein = getNS8KMfilename(confM2R, confM2R.start_year, confM2R.start_month, "S")
     if confM2R.indatatype == 'NS8KMZ':
-        fileNameIn, readFromOneFile = getNS8KMZfilename(confM2R, confM2R.start_year, confM2R.start_month, "S")
+        filenamein, readFromOneFile = getNS8KMZfilename(confM2R, confM2R.start_year, confM2R.start_month, "S")
 
     # Finalize creating the model grd object now that we know the filename for input data
-    confM2R.grdMODEL.opennetcdf(fileNameIn)
+    confM2R.grdMODEL.opennetcdf(filenamein)
     confM2R.grdMODEL.createobject(confM2R)
     confM2R.grdMODEL.getdims()
 
@@ -732,10 +732,10 @@ def convertMODEL2ROMS(confM2R):
 
                     # Take the input data and horizontally interpolate to your grid
 
-                    array1 = HorizontalInterpolation(confM2R, myvar, data)
+                    array1 = horizontalinterpolation(confM2R, myvar, data)
 
                     if myvar in ['temperature', 'salinity']:
-                        STdata = VerticalInterpolation(myvar, array1, array1, confM2R.grdROMS, confM2R.grdMODEL)
+                        STdata = verticalinterpolation(myvar, array1, array1, confM2R.grdROMS, confM2R.grdMODEL)
 
                         for dd in range(len(STdata[:, 0, 0])):
                             STdata[dd, :, :] = np.where(confM2R.grdROMS.mask_rho == 0, confM2R.grdROMS.fillval,
@@ -795,14 +795,14 @@ def convertMODEL2ROMS(confM2R):
                     if myvar == 'vvel':
                         indexROMS_UBAR = (confM2R.grdROMS.eta_u, confM2R.grdROMS.xi_u)
                         indexROMS_VBAR = (confM2R.grdROMS.eta_v, confM2R.grdROMS.xi_v)
-                        UBARdata = np.zeros((indexROMS_UBAR), dtype=np.float64)
-                        VBARdata = np.zeros((indexROMS_VBAR), dtype=np.float64)
+                      #  UBARdata = np.zeros((indexROMS_UBAR), dtype=np.float64)
+                      #  VBARdata = np.zeros((indexROMS_VBAR), dtype=np.float64)
 
                         urot, vrot = rotate(confM2R.grdROMS, confM2R.grdMODEL, data, array2, array1)
 
-                        u, v = interpolate2UV(confM2R.grdROMS, confM2R.grdMODEL, urot, vrot)
+                        u, v = interpolate2uv(confM2R.grdROMS, confM2R.grdMODEL, urot, vrot)
 
-                        Udata, Vdata, UBARdata, VBARdata = VerticalInterpolation(myvar, u, v, confM2R.grdROMS,
+                        Udata, Vdata, UBARdata, VBARdata = verticalinterpolation(myvar, u, v, confM2R.grdROMS,
                                                                                  confM2R.grdMODEL)
 
                     if myvar == 'vvel':
@@ -821,7 +821,6 @@ def convertMODEL2ROMS(confM2R):
                         IOwrite.writeclimfile(confM2R, time, myvar,  Udata, Vdata, UBARdata, VBARdata)
 
                         if time == confM2R.grdROMS.inittime:
-                            # We print time=initTime to init file so that we have values for ubar and vbar (not present at time=1)
                             IOinitial.createinitfile(confM2R, time, myvar, Udata, Vdata, UBARdata, VBARdata)
 
                 time += 1

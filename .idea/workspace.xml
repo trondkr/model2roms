@@ -2,23 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7476ee36-24b6-4720-824a-d5a472842f7d" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change beforePath="$PROJECT_DIR$/IOBry.py" afterPath="$PROJECT_DIR$/IOBry.py" />
       <change beforePath="$PROJECT_DIR$/IOinitial.py" afterPath="$PROJECT_DIR$/IOinitial.py" />
-      <change beforePath="$PROJECT_DIR$/IOstation.py" afterPath="$PROJECT_DIR$/IOstation.py" />
       <change beforePath="$PROJECT_DIR$/IOwrite.py" afterPath="$PROJECT_DIR$/IOwrite.py" />
-      <change beforePath="$PROJECT_DIR$/PET0.ESMF_LogFile" afterPath="$PROJECT_DIR$/PET0.ESMF_LogFile" />
-      <change beforePath="$PROJECT_DIR$/clim2bry.py" afterPath="$PROJECT_DIR$/clim2bry.py" />
-      <change beforePath="$PROJECT_DIR$/configM2R.py" afterPath="$PROJECT_DIR$/configM2R.py" />
-      <change beforePath="$PROJECT_DIR$/datetimeFunctions.py" afterPath="$PROJECT_DIR$/datetimeFunctions.py" />
-      <change beforePath="$PROJECT_DIR$/grd.py" afterPath="$PROJECT_DIR$/grd.py" />
-      <change beforePath="$PROJECT_DIR$/interp2D.py" afterPath="$PROJECT_DIR$/interp2D.py" />
-      <change beforePath="$PROJECT_DIR$/main.py" afterPath="$PROJECT_DIR$/main.py" />
+      <change beforePath="$PROJECT_DIR$/PET0.ESMF_LogFile" afterPath="" />
       <change beforePath="$PROJECT_DIR$/model2roms.py" afterPath="$PROJECT_DIR$/model2roms.py" />
-      <change beforePath="$PROJECT_DIR$/roho800_clim_SODA3_20130115_to_20131215.nc" afterPath="$PROJECT_DIR$/roho800_clim_SODA3_20130115_to_20131215.nc" />
-      <change beforePath="$PROJECT_DIR$/roho800_init_SODA3_20130115_to_20131215.nc" afterPath="$PROJECT_DIR$/roho800_init_SODA3_20130115_to_20131215.nc" />
+      <change beforePath="$PROJECT_DIR$/roho800_clim_SODA3_20130115_to_20131215.nc" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/roho800_init_SODA3_20130115_to_20131215.nc" afterPath="" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -38,15 +28,15 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="model2roms.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="model2roms.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/model2roms.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="162">
-              <caret line="783" column="41" lean-forward="false" selection-start-line="783" selection-start-column="41" selection-end-line="783" selection-end-column="41" />
+            <state relative-caret-position="629">
+              <caret line="311" column="19" lean-forward="true" selection-start-line="311" selection-start-column="19" selection-end-line="311" selection-end-column="19" />
               <folding>
                 <element signature="e#0#37#0" expanded="true" />
-                <marker date="1524680087811" expanded="true" signature="19381:19429" ph="..." />
-                <marker date="1524680087811" expanded="true" signature="29519:40987" ph="..." />
+                <marker date="1524735330653" expanded="true" signature="19603:19651" ph="..." />
+                <marker date="1524735330653" expanded="true" signature="29740:41079" ph="..." />
               </folding>
             </state>
           </provider>
@@ -56,7 +46,7 @@
         <entry file="file://$PROJECT_DIR$/datetimeFunctions.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="69">
-              <caret line="25" column="69" lean-forward="true" selection-start-line="25" selection-start-column="69" selection-end-line="25" selection-end-column="69" />
+              <caret line="25" column="69" lean-forward="false" selection-start-line="25" selection-start-column="69" selection-end-line="25" selection-end-column="69" />
               <folding />
             </state>
           </provider>
@@ -74,10 +64,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="clim2bry.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="clim2bry.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/clim2bry.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-861">
+            <state relative-caret-position="766">
               <caret line="50" column="20" lean-forward="false" selection-start-line="50" selection-start-column="20" selection-end-line="50" selection-end-column="20" />
               <folding />
             </state>
@@ -87,8 +77,38 @@
       <file leaf-file-name="IOBry.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/IOBry.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="613">
-              <caret line="831" column="0" lean-forward="false" selection-start-line="831" selection-start-column="0" selection-end-line="831" selection-end-column="0" />
+            <state relative-caret-position="255">
+              <caret line="191" column="62" lean-forward="false" selection-start-line="191" selection-start-column="62" selection-end-line="191" selection-end-column="62" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="interpolation.f90" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/interpolation.f90">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="391">
+              <caret line="281" column="27" lean-forward="false" selection-start-line="281" selection-start-column="27" selection-end-line="281" selection-end-column="27" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="IOwrite.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/IOwrite.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="5934">
+              <caret line="415" column="13" lean-forward="false" selection-start-line="415" selection-start-column="13" selection-end-line="415" selection-end-column="13" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="IOinitial.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/IOinitial.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="734">
+              <caret line="416" column="13" lean-forward="false" selection-start-line="416" selection-start-column="13" selection-end-line="416" selection-end-column="13" />
               <folding />
             </state>
           </provider>
@@ -98,14 +118,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>grdROMS.Nlevels</find>
-      <find>confM2R.rdROMS.mask</find>
-      <find>confM2R.grdROMS.initTime</find>
-      <find>timeunits</find>
-      <find>IOBry.createBryFile</find>
-      <find>romsgr</find>
-      <find>missing</find>
-      <find>confM2R.grdROMS.fill_value,</find>
       <find>if (mytype == &quot;NORESM&quot;):</find>
       <find>print</find>
       <find>confM2R.fillvalue</find>
@@ -125,9 +137,17 @@
       <find>doHorInterpolationRegularGrid</find>
       <find>doHorInterpolationSSHRegularGrid</find>
       <find>lapl</find>
-      <find>grdROMS.fill_value</find>
       <find>confM2R.decimateGridfile</find>
       <find>extractStations</find>
+      <find>Start vertical interpolation for</find>
+      <find>horizont</find>
+      <find>interpola</find>
+      <find>Vertical</find>
+      <find>fileNameIn</find>
+      <find>verticalinterpolation</find>
+      <find>rotate</find>
+      <find>Current time of</find>
+      <find>grdROMS.fill_value</find>
     </findStrings>
     <replaceStrings>
       <replace>'me@trondkristiansen.com'</replace>
@@ -139,8 +159,9 @@
       <replace>grdROMS.fillval</replace>
       <replace>dohorinterpolationregulargrid</replace>
       <replace>dohorinterpolationsshregulargrid</replace>
-      <replace>grdROMS.fillvalue</replace>
       <replace>self.fillval</replace>
+      <replace>filenamein</replace>
+      <replace>grdROMS.fillvalue</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -156,15 +177,15 @@
         <option value="$PROJECT_DIR$/main.py" />
         <option value="$PROJECT_DIR$/IOverticalGrid.py" />
         <option value="$PROJECT_DIR$/atmosForcing.py" />
-        <option value="$PROJECT_DIR$/IOwrite.py" />
         <option value="$PROJECT_DIR$/clim2bry.py" />
-        <option value="$PROJECT_DIR$/IOinitial.py" />
         <option value="$PROJECT_DIR$/grd.py" />
         <option value="$PROJECT_DIR$/configM2R.py" />
-        <option value="$PROJECT_DIR$/model2roms.py" />
         <option value="$PROJECT_DIR$/interp2D.py" />
-        <option value="$PROJECT_DIR$/IOBry.py" />
         <option value="$PROJECT_DIR$/datetimeFunctions.py" />
+        <option value="$PROJECT_DIR$/IOwrite.py" />
+        <option value="$PROJECT_DIR$/IOinitial.py" />
+        <option value="$PROJECT_DIR$/IOBry.py" />
+        <option value="$PROJECT_DIR$/model2roms.py" />
       </list>
     </option>
   </component>
@@ -330,24 +351,14 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/datetimeFunctions.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="2" selection-end-column="15" />
-          <folding>
-            <element signature="e#0#57#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/model2roms.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="14858">
           <caret line="886" column="31" lean-forward="false" selection-start-line="886" selection-start-column="31" selection-end-line="886" selection-end-column="31" />
           <folding>
             <element signature="e#0#37#0" expanded="true" />
-            <marker date="1524680087811" expanded="true" signature="19381:19429" ph="..." />
-            <marker date="1524680087811" expanded="true" signature="29519:40987" ph="..." />
+            <marker date="1524735330653" expanded="true" signature="19603:19651" ph="..." />
+            <marker date="1524735330653" expanded="true" signature="29740:41079" ph="..." />
           </folding>
         </state>
       </provider>
@@ -518,8 +529,8 @@
           <caret line="886" column="31" lean-forward="false" selection-start-line="886" selection-start-column="31" selection-end-line="886" selection-end-column="31" />
           <folding>
             <element signature="e#0#37#0" expanded="true" />
-            <marker date="1524680087811" expanded="true" signature="19381:19429" ph="..." />
-            <marker date="1524680087811" expanded="true" signature="29519:40987" ph="..." />
+            <marker date="1524735330653" expanded="true" signature="19603:19651" ph="..." />
+            <marker date="1524735330653" expanded="true" signature="29740:41079" ph="..." />
           </folding>
         </state>
       </provider>
@@ -600,8 +611,8 @@
           <caret line="320" column="29" lean-forward="false" selection-start-line="320" selection-start-column="29" selection-end-line="320" selection-end-column="29" />
           <folding>
             <element signature="e#0#37#0" expanded="true" />
-            <marker date="1524680087811" expanded="true" signature="19381:19429" ph="..." />
-            <marker date="1524680087811" expanded="true" signature="29519:40987" ph="..." />
+            <marker date="1524735330653" expanded="true" signature="19603:19651" ph="..." />
+            <marker date="1524735330653" expanded="true" signature="29740:41079" ph="..." />
           </folding>
         </state>
       </provider>
@@ -630,8 +641,8 @@
           <caret line="319" column="27" lean-forward="true" selection-start-line="319" selection-start-column="27" selection-end-line="319" selection-end-column="27" />
           <folding>
             <element signature="e#0#37#0" expanded="true" />
-            <marker date="1524680087811" expanded="true" signature="19381:19429" ph="..." />
-            <marker date="1524680087811" expanded="true" signature="29519:40987" ph="..." />
+            <marker date="1524735330653" expanded="true" signature="19603:19651" ph="..." />
+            <marker date="1524735330653" expanded="true" signature="29740:41079" ph="..." />
           </folding>
         </state>
       </provider>
@@ -697,26 +708,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/model2roms.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="162">
-          <caret line="783" column="41" lean-forward="false" selection-start-line="783" selection-start-column="41" selection-end-line="783" selection-end-column="41" />
-          <folding>
-            <element signature="e#0#37#0" expanded="true" />
-            <marker date="1524680087811" expanded="true" signature="19381:19429" ph="..." />
-            <marker date="1524680087811" expanded="true" signature="29519:40987" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/IOwrite.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="30" column="17" lean-forward="false" selection-start-line="30" selection-start-column="4" selection-end-line="30" selection-end-column="17" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/grd.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="50">
@@ -735,16 +726,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/IOinitial.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="289">
-          <caret line="69" column="39" lean-forward="false" selection-start-line="69" selection-start-column="39" selection-end-line="69" selection-end-column="39" />
-          <folding>
-            <element signature="e#0#11#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/interp2D.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="442">
@@ -755,27 +736,63 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/IOBry.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="613">
-          <caret line="831" column="0" lean-forward="false" selection-start-line="831" selection-start-column="0" selection-end-line="831" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/datetimeFunctions.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="69">
-          <caret line="25" column="69" lean-forward="true" selection-start-line="25" selection-start-column="69" selection-end-line="25" selection-end-column="69" />
+          <caret line="25" column="69" lean-forward="false" selection-start-line="25" selection-start-column="69" selection-end-line="25" selection-end-column="69" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/clim2bry.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-861">
+        <state relative-caret-position="766">
           <caret line="50" column="20" lean-forward="false" selection-start-line="50" selection-start-column="20" selection-end-line="50" selection-end-column="20" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/IOwrite.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5934">
+          <caret line="415" column="13" lean-forward="false" selection-start-line="415" selection-start-column="13" selection-end-line="415" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/IOinitial.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="734">
+          <caret line="416" column="13" lean-forward="false" selection-start-line="416" selection-start-column="13" selection-end-line="416" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/interpolation.f90">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="391">
+          <caret line="281" column="27" lean-forward="false" selection-start-line="281" selection-start-column="27" selection-end-line="281" selection-end-column="27" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/IOBry.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="191" column="62" lean-forward="false" selection-start-line="191" selection-start-column="62" selection-end-line="191" selection-end-column="62" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/model2roms.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="629">
+          <caret line="311" column="19" lean-forward="true" selection-start-line="311" selection-start-column="19" selection-end-line="311" selection-end-column="19" />
+          <folding>
+            <element signature="e#0#37#0" expanded="true" />
+            <marker date="1524735330653" expanded="true" signature="19603:19651" ph="..." />
+            <marker date="1524735330653" expanded="true" signature="29740:41079" ph="..." />
+          </folding>
         </state>
       </provider>
     </entry>
