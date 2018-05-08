@@ -607,7 +607,7 @@ def get2ddata(confM2R, myvar, year, month, day):
         if confM2R.indatatype == "NS8KMZ":
             filename, readFromOneFile = getNS8KMZfilename(confM2R, year, month, confM2R.inputdatavarnames[varN])
             cdf = Dataset(filename)
-            print("Reading from file", filename)
+        
             if (readFromOneFile):
                 jdref = date2num(datetime(1948, 1, 1), cdf.variables["time"].units,
                                  calendar=cdf.variables["time"].calendar)

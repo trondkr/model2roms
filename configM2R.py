@@ -111,8 +111,8 @@ class Model2romsConfig(object):
                 'ROHO800': '/Users/trondkr/Dropbox/NIVA/ROHO800/Grid/ROHO800_grid.nc'}[self.outgrid]
 
     def defineforcingdatapath(self):
-        return {'SODA3': "/Users/trondkr/Dropbox/NIVA/ROHO800/Grid/",
-                'NORESM': "/Volumes/MacintoshHD2/Datasets",
+        return {'SODA3': "/Volumes/DATASETS/SODA3.3.1/OCEAN/",
+                'NORESM': "/Volumes/MacintoshHD2/Datasets/",
                 'WOAMONTHLY': "/Users/trondkr/Projects/is4dvar/createSSS/"}[self.indatatype]
 
     def __init__(self):
@@ -138,7 +138,8 @@ class Model2romsConfig(object):
 
             self.stationnames = ["Ytre Utsira", "Indre Utsira", "Lista"]
             self.latlist = [59.316667, 59.316667, 58.016667]
-            self.lonliost = [4.800000, 4.983333, 6.533333]
+            self.lonlist = [4.800000, 4.983333, 6.533333]
+            self.numberofpoints = 4 # Number of points around lat/lon to extract and average as output
 
         # Create the bry, init, and clim files for a given grid and input data
         self.createoceanforcing = True
@@ -168,7 +169,7 @@ class Model2romsConfig(object):
 
         # Define contact info for final NetCDF files
         self.authorname = "Trond Kristiansen"
-        self.authoremail = "me (at) trondkristiansen.com"
+        self.authoremail = "trond.kristiansen (at) niva.no"
 
         # Define what grid type you wnat to interpolate from: Can be Z for SIGMA for ROMS
         # vertical coordinate system or ZLEVEL. also define the name of the dimensions in the input files.
@@ -220,8 +221,8 @@ class Model2romsConfig(object):
 
         # DATE AND TIME DETAILS ---------------------------------------------------------
         # Define the period to create forcing for
-        self.start_year = 2013
-        self.end_year = 2013
+        self.start_year = 1980
+        self.end_year = 2014
         self.start_month = 1
         self.end_month = 12
         self.start_day = 15
@@ -264,7 +265,6 @@ class Model2romsConfig(object):
                 import ESMF
                 print("Starting logfile for ESMF")
                 manager = ESMF.Manager(debug=True)
-
 
             # Create the grid object for the output grid
             self.grdROMS = grd.Grd("ROMS", self)

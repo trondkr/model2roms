@@ -41,7 +41,7 @@ class Grd:
         print('---> Initialized GRD object for grid type %s' % (self.type))
 
     def opennetcdf(self, grdfilename):
-
+        print(self.grdfilename)
         self.grdfilename = grdfilename
         print(self.grdfilename)
         """Open the netCDF file and store the contents in arrays associated with variable names"""

@@ -154,36 +154,35 @@ def initArrays(years,IDS,deepest,name,lon,lat):
     
     return stTemp, stSalt, stSSH, stUvel, stVvel, stTauX, stTauY
 
-def getStationData(years,IDS,sodapath,latlist,lonlist,stationNames):
+def getStationData(confM2R):
 
-    fileNameIn=sodapath+'SODA_2.0.2_'+str(years[0])+'_'+str(IDS[0])+'.cdf'
+    fileNameIn=confM2R.modelpath+'SODA_2.0.2_'+str(years[0])+'_'+str(IDS[0])+'.cdf'
     
     """First time in loop, get the essential old grid information"""
     """SODA data already at Z-levels. No need to interpolate to fixed depths, but we use the one we have"""
     
-    grdMODEL = grd.grdClass(fileNameIn,"SODA")
+    grdMODEL = grd.Grd(fileNameIn,"SODA")
     IOverticalGrid.get_z_levels(grdMODEL)
     
     station=0
     numberOfPoints=4
    
-    for lat, lon in zip(latlist, lonlist):
+    for lat, lon in zip(confM2R.latlist, confM2R.lonlist):
         print(('\n----------------NEW STATION==> %s ------------------------------------------'%(stationNames[station])))
      
         """Now we want to find the indices for our longitude, latitude station pairs in the lat-long list"""
-        gridIndexes, dis = getStationIndices(grdMODEL,lon,lat,'SODA',numberOfPoints)
+        gridIndexes, dis = getStationIndices(confM2R.grdMODEL,lon,lat,'SODA',confM2R.numberofpoints)
     
         stTime=[]; stDate=[]; time=0; counter=0; t=0
-        total=float(len(years)*len(IDS))
-        import progressbar
-        progress = progressbar.ProgressBar(widgets=[Percentage(), Bar()], maxval=total).start()
+        years = confM2R.end_year-confM2R.start_year
+        IDS=np.arange(0, 12, 1)
 
         for year in years:
             for ID in IDS:
                 file="SODA_2.0.2_"+str(year)+"_"+str(ID)+".cdf"
-                filename=sodapath+file
+                filename=confM2R.modelpath + file
                
-                jdsoda, yyyymmdd, message = getStationTime(grdMODEL,year,ID)
+                jdsoda, yyyymmdd, message = getStationTime(confM2R.grdMODEL,year,ID)
                 
                 stTime.append(jdsoda)
                 stDate.append(yyyymmdd)
@@ -193,9 +192,9 @@ def getStationData(years,IDS,sodapath,latlist,lonlist,stationNames):
                 """Each SODA file consist only of one time step. Get the subset data selected, and
                 store that time step in a new array:"""
                 if year==years[0] and ID==IDS[0]:
-                    validIndex, validDis = testValidStation(cdf,dis,numberOfPoints, gridIndexes)
-                    deepest              = testValidDepth(cdf,numberOfPoints, gridIndexes,grdMODEL.depth)
-                    stTemp, stSalt, stSSH, stUvel, stVvel, stTauX, stTauY = initArrays(years,IDS,deepest,stationNames[station],lon,lat)
+                    validIndex, validDis = testValidStation(cdf,dis,confM2R.numberofpoints, gridIndexes)
+                    deepest              = testValidDepth(cdf,confM2R.numberofpoints, gridIndexes,confM2R.grdMODEL.depth)
+                    stTemp, stSalt, stSSH, stUvel, stVvel, stTauX, stTauY = initArrays(years,IDS,deepest,confM2R.stationnames[station],lon,lat)
                 
                 for i in validIndex:
                     wgt=float(validDis[i])/sum(validDis)
@@ -215,18 +214,15 @@ def getStationData(years,IDS,sodapath,latlist,lonlist,stationNames):
                  
                 cdf.close()
                 counter+=1
-
-                progress.update(time)
                 time+=1
 
-        
         print(('Total time steps saved to file %s for station %s'%(time,station)))
         #plotData.contourStationData(stTemp,stTime,stDate,-grdMODEL.depth[0:deepest],stationNames[station])
         
-        outfilename='station_'+str(stationNames[station])+'.nc'
+        outfilename='station_'+str(confM2R.stationnames[station])+'.nc'
         print(('Results saved to file %s'%(outfilename)))
         writeStationNETCDF4(stTemp,stSalt,stUvel,stVvel,stSSH,stTauX,stTauY,stTime,
-                            grdMODEL.depth[0:deepest],lat,lon,outfilename)
+                            confM2R.grdMODEL.depth[0:deepest],lat,lon,outfilename)
         station+=1
     
 def getStationIndices(grdObject,st_lon,st_lat,type,numberOfPoints):
