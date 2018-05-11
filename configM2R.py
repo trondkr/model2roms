@@ -48,7 +48,7 @@ class Model2romsConfig(object):
             print('\n=>Conversions run for climatological months')
         else:
             print('\n=>Conversions run from %s to year %s' % (self.start_year, self.end_year))
-        print('==>The following variables will be converted:')
+        print('==> The following variables will be converted:')
         for myvar in self.globalvarnames:
             print('===> %s' % myvar)
         if self.useesmf:
@@ -120,7 +120,7 @@ class Model2romsConfig(object):
         print('Started ' + time.ctime(time.time()))
 
         # EDIT ===================================================================
-        # Set show_progress to "False" if you do not want to see the progress
+        # Set showprogress to "False" if you do not want to see the progress
         # indicator for horizontal interpolation.
         self.showprogress = True
         # Set compileAll to True if you want automatic re-compilation of all the
@@ -166,18 +166,24 @@ class Model2romsConfig(object):
         # 1. SODA, 2. SODAMONTHLY, 3.WOAMONTHLY, 4. NORESM, 4. GLORYS, 5. SODA3
         self.indatatype = 'SODA3'
 
+        # Define contact info for final NetCDF files
+        self.authorname = "Trond Kristiansen"
+        self.authoremail = "me (at) trondkristiansen.com"
+
         # Define what grid type you wnat to interpolate from: Can be Z for SIGMA for ROMS
         # vertical coordinate system or ZLEVEL. also define the name of the dimensions in the input files.
         # Options:
         # 1. SIGMA (not prpoerly implemented yet), 2. ZLEVEL
         self.ingridtype = "SIGMA"
 
-        # Define the names of ythe geographical variables in the input files
-        self.grdType = 'regular'
-        self.lonName = "longitude"
-        self.latName = "latitude"
-        self.depthName = "depth"
-        self.fill_value = -1.e+20
+        # Define the names of the geographical variables in the input files
+        self.grdtype = 'regular'
+        self.lonname = "longitude"
+        self.latname = "latitude"
+        self.depthname = "depth"
+        self.timename = "time"
+        self.realm = "ocean"
+        self.fillvaluein = -1.e20
 
         # OUT GRIDTYPES ------------------------------------------------------------------------------
         # Define what grid type you wnat to interpolate to
@@ -204,7 +210,6 @@ class Model2romsConfig(object):
         # PATH TO FORCINGDATA --------------------------------------------------------------------
         # Define the path to the input data
         self.modelpath = self.defineforcingdatapath()
-        print("model path ", self.modelpath)
 
         # PATH TO GRID -----------------------------------------------------------------------------
         # Define the path to the grid file
@@ -228,7 +233,6 @@ class Model2romsConfig(object):
         if int(calendar.monthrange(self.end_year, self.end_month)[1]) < self.end_day:
             self.end_day = int(calendar.monthrange(self.end_year, self.end_month)[1])
 
-	print "hello, startdate here"
         self.startdate = datetime(self.start_year, self.start_month, self.start_day)
         self.enddate = datetime(self.end_year, self.end_month, self.end_day)
         self.years = [self.start_year + year for year in range(self.end_year + 1 - self.start_year)]
@@ -263,50 +267,23 @@ class Model2romsConfig(object):
 
 
             # Create the grid object for the output grid
-            self.grdROMS = grd.Grd("ROMS", self.outgridtype, self.useesmf, 'ocean', self.outgrid)
-            self.grdROMS.Nlevels =self.nlevels
+            self.grdROMS = grd.Grd("ROMS", self)
+            self.grdROMS.nlevels =self.nlevels
             self.grdROMS.vstretching = self.vstretching
             self.grdROMS.vtransform = self.vtransform
             self.grdROMS.theta_s = self.theta_s
             self.grdROMS.theta_b = self.theta_b
-            self.grdROMS.Tcline = self.tcline
+            self.grdROMS.tcline = self.tcline
             self.grdROMS.hc = self.hc
-            self.grdROMS.vars = self.inputdatavarnames
-            self.grdROMS.varNames = self.globalvarnames
-            self.grdROMS.lonName = 'lon_rho'
-            self.grdROMS.latName = 'lat_rho'
+            self.grdROMS.lonname = 'lon_rho'
+            self.grdROMS.latname = 'lat_rho'
 
-            self.grdROMS.openNetCDF(self.romsgridpath)
-            self.grdROMS.createObject()
-            self.grdROMS.getDims()
+            self.grdROMS.opennetcdf(self.romsgridpath)
+            self.grdROMS.createobject(self)
+            self.grdROMS.getdims()
 
             # Create the grid object for the input grid
-            self.grdMODEL = grd.Grd("FORCINGDATA", self.outgridtype, self.useesmf, 'ocean', self.outgrid)
-            self.grdMODEL.grdType = self.grdType
-            self.grdMODEL.lonName = self.lonName
-            self.grdMODEL.latName = self.latName
-            self.grdMODEL.depthName = self.depthName
-            self.grdMODEL.fill_value = self.fill_value
-
-            #if self.createoceanforcing:
-            #    model2roms.convertMODEL2ROMS()
-
-            #    clim2bry.writeBry(grdROMS, start_year, bryName, climname, writeice, indatatype, myformat)
-
-            #if self.createAtmosForcing:
-            #    atmosForcing.createAtmosFileUV(grdROMS, modelpath, atmospath, startdate, enddate, useESMF,
-            #                                   myformat, abbreviation, indatatype, gridtype, show_progress)
-
-        if self.decimategridfile:
-            decimateGrid.createGrid(grdROMS, "/Users/trondkr/Projects/KINO/GRID/kino_1600m_18072015.nc",
-                                    "/Users/trondkr/Projects/KINO/GRID/kino_1600m_18072015v2.nc", 2)
-
-        if self.extractstations:
-            print("Running in station mode and extracting pre-defined station locations")
-            IOstation.getStationData(years, IDS, modelpath, latlist, lonlist, stationNames)
-
-        print('Finished ' + time.ctime(time.time()))
-
-
-if __name__ == "__main__":
-    main()
+            self.grdMODEL = grd.Grd("FORCINGDATA", self)
+            self.grdMODEL.grdType = self.grdtype
+            self.grdMODEL.lonName = self.lonname
+            self.grdMODEL.latName = self.latname

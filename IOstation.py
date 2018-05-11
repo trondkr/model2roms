@@ -278,7 +278,7 @@ def getStationIndices(grdObject,st_lon,st_lat,type,numberOfPoints):
         print(('Looking for longitude [%3.3f] and latitude [%3.3f]'%(st_lon-360,st_lat)))
     else:
         print(('Looking for longitude [%3.3f] and latitude [%3.3f]'%(st_lon,st_lat)))
-    print('Result ===>')
+    print('Result ===> ')
     for i in range(numberOfPoints):
         print(('Found index pair in gridfile',listsIndexes[i]))
         if NEG is True:

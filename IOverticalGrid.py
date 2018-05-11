@@ -22,11 +22,11 @@ vgrid.py function copied from https://github.com/kshedstrom/pyroms (Frederic Cas
 def calculateVgrid(self):
     print(("--->Setting up vertical coordinates using self.vtransform: %s self.vstretching: %s"%(self.vtransform,self.vstretching)))
     if self.vtransform == 1:
-        vgrid = s_coordinate(self.h, self.theta_b, self.theta_s, self.Tcline, self.Nlevels, self.vtransform, self.vstretching, zeta=None)
+        vgrid = s_coordinate(self.h, self.theta_b, self.theta_s, self.tcline, self.nlevels, self.vtransform, self.vstretching, zeta=None)
     elif self.vtransform == 2 and self.vstretching == 2:
-        vgrid = s_coordinate_2(self.h, self.theta_b, self.theta_s, self.Tcline, self.Nlevels, self.vtransform, self.vstretching, zeta=None)
+        vgrid = s_coordinate_2(self.h, self.theta_b, self.theta_s, self.tcline, self.nlevels, self.vtransform, self.vstretching, zeta=None)
     elif self.vtransform == 2 and self.vstretching == 4:
-        vgrid = s_coordinate_4(self.h, self.theta_b, self.theta_s, self.Tcline, self.Nlevels, self.vtransform, self.vstretching, zeta=None)
+        vgrid = s_coordinate_4(self.h, self.theta_b, self.theta_s, self.tcline, self.nlevels, self.vtransform, self.vstretching, zeta=None)
     else:
         raise Warning('Unknow vertical transformation Vtrans')
     self.z_r = vgrid.z_r[0,:]
@@ -46,23 +46,23 @@ class s_coordinate(object):
     s = s_coordinate(h, theta_b, theta_s, Tcline, N)
     """
 
-    def __init__(self, h, theta_b, theta_s, Tcline, N, vtransform, vstretching, zeta=None):
+    def __init__(self, h, theta_b, theta_s, tcline, N, vtransform, vstretching, zeta=None):
       
         self.h = np.asarray(h)
         self.hmin = h.min()
         self.theta_b = theta_b
         self.theta_s = theta_s
-        self.Tcline = Tcline
+        self.Tcline = tcline
         self.N = int(N)
         self.Np = self.N+1
         self.vtransform = vtransform
         self.vstretching = vstretching
-        self.hc = min(self.hmin, self.Tcline)
+        self.hc = min(self.hmin, self.tcline)
 
         self.Vtrans = 1
 
         if self.vtransform==1:
-            if (self.Tcline > self.hmin):
+            if (self.tcline > self.hmin):
                 warnings.warn('Vertical transformation parameters are not defined correctly in either gridid.txt or in the history files: \n Tcline = %d and hmin = %d. \n You need to make sure that Tcline <= hmin when using transformation 1.' %(self.Tcline,self.hmin))
 
         self.c1 = 1.0
@@ -123,18 +123,18 @@ class s_coordinate_2(s_coordinate):
     s = s_coordinate_2(h, theta_b, theta_s, Tcline, N)
     """
 
-    def __init__(self, h, theta_b, theta_s, Tcline, N,  vtransform, vstretching, zeta=None):
+    def __init__(self, h, theta_b, theta_s, tcline, N,  vtransform, vstretching, zeta=None):
         self.h = np.asarray(h)
         self.hmin = h.min()
         self.theta_b = theta_b
         self.theta_s = theta_s
-        self.Tcline = Tcline
+        self.tcline = tcline
         self.N = int(N)
         self.Np = self.N+1
         self.vtransform = vtransform
         self.vstretching = vstretching
 
-        self.hc = self.Tcline
+        self.hc = self.tcline
 
         self.Vtrans = 2
 
@@ -208,18 +208,18 @@ class s_coordinate_4(s_coordinate):
     s = s_coordinate_4(h, theta_b, theta_s, Tcline, N)
     """
 
-    def __init__(self, h, theta_b, theta_s, Tcline, N,  vtransform, vstretching, zeta=None):
+    def __init__(self, h, theta_b, theta_s, tcline, N,  vtransform, vstretching, zeta=None):
         self.h = np.asarray(h)
         self.hmin = h.min()
         self.theta_b = theta_b
         self.theta_s = theta_s
-        self.Tcline = Tcline
+        self.tcline = tcline
         self.N = int(N)
         self.Np = self.N+1
         self.vtransform = vtransform
         self.vstretching = vstretching
 
-        self.hc = self.Tcline
+        self.hc = self.tcline
 
         self.Vtrans = 4
 

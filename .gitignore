@@ -4,3 +4,6 @@
 *.nc
 .idea
 .vscode
+*.nc
+*_LogFile
+*.pyc

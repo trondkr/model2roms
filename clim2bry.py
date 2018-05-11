@@ -43,7 +43,7 @@ def myhelp():
                       ubar(1,Mpo)"""
 
 
-def writeBry(confM2R):
+def writebry(confM2R):
     # See myhelp function for definition of these variables:
     grdROMS = confM2R.grdROMS
 
@@ -55,7 +55,7 @@ def writeBry(confM2R):
     # Open the CLIM file
     clim = Dataset(confM2R.climname, 'r')
     # Generate the BRY netcdf4 file that we will use to fill in data
-    IOBry.createBryFile(grdROMS, confM2R.bryname, confM2R.writeice, confM2R.indatatype, confM2R.myformat)
+    IOBry.createBryFile(confM2R)
     # Now open the file we created
     f = Dataset(confM2R.bryname, mode='a', format=confM2R.myformat, zlib=confM2R.myzlib)
 

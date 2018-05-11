@@ -69,13 +69,13 @@ def getNORESMfilename(year,month,day,myvar,dataPath):
     return filename
 
 
-def createAtmosFileUV(grdROMS,modelpath,atmospath,startdate,enddate,useESMF,myformat,abbreviation,mytype,gridtype,show_progress):
+def createAtmosFileUV(grdROMS,modelpath,atmospath,startdate,enddate,useESMF,myformat,abbreviation,mytype,gridtype,showprogress):
 
     # Setup 
     print("\nGenerating atmospheric forcing for: %s to %s\n"%(startdate, enddate))
     years = [(int(startdate.year) + kk) for kk in range(1 + int(enddate.year) - int(startdate.year))]
    
-    if show_progress is True:
+    if showprogress is True:
         import progressbar
         progress = progressbar.ProgressBar(widgets=[progressbar.Percentage(), progressbar.Bar()], maxval=len(years)).start()
     
