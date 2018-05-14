@@ -130,7 +130,7 @@ def horizontalinterpolation(confM2R, myvar, data):
         if myvar in ['temperature', 'salinity']:
             return interp2D.dohorinterpolationregulargrid(confM2R, data)
         elif myvar in ['ssh', 'ageice', 'uice', 'vice', 'aice', 'hice', 'snow_thick']:
-            return interp2D.dohorinterpolationsshregulargrid(confM2R, data)
+            return interp2D.dohorinterpolationsshregulargrid(confM2R, myvar, data)
         elif myvar in ['uvel', 'vvel']:
             return interp2D.dohorinterpolationregulargrid(confM2R, data)
     except IOError as error:
@@ -626,7 +626,7 @@ def get2ddata(confM2R, myvar, year, month, day):
         cdf.close()
 
         if __debug__:
-            print("Data range of %s just after extracting from netcdf file: %s - %s" % (str(grdROMS.varNames[varN]),
+            print("Data range of %s just after extracting from netcdf file: %s - %s" % (str(confM2R.inputdatavarnames[varN]),
                                                                                         data.min(), data.max()))
 
     return data
