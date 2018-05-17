@@ -87,7 +87,7 @@ class Model2romsConfig(object):
     def defineglobalvarnames(self):
 
         return {'SODA': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel'],
-                'SODA3': ['temperature', 'salinity', 'uvel', 'vvel'],
+                'SODA3': ['temperature', 'salinity','ssh', 'uvel', 'vvel'],
                 'GLORYS': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel', 'uice', 'vice', 'aice', 'hice'],
                 'WOAMONTHLY': ['temperature', 'salinity'],
                 'NORESM': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel', 'ageice', 'uice', 'vice', 'aice', 'hice']}[
@@ -108,10 +108,10 @@ class Model2romsConfig(object):
 
     def defineromsgridpath(self):
         return {'A20': '/home/trondk/Projects/A20/Grid/A20niva_grd_v1.nc',
-                'ROHO800': '/Users/trondkr/Dropbox/NIVA/ROHO800/Grid/ROHO800_grid.nc'}[self.outgrid]
+                'ROHO800': '/global/homes/a/abarthel/data/forcingfields/fromTrond/ROHO800_grid.nc'}[self.outgrid]
 
     def defineforcingdatapath(self):
-        return {'SODA3': "/Users/trondkr/Dropbox/NIVA/ROHO800/Grid/",
+        return {'SODA3': "/global/homes/a/abarthel/data/forcingfields/fromTrond/",
                 'NORESM': "/Volumes/MacintoshHD2/Datasets",
                 'WOAMONTHLY': "/Users/trondkr/Projects/is4dvar/createSSS/"}[self.indatatype]
 
@@ -122,7 +122,7 @@ class Model2romsConfig(object):
         # EDIT ===================================================================
         # Set showprogress to "False" if you do not want to see the progress
         # indicator for horizontal interpolation.
-        self.showprogress = False
+        self.showprogress = True
         # Set compileAll to True if you want automatic re-compilation of all the
         # fortran files necessary to run model2roms. Options are "gfortran" or "ifort". Edit
         # compile.py to add other Fortran compilers.
@@ -224,8 +224,8 @@ class Model2romsConfig(object):
         self.end_year = 2013
         self.start_month = 1
         self.end_month = 12
-        self.start_day = 15
-        self.end_day = 15
+        self.start_day = 1
+        self.end_day = 1
 
         if int(calendar.monthrange(self.start_year, self.start_month)[1]) < self.start_day:
             self.start_day = int(calendar.monthrange(self.start_year, self.start_month)[1])
@@ -287,5 +287,3 @@ class Model2romsConfig(object):
             self.grdMODEL.grdType = self.grdtype
             self.grdMODEL.lonName = self.lonname
             self.grdMODEL.latName = self.latname
-            self.grdMODEL.depthName = self.depthname
-            self.grdMODEL.fillval = self.fillvaluein
