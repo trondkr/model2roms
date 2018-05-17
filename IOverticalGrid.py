@@ -43,7 +43,7 @@ class s_coordinate(object):
     
     return an object that can be indexed to return depths
 
-    s = s_coordinate(h, theta_b, theta_s, Tcline, N)
+    s = s_coordinate(h, theta_b, theta_s, tcline, N)
     """
 
     def __init__(self, h, theta_b, theta_s, tcline, N, vtransform, vstretching, zeta=None):
@@ -52,7 +52,7 @@ class s_coordinate(object):
         self.hmin = h.min()
         self.theta_b = theta_b
         self.theta_s = theta_s
-        self.Tcline = tcline
+        self.tcline = tcline
         self.N = int(N)
         self.Np = self.N+1
         self.vtransform = vtransform
@@ -63,7 +63,7 @@ class s_coordinate(object):
 
         if self.vtransform==1:
             if (self.tcline > self.hmin):
-                warnings.warn('Vertical transformation parameters are not defined correctly in either gridid.txt or in the history files: \n Tcline = %d and hmin = %d. \n You need to make sure that Tcline <= hmin when using transformation 1.' %(self.Tcline,self.hmin))
+                warnings.warn('Vertical transformation parameters are not defined correctly in either gridid.txt or in the history files: \n tcline = %d and hmin = %d. \n You need to make sure that tcline <= hmin when using transformation 1.' %(self.tcline,self.hmin))
 
         self.c1 = 1.0
         self.c2 = 2.0
@@ -120,7 +120,7 @@ class s_coordinate_2(s_coordinate):
     
     return an object that can be indexed to return depths
 
-    s = s_coordinate_2(h, theta_b, theta_s, Tcline, N)
+    s = s_coordinate_2(h, theta_b, theta_s, tcline, N)
     """
 
     def __init__(self, h, theta_b, theta_s, tcline, N,  vtransform, vstretching, zeta=None):
@@ -205,7 +205,7 @@ class s_coordinate_4(s_coordinate):
     
     return an object that can be indexed to return depths
 
-    s = s_coordinate_4(h, theta_b, theta_s, Tcline, N)
+    s = s_coordinate_4(h, theta_b, theta_s, tcline, N)
     """
 
     def __init__(self, h, theta_b, theta_s, tcline, N,  vtransform, vstretching, zeta=None):
