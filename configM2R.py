@@ -41,7 +41,8 @@ class Model2romsConfig(object):
     # Define abbreviation for the run: sued to name output files etc.
     def defineabbreviation(self):
         return {"A20": "a20",
-                "ROHO800": "roho800"}[self.outgrid]
+                "ROHO800": "roho800",
+		"SO5K": "so5k"}[self.outgrid]
 
     def showinfo(self):
         if self.isclimatology:
@@ -108,7 +109,8 @@ class Model2romsConfig(object):
 
     def defineromsgridpath(self):
         return {'A20': '/home/trondk/Projects/A20/Grid/A20niva_grd_v1.nc',
-                'ROHO800': '/global/homes/a/abarthel/data/forcingfields/fromTrond/ROHO800_grid.nc'}[self.outgrid]
+                'ROHO800': '/global/homes/a/abarthel/data/forcingfields/fromTrond/ROHO800_grid.nc',
+		'SO5K': '/global/homes/a/abarthel/ROMS/so_grd.rtopo2.2.small.5km.nc'}[self.outgrid]
 
     def defineforcingdatapath(self):
         return {'SODA3': "/global/homes/a/abarthel/data/forcingfields/fromTrond/",
@@ -188,7 +190,7 @@ class Model2romsConfig(object):
         # OUT GRIDTYPES ------------------------------------------------------------------------------
         # Define what grid type you wnat to interpolate to
         # Options: This is just the name of your grid used to identify your selection later
-        self.outgrid = "ROHO800"
+        self.outgrid = "SO5K"
         self.outgridtype = "ROMS"
 
         # Subset input data. If you have global data you may want to seubset these to speed up reading. Make
@@ -196,17 +198,26 @@ class Model2romsConfig(object):
         self.subsetindata = False
         if self.subsetindata:
             self.subset = self.definesubsetforindata()
-
+	
+	if self.outgrid == "ROHO800":
         # Define nmber of output depth levels
-        self.nlevels = 40
+            self.nlevels = 40
         # Define the grid stretching properties (leave default if uncertain what to pick)
-        self.vstretching = 4
-        self.vtransform = 2
-        self.theta_s = 7.0
-        self.theta_b = 0.1
-        self.tcline = 250.0
-        self.hc = 250
+            self.vstretching = 4
+            self.vtransform = 2
+            self.theta_s = 7.0
+            self.theta_b = 0.1
+            self.tcline = 250.0
+            self.hc = 250
 
+	if self.outgrid == "SO5K":
+  	    self.nlevels = 32
+            self.vstretching = 1
+            self.vtransform = 1
+            self.theta_s = 5.0
+            self.theta_b = 0.4
+            self.tcline = 20.0
+            self.hc = 20
         # PATH TO FORCINGDATA --------------------------------------------------------------------
         # Define the path to the input data
         self.modelpath = self.defineforcingdatapath()
