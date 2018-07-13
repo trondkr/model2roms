@@ -52,7 +52,7 @@ class s_coordinate(object):
         self.hmin = h.min()
         self.theta_b = theta_b
         self.theta_s = theta_s
-        self.Tcline = tcline
+        self.tcline = tcline
         self.N = int(N)
         self.Np = self.N+1
         self.vtransform = vtransform
