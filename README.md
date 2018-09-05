@@ -7,7 +7,13 @@ required to run the ROMS (<a href="http://myroms.org/" target="_blank">Regional 
 <h3>Latest updates</h3>
 <ul>
 <li>05.09.2018: Model2roms has been refactored and improved in the following way: we now use an object to store all of the configurations (configM2R.py), the run script has been improved (runM2R.py), supports SODA3 and GLORYS2V4 as forcing inputfiles, and severeal minor bugs has been fixed.</li>
-<li>Support for using Earth System Modeling Framework as the default interpolation method. This allows the input data to be on any kind of grid structure (e.g. irregular) as long as geographical information such as longitude and latitude of grid cells are available. The implementation uses the Python interface to ESMF which can be found here: <a href="https://www.earthsystemcog.org/projects/esmpy/" target="_blank">www.earthsystemcog.org/projects/esmpy/</a>. Using ESMF significantly increases the speed of the interpolation. As an example, interpolating one variable (e.g. temperature distribution) from a global irregular grid to a local non-rectangular grid of size 1250x789, at 70 different depth levels, takes 3 seconds on a Mac Laptop Pro. Additional information as to how to install ESMF and ESMPy on Mac OSX is available <a href="http://www.trondkristiansen.com/?page_id=1302" target="_blank">www.trondkristiansen.com/</a></li>
+<li>Support for using Earth System Modeling Framework as the default interpolation method. This allows the input data to be on any kind of grid structure (e.g. irregular) as long as geographical information such as longitude and latitude of grid cells are available. The implementation uses the Python interface to ESMF which can be found here: <a href="https://www.earthsystemcog.org/projects/esmpy/" target="_blank">www.earthsystemcog.org/projects/esmpy/</a>. Using ESMF significantly increases the speed of the interpolation. As an example, interpolating one variable (e.g. temperature distribution) from a global irregular grid to a local non-rectangular grid of size 1250x789, at 70 different depth levels, takes 3 seconds on a Mac Laptop Pro. Additional information as to how to install ESMF and ESMPy from source on Mac OSX is available <a href="http://www.trondkristiansen.com/?page_id=1302" target="_blank">www.trondkristiansen.com/</a></li>. For most people, installing using Anaconda would be the best option:
+```bash
+conda create -n model2roms
+conda config --add channels conda-forge
+conda activate model2roms
+conda install esmpy netcdf4
+```
 <li>Added support for ICE variables. The latest version writes to file (init, bry, and clim) all necessary ice variables required to run ROMS with ice.</li>
 <li>Added support to generate forcing using global <a href="http://sextant.ifremer.fr/record/7a7b31cb-9e7b-4b5b-9ff3-c1165b51f79b/" target="_blank">GLORYS2V3</a> files including sea ice</li>
 <li>Many general improvements to the code such as more generic time and date methods.</li>
