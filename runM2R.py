@@ -1,5 +1,5 @@
 import time
-from netCDF4 import datetime
+from datetime import datetime, timedelta
 import configM2R
 import model2roms
 import IOstation

@@ -1,5 +1,5 @@
 import time, calendar
-from netCDF4 import Dataset, datetime, date2num, num2date
+from netCDF4 import Dataset, date2num, num2date
 import model2roms
 import IOstation
 import clim2bry
@@ -8,6 +8,7 @@ import grd
 import numpy as np
 import atmosForcing
 import sys
+from datetime import datetime, timedelta
 
 __author__ = 'Trond Kristiansen'
 __email__ = 'trond.kristiansen@niva.no'

@@ -1,5 +1,6 @@
 from __future__ import print_function
-from netCDF4 import Dataset, datetime, date2num, num2date
+from netCDF4 import Dataset, date2num, num2date
+from datetime import datetime, timedelta
 import numpy as np
 import interp2D
 import interpolation as interp

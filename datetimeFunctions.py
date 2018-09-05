@@ -1,5 +1,6 @@
-from netCDF4 import Dataset, datetime, date2num, num2date
+from netCDF4 import Dataset, date2num, num2date
 import os
+from datetime import datetime, timedelta
 import calendar
 
 __author__ = 'Trond Kristiansen'
