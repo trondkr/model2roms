@@ -6,6 +6,7 @@ required to run the ROMS (<a href="http://myroms.org/" target="_blank">Regional 
 
 <h3>Latest updates</h3>
 <ul>
+<li>05.09.2018: Model2roms has been refactored and improved in the following way: we now use an object to store all of the configurations (configM2R.py), the run script has been improved (runM2R.py), supports SODA3 and GLORYS2V4 as forcing inputfiles, and severeal minor bugs has been fixed.</li>
 <li>Support for using Earth System Modeling Framework as the default interpolation method. This allows the input data to be on any kind of grid structure (e.g. irregular) as long as geographical information such as longitude and latitude of grid cells are available. The implementation uses the Python interface to ESMF which can be found here: <a href="https://www.earthsystemcog.org/projects/esmpy/" target="_blank">www.earthsystemcog.org/projects/esmpy/</a>. Using ESMF significantly increases the speed of the interpolation. As an example, interpolating one variable (e.g. temperature distribution) from a global irregular grid to a local non-rectangular grid of size 1250x789, at 70 different depth levels, takes 3 seconds on a Mac Laptop Pro. Additional information as to how to install ESMF and ESMPy on Mac OSX is available <a href="http://www.trondkristiansen.com/?page_id=1302" target="_blank">www.trondkristiansen.com/</a></li>
 <li>Added support for ICE variables. The latest version writes to file (init, bry, and clim) all necessary ice variables required to run ROMS with ice.</li>
 <li>Added support to generate forcing using global <a href="http://sextant.ifremer.fr/record/7a7b31cb-9e7b-4b5b-9ff3-c1165b51f79b/" target="_blank">GLORYS2V3</a> files including sea ice</li>
@@ -38,58 +39,115 @@ Without filter            | With filter
 <img src="http://www.trondkristiansen.com/wp-content/gallery/romstools/temperature_depth_ESMF_0_withoutfilter_time_75190.0.png" width=100%>  |  <img src="http://www.trondkristiansen.com/wp-content/gallery/romstools/temperature_depth_ESMF_0_withfilter_time_75190.0.png" width=100%>
 
 <h3>Optional settings</h3>
-Prior to run model2roms you have to specify a number of settings so that the program can identify where input and grid files can be found. In addition, you can specify what sort of run you are doing by turning options on and off. Most of the general settings are found in `main.py`, a few definitions for variable names are found in `model2roms.py`, and finally some settings for the grid specifications re found in `grd.py`. Eventually, all of the settings will be moved to one file. Still, the main settings are the following:
+Prior to run model2roms you have to specify a number of settings so that the program can identify where input and grid files can be found. In addition, you can specify what sort of run you are doing by turning options on and off. All of the user settings are done in `configM2R.py`, a few definitions for variable names are found in `model2roms.py`, and finally a few settings for the grid specifications are found in `grd.py`. Eventually, all of the settings will be moved to one file. Still, the main settings are the following:
 ``` python
-    # Set showprogress to "False" if you do not want to see the progress
-    # indicator for horizontal interpolation.
-    showprogress = True
-    
-    # Set compileAll to True if you want automatic re-compilation of all the
-    # fortran files necessary to run soda2roms. You need to edit compile.py for this
-    compileAll = False
+        # Set showprogress to "False" if you do not want to see the progress
+        # indicator for horizontal interpolation.
+        self.showprogress = False
+        # Set compileAll to True if you want automatic re-compilation of all the
+        # fortran files necessary to run model2roms. Options are "gfortran" or "ifort". Edit
+        # compile.py to add other Fortran compilers.
+        self.compileall = False
+        # Extract time-series of data for given longitude/latitude
+        self.extractstations = False
+        # Define a set of longitude/latitude positions with names to extract into
+        # station files (using extractStations)
+        if self.extractstations:
+            #  stationNames = ['NorthSea', 'Iceland', 'EastandWestGreenland', 'Lofoten', 'Georges Bank']
+            #  lonlist = [2.4301, -22.6001, -47.0801, 13.3801, -67.2001]
+            #  latlist = [54.5601, 63.7010, 60.4201, 67.5001, 41.6423]
 
-    # Extract time-series of data for given set of longitude/latitudes. Useful to create time-series of input files.
-    extractStations = False
-    # Define a set of longitude/latitude positions with names to extract into
-    
-    # Create the bry, init, and clim files for a given ROMS grid and forcing data (e.g. SODA, HYCOM)
-    createForcing = True
-    # Create a smaller resolution grid based on your original. Decimates every second for
-    # each time run. This option is used for large grids where you want to do a number of testing prior ro creating the final      # forcing files.
-    decimateGrid = False
-    
-    # Write ice values to file (for Arctic regions)
-    writeIce = True
-    
-    # Use ESMF for the interpolation. This requires that you have ESMF and ESMPy installed (import ESMF)
-    useESMF = True
-    
-    # Apply filter to smooth the 2D fields after interpolation (time consuming)
-    useFilter = False
+            self.stationnames = ["Ytre Utsira", "Indre Utsira", "Lista"]
+            self.latlist = [59.316667, 59.316667, 58.016667]
+            self.lonlist = [4.800000, 4.983333, 6.533333]
+            self.numberofpoints = 4 # Number of points around lat/lon to extract and average as output
 
-    # Format to write the ouput to: 'NETCDF4', 'NETCDF4_CLASSIC', 'NETCDF3_64BIT', or 'NETCDF3_CLASSIC'
-    # Using NETCDF4 automatically turns on compression of files (ZLIB)
-    myformat='NETCDF4'
-    
-    # Set the input data MODEL type (SODA, SODAMONTHLY,GLORYS2V1,WOAMONTHLY,NORESM)
-    mytype = 'NORESM'
+        # Create the bry, init, and clim files for a given grid and input data
+        self.createoceanforcing = True
+        # Create atmospheric forcing for the given grid
+        self.createatmosforcing = False  # currently in beta stages and unavailable
+        # Create a smaller resolution grid based on your original. Decimates every second for
+        # each time run
+        self.decimategridfile = False
+        # Write ice values to file (for Arctic regions)
+        self.writeice = True
+        # Use ESMF for the interpolation. This requires that you have ESMF and ESMPy installed (import ESMF)
+        self.useesmf = True
+        # Apply filter to smooth the 2D fields after interpolation (time consuming but enhances results)
+        self.usefilter = True
+        # Format to write the ouput to: 'NETCDF4', 'NETCDF4_CLASSIC', 'NETCDF3_64BIT', or 'NETCDF3_CLASSIC'
+        # Using NETCDF4 automatically turns on compression of files (ZLIB)
+        self.myformat = 'NETCDF4'
+        self.myzlib = True
+        # Frequency of the input data: usually monthly
+        self.timefrequencyofinputdata = "month"  # , "month", "hour"
 
-    # Define what grid type you wnat to interpolate to (see grd.py for details):
-    gridtype = "NS8KM"
+        # IN GRIDTYPES ------------------------------------------------------------------------------
+        #  Define what grid type you wnat to interpolate from (input MODEL data)
+        # Options:
+        # 1. SODA, 2. SODAMONTHLY, 3.WOAMONTHLY, 4. NORESM, 4. GLORYS, 5. SODA3
+        self.indatatype = 'SODA3'
 
-    # Define the paths to the input data
-    if mytype == 'NORESM':
-        modelpath = "/Users/trondkr/Projects/RegScen/NRCP45AERCN_f19_g16_CLE_01/"
+        # Define contact info for final NetCDF files
+        self.authorname = "Trond Kristiansen"
+        self.authoremail = "trond.kristiansen (at) niva.no"
 
-    # Define the path to the grid file
-    if gridtype == "NS8KM":
-        romsgridpath = "/Users/trondkr/Projects/is4dvar/Grid/nordsjoen_8km_grid_hmax20m_v3.nc"
-  
-    # Define the start year and month and end year and month.
-    start_year  = 2017
-    end_year    = 2026
-    start_month = 1
-    end_month   = 12
+        # Define what grid type you wnat to interpolate from: Can be Z for SIGMA for ROMS
+        # vertical coordinate system or ZLEVEL. also define the name of the dimensions in the input files.
+        # Options:
+        # 1. SIGMA (not prpoerly implemented yet), 2. ZLEVEL
+        self.ingridtype = "SIGMA"
+
+        # Define the names of the geographical variables in the input files
+        self.grdtype = 'regular'
+        self.lonname = "longitude"
+        self.latname = "latitude"
+        self.depthname = "depth"
+        self.timename = "time"
+        self.realm = "ocean"
+        self.fillvaluein = -1.e20
+
+        # OUT GRIDTYPES ------------------------------------------------------------------------------
+        # Define what grid type you wnat to interpolate to
+        # Options: This is just the name of your grid used to identify your selection later
+        self.outgrid = "ROHO800"
+        self.outgridtype = "ROMS"
+
+        # Subset input data. If you have global data you may want to seubset these to speed up reading. Make
+        # sure that your input data are cartesian (0-360 or -180:180, -90:90)
+        self.subsetindata = False
+        if self.subsetindata:
+            self.subset = self.definesubsetforindata()
+
+        # Define nmber of output depth levels
+        self.nlevels = 40
+        # Define the grid stretching properties (leave default if uncertain what to pick)
+        self.vstretching = 4
+        self.vtransform = 2
+        self.theta_s = 7.0
+        self.theta_b = 0.1
+        self.tcline = 250.0
+        self.hc = 250
+
+        # PATH TO FORCINGDATA --------------------------------------------------------------------
+        # Define the path to the input data
+        self.modelpath = self.defineforcingdatapath()
+
+        # PATH TO GRID -----------------------------------------------------------------------------
+        # Define the path to the grid file
+        self.romsgridpath = self.defineromsgridpath()
+
+        # Climatology is only monthly and model2roms needs to know this
+        self.isclimatology = True if self.indatatype == 'WOAMONTHLY' else False
+
+        # DATE AND TIME DETAILS ---------------------------------------------------------
+        # Define the period to create forcing for
+        self.start_year = 1980
+        self.end_year = 2014
+        self.start_month = 1
+        self.end_month = 12
+        self.start_day = 15
+        self.end_day = 15
 ```  
 <p style="clear: both;">
 
