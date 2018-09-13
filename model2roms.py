@@ -627,7 +627,7 @@ def get2ddata(confM2R, myvar, year, month, day):
         cdf.close()
 
         if __debug__:
-            print("Data range of %s just after extracting from netcdf file: %s - %s" % (str(grdROMS.varNames[varN]),
+            print("Data range of %s just after extracting from netcdf file: %s - %s" % (str(confM2R.inputdatavarnames[varN]),
                                                                                         data.min(), data.max()))
 
     return data
