@@ -19,9 +19,9 @@ except ImportError:
 __author__ = 'Trond Kristiansen'
 __email__ = 'trond.kristiansen@niva.no'
 __created__ = datetime(2008, 8, 15)
-__modified__ = datetime(2014, 12, 1)
-__version__ = "1.5"
-__status__ = "Development, modified on 15.08.2008,01.10.2009,07.01.2010, 15.07.2014, 01.12.2014, 07.08.2015"
+__modified__ = datetime(2019, 2, 8)
+__version__ = "1.8"
+__status__ = "Development, modified on 15.08.2008,01.10.2009,07.01.2010, 15.07.2014, 01.12.2014, 07.08.2015, 08.02.2018"
 
 
 def verticalinterpolation(myvar, array1, array2, grdROMS, grdMODEL):
@@ -180,7 +180,6 @@ def interpolate2uv(grdROMS, grdMODEL, urot, vrot):
                                     int(grdMODEL.nlevels))
 
     # plotData.contourMap(grdROMS,grdMODEL,Zv[0,:,:],"1",'vrot')
-
     return Zu, Zv
 
 
@@ -206,7 +205,7 @@ def getTime(confM2R, year, month, day):
         filename = getWOAMONTHLYfilename(confM2R, year, month, "temperature")
 
     if confM2R.indatatype == 'NORESM':
-        filename = getNORESMfilename(confM2R, year, month, "saln")
+        filename = getNORESMfilename(confM2R, year, month, "salnlvl")
 
     if confM2R.indatatype == 'NS8KM':
         filename = getNS8KMfilename(confM2R, year, month, "salt")
@@ -351,12 +350,14 @@ def getNORESMfilename(confM2R, year, month, myvar):
         if myvar in ['iage', 'uvel', 'vvel', 'aice', 'hi', 'hs']:
             filename = confM2R.modelpath + 'ICE/NRCP45AERCN_f19_g16_CLE_01.cice.h.' + str(year) + '.nc'
         else:
-            if confM2R.start_month < 10:
-                filename = confM2R.modelpath + 'OCN/NRCP45AERCN_f19_g16_CLE_01.micom.hm.' + str(year) + '-0' + str(
-                    ID) + '.nc'
+            if myvar in ['salnlvl','templvl']:
+                base="RCP85_2006_2100_TS/NRCP85BPRPEX_01.micom.hmlvl."
             else:
-                filename = confM2R.modelpath + 'OCN/NRCP45AERCN_f19_g16_CLE_01.micom.hm.' + str(year) + '-' + str(
-                    ID) + '.nc'
+                base="RCP85_2006_2100_atm_oceanUV/vel.micom.hmlvl."
+            if confM2R.start_month < 10:
+                filename = confM2R.modelpath + str(year) + '-0' + str(ID) + '.nc'
+            else:
+                filename = confM2R.modelpath + str(year) + '-' + str(ID) + '.nc'
 
     return filename
 
@@ -590,7 +591,7 @@ def get2ddata(confM2R, myvar, year, month, day):
             cdf = Dataset(filename)
             data = cdf.variables[str(confM2R.inputdatavarnames[varN])][month - 1, :, :]
 
-        if confM2R.indatatype == "NORESM":
+        if (confM2R.indatatype == "NORESM" and confM2R.set2DvarsToZero is False):
             cdf = Dataset(getNORESMfilename(confM2R, year, month, confM2R.inputdatavarnames[varN]))
             # myunits = cdf.variables[str(grdROMS.varNames[varN])].units
             # For NORESM data are 12 months of data stored in ice files. Use ID as month indicator to get data.
@@ -629,7 +630,6 @@ def get2ddata(confM2R, myvar, year, month, day):
         if __debug__:
             print("Data range of %s just after extracting from netcdf file: %s - %s" % (str(confM2R.inputdatavarnames[varN]),
                                                                                         data.min(), data.max()))
-
     return data
 
 

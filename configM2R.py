@@ -108,12 +108,12 @@ class Model2romsConfig(object):
                            'hs']}[self.indatatype]
 
     def defineromsgridpath(self):
-        return {'A20': '/home/trondk/Projects/A20/Grid/A20niva_grd_v1.nc',
-                'ROHO800': '/Users/trondkr/Dropbox/NIVA/ROHO800/Grid/ROHO800_grid.nc'}[self.outgrid]
+        return {'A20': '/cluster/projects/nn9412k/A20/Grid/A20niva_grd_v1.nc',
+                'ROHO800': '/global/work/andrest/ROHO800/River_and_Grid_fix/ROHO800_grid_fix.nc'}[self.outgrid]
 
     def defineforcingdatapath(self):
-        return {'SODA3': "/Volumes/DATASETS/SODA3.3.1/OCEAN/",
-                'NORESM': "/Volumes/MacintoshHD2/Datasets/",
+        return {'SODA3': "/global/home/trondk/Projects/SODA3/SODA3/dsrs.atmos.umd.edu/DATA/soda3.3.1/REGRIDED/",
+                'NORESM': "/cluster/projects/nn9412k/A20/FORCING/RCP85_NORESM/",
                 'WOAMONTHLY': "/Users/trondkr/Projects/is4dvar/createSSS/"}[self.indatatype]
 
     def __init__(self):
@@ -151,6 +151,8 @@ class Model2romsConfig(object):
         self.decimategridfile = False
         # Write ice values to file (for Arctic regions)
         self.writeice = True
+        # ROMS sometimes requires input of ice and ssh, but if you dont have these write zero files to file
+        self.set2DvarsToZero=True
         # Use ESMF for the interpolation. This requires that you have ESMF and ESMPy installed (import ESMF)
         self.useesmf = True
         # Apply filter to smooth the 2D fields after interpolation (time consuming but enhances results)
@@ -166,7 +168,7 @@ class Model2romsConfig(object):
         #  Define what grid type you wnat to interpolate from (input MODEL data)
         # Options:
         # 1. SODA, 2. SODAMONTHLY, 3.WOAMONTHLY, 4. NORESM, 4. GLORYS, 5. SODA3
-        self.indatatype = 'SODA3'
+        self.indatatype = 'NORESM'
 
         # Define contact info for final NetCDF files
         self.authorname = "Trond Kristiansen"
@@ -176,7 +178,7 @@ class Model2romsConfig(object):
         # vertical coordinate system or ZLEVEL. also define the name of the dimensions in the input files.
         # Options:
         # 1. SIGMA (not prpoerly implemented yet), 2. ZLEVEL
-        self.ingridtype = "SIGMA"
+        self.ingridtype = "ZLEVEL"
 
         # Define the names of the geographical variables in the input files
         self.grdtype = 'regular'
@@ -190,12 +192,12 @@ class Model2romsConfig(object):
         # OUT GRIDTYPES ------------------------------------------------------------------------------
         # Define what grid type you wnat to interpolate to
         # Options: This is just the name of your grid used to identify your selection later
-        self.outgrid = "ROHO800"
+        self.outgrid = "A20" #"ROHO800"
         self.outgridtype = "ROMS"
 
         # Subset input data. If you have global data you may want to seubset these to speed up reading. Make
         # sure that your input data are cartesian (0-360 or -180:180, -90:90)
-        self.subsetindata = False
+        self.subsetindata = True
         if self.subsetindata:
             self.subset = self.definesubsetforindata()
 
@@ -222,8 +224,8 @@ class Model2romsConfig(object):
 
         # DATE AND TIME DETAILS ---------------------------------------------------------
         # Define the period to create forcing for
-        self.start_year = 1980
-        self.end_year = 2014
+        self.start_year = 2006
+        self.end_year = 2007
         self.start_month = 1
         self.end_month = 12
         self.start_day = 15
@@ -263,7 +265,10 @@ class Model2romsConfig(object):
             self.showinfo()
 
             if self.useesmf:
-                import ESMF
+                try:
+                    import ESMF
+                except ImportError:
+                    raise ImportError("Unable to import ESMF")
                 print("Starting logfile for ESMF")
                 manager = ESMF.Manager(debug=True)
 
