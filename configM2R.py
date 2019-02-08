@@ -202,7 +202,7 @@ class Model2romsConfig(object):
 
         # Subset input data. If you have global data you may want to seubset these to speed up reading. Make
         # sure that your input data are cartesian (0-360 or -180:180, -90:90)
-        self.subsetindata = True
+        self.subsetindata = False
         if self.subsetindata:
             self.subset = self.definesubsetforindata()
 
