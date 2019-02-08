@@ -183,7 +183,7 @@ class Model2romsConfig(object):
         # Define the names of the geographical variables in the input files
         self.grdtype = 'regular'
         self.lonname = "plon"
-        self.latname = "latitplatude"
+        self.latname = "plat"
         self.depthname = "depth"
         self.timename = "time"
         self.realm = "ocean"
