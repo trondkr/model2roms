@@ -92,20 +92,20 @@ class Grd:
                                           is_sphere=True, coord_names=[str(confM2R.lonname_v), str(confM2R.latname_v)],
                                           add_mask=False)
 
-        if self.type == 'WOAMONTHLY':
+        if self.indatatype == 'WOAMONTHLY':
             self.fillval = 9.96921e+36
-        if self.type == 'SODA':
+        if self.indatatype == 'SODA':
             self.fillval = -9.99e+33
-        if self.type == 'SODA3':
+        if self.indatatype == 'SODA3':
             self.fillval = -1.e+20
-        if self.type == 'SODAMONTHLY':
+        if self.indatatype == 'SODAMONTHLY':
             self.fillval = -9.99e+33
-        if self.type == 'GLORYS':
+        if self.indatatype == 'GLORYS':
             self.fillval = 9.96921e+36
-        if self.type == 'NS8KMZ':
+        if self.indatatype == 'NS8KMZ':
             self.fillval = 9.96921e+36
        
-        if self.type == 'NORESM':
+        if self.indatatype == 'NORESM':
             # self.h = self.cdf.variables["depth"][:]
             self.h = np.asarray([0, 5, 10, 15, 20, 25, 30, 40, 50, 62.5, 75, 87.5, 100, 112.5, 125,
                                  137.5, 150, 175, 200, 225, 250, 275, 300, 350, 400, 450, 500, 550, 600,
