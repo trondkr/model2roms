@@ -345,7 +345,7 @@ def getGLORYSfilename(confM2R, year, month, myvar):
 
 def getNORESMfilename(confM2R, year, month, myvar):
     if myvar == 'grid':
-        filename = confM2R.modelpath + 'GRID/NorESM.nc'
+        filename = confM2R.modelpath + 'grid_gx1v6.nc'
     else:
         if myvar in ['iage', 'uvel', 'vvel', 'aice', 'hi', 'hs']:
             filename = confM2R.modelpath + 'ICE/NRCP45AERCN_f19_g16_CLE_01.cice.h.' + str(year) + '.nc'

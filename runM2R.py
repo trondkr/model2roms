@@ -10,7 +10,7 @@ import atmosForcing
 __author__ = 'Trond Kristiansen'
 __email__ = 'trond.kristiansen@niva.no'
 __created__ = datetime(2009, 1, 30)
-__modified__ = datetime(2018, 4, 5)
+__modified__ = datetime(2019, 2, 8)
 __version__ = "1.5"
 __status__ = "Development"
 
