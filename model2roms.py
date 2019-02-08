@@ -355,9 +355,9 @@ def getNORESMfilename(confM2R, year, month, myvar):
             else:
                 base="RCP85_2006_2100_atm_oceanUV/vel.micom.hmlvl."
             if confM2R.start_month < 10:
-                filename = confM2R.modelpath + str(year) + '-0' + str(month) + '.nc'
+                filename = confM2R.modelpath + base +  str(year) + '-0' + str(month) + '.nc'
             else:
-                filename = confM2R.modelpath + str(year) + '-' + str(month) + '.nc'
+                filename = confM2R.modelpath + base + str(year) + '-' + str(month) + '.nc'
 
     return filename
 
