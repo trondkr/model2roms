@@ -114,7 +114,8 @@ class Grd:
                                  3000, 3250, 3500, 3750, 4000, 4250, 4500, 4750, 5000, 5250, 5500, 5750,
                                  6000, 6250, 6500, 6750])
             self.fillval=32768
-            
+            self.nlevels=len(self.h) 
+
         if self.type == 'STATION':
             self.lon = self.cdf.variables[confM2R.lonname][:]
             self.lat = self.cdf.variables[confM2R.latname][:]
