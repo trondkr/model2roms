@@ -671,7 +671,7 @@ def convertMODEL2ROMS(confM2R):
                                                          unmapped_action=ESMF.UnmappedAction.IGNORE)
 
         print("  -> regridSrc2Dst at U points")
-        confM2R.grdMODEL.fieldSrc = ESMF.Field(confM2R.grdMODEL.esmfgrid, "fieldSrc", staggerloc=ESMF.StaggerLoc.CENTER)
+        confM2R.grdMODEL.fieldSrc = ESMF.Field(confM2R.grdMODEL.esmfgrid_u, "fieldSrc", staggerloc=ESMF.StaggerLoc.CENTER)
         confM2R.grdMODEL.fieldDst_u = ESMF.Field(confM2R.grdROMS.esmfgrid_u, "fieldDst_u",
                                                  staggerloc=ESMF.StaggerLoc.CENTER)
         confM2R.grdMODEL.regridSrc2Dst_u = ESMF.Regrid(confM2R.grdMODEL.fieldSrc, confM2R.grdMODEL.fieldDst_u,
@@ -679,7 +679,7 @@ def convertMODEL2ROMS(confM2R):
                                                        unmapped_action=ESMF.UnmappedAction.IGNORE)
 
         print("  -> regridSrc2Dst at V points")
-        confM2R.grdMODEL.fieldSrc = ESMF.Field(confM2R.grdMODEL.esmfgrid, "fieldSrc", staggerloc=ESMF.StaggerLoc.CENTER)
+        confM2R.grdMODEL.fieldSrc = ESMF.Field(confM2R.grdMODEL.esmfgrid_v, "fieldSrc", staggerloc=ESMF.StaggerLoc.CENTER)
         confM2R.grdMODEL.fieldDst_v = ESMF.Field(confM2R.grdROMS.esmfgrid_v, "fieldDst_v",
                                                  staggerloc=ESMF.StaggerLoc.CENTER)
         confM2R.grdMODEL.regridSrc2Dst_v = ESMF.Regrid(confM2R.grdMODEL.fieldSrc, confM2R.grdMODEL.fieldDst_v,

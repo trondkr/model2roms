@@ -184,7 +184,12 @@ class Model2romsConfig(object):
         self.grdtype = 'regular'
         self.lonname = "plon"
         self.latname = "plat"
-        self.depthname = "depth"
+        self.depthname = "pdepth"
+        self.lonname_u = "ulon"
+        self.latname_u = "ulat"
+        self.lonname_v = "vlon"
+        self.latname_v = "vlat"
+
         self.timename = "time"
         self.realm = "ocean"
         self.fillvaluein = -1.e20

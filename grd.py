@@ -85,6 +85,12 @@ class Grd:
                 self.esmfgrid = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
                                           is_sphere=True, coord_names=[str(confM2R.lonname), str(confM2R.latname)],
                                           add_mask=False)
+                self.esmfgrid_u = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
+                                          is_sphere=True, coord_names=[str(confM2R.lonname_u), str(confM2R.latname_u)],
+                                          add_mask=False)
+                self.esmfgrid_v = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
+                                          is_sphere=True, coord_names=[str(confM2R.lonname_v), str(confM2R.latname_v)],
+                                          add_mask=False)
 
         if self.type == 'WOAMONTHLY':
             self.fillval = 9.96921e+36
