@@ -49,7 +49,7 @@ def dohorinterpolationregulargrid(confM2R, mydata):
     for k in range(confM2R.grdMODEL.nlevels):
 
         if confM2R.useesmf:
-            print("TEST \(np.shape(mydata)) \(k) \(confM2R.grdMODEL.nlevels)")
+            print(np.shape(mydata),k,confM2R.grdMODEL.nlevels)
             confM2R.grdMODEL.fieldSrc.data[:, :] = np.flipud(np.rot90(np.squeeze(mydata[k, :, :])))
             # Get the actual regridded array
             field = confM2R.grdMODEL.regridSrc2Dst_rho(confM2R.grdMODEL.fieldSrc, confM2R.grdMODEL.fieldDst_rho)
