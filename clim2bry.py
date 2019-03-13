@@ -244,6 +244,8 @@ def writebry(confM2R):
         f.variables['vbar_west'][itime, :] = vbar_west
 
         if confM2R.writebcg:
+            print(np.shape(f.variables['O3_c_west'][:]))
+            print(np.shape(O3_c_west))
             f.variables['O3_c_west'][itime,:,:] = O3_c_west
             f.variables['O3_TA_west'][itime,:,:] = O3_ta_west
             f.variables['N1_p_west'][itime,:,:] = N1_p_west

@@ -77,13 +77,13 @@ def compileallgfortran():
     """Start the processes"""
     print("\n")
 
-    proc = subprocess.Popen('module swap PrgEnv-pgi PrgEnv-gnu', shell=True, stdout=subprocess.PIPE, )
-    stdout_value = proc.communicate()
-    log.writelines(repr(stdout_value))
+    #proc = subprocess.Popen('module swap PrgEnv-pgi PrgEnv-gnu', shell=True, stdout=subprocess.PIPE, )
+    #stdout_value = proc.communicate()
+    #log.writelines(repr(stdout_value))
 
-    proc = subprocess.Popen('module unload notur', shell=True, stdout=subprocess.PIPE, )
-    stdout_value = proc.communicate()
-    log.writelines(repr(stdout_value))
+    #proc = subprocess.Popen('module unload notur', shell=True, stdout=subprocess.PIPE, )
+    #stdout_value = proc.communicate()
+    #log.writelines(repr(stdout_value))
 
     print("Compiling barotropic.f90 to create ==> barotropic.so")
     proc = subprocess.Popen('f2py --verbose -c -m barotropic barotropic.f90',

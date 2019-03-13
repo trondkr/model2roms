@@ -232,9 +232,9 @@ class Model2romsConfig(object):
         # DATE AND TIME DETAILS ---------------------------------------------------------
         # Define the period to create forcing for
         self.start_year = 2006
-        self.end_year = 2008
+        self.end_year = 2007
         self.start_month = 1
-        self.end_month = 12
+        self.end_month = 3
         self.start_day = 15
         self.end_day = 15
 

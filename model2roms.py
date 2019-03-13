@@ -32,10 +32,10 @@ def verticalinterpolation(myvar, array1, array2, grdROMS, grdMODEL):
     outINDEX_V = (grdROMS.nlevels, grdROMS.eta_v, grdROMS.xi_v)
     outINDEX_VBAR = (grdROMS.eta_v, grdROMS.xi_v)
 
-    if myvar in ['salinity', 'temperature','O3_c','O3_TA','N1_p','N3_n','N5_s','O2_o']:
+    if myvar in ['salinity','temperature','O3_c','O3_TA','N1_p','N3_n','N5_s','O2_o']:
         print('\nStart vertical interpolation for %s (dimensions=%s x %s)' % (myvar, grdROMS.xi_rho, grdROMS.eta_rho))
         outdata = np.empty((outINDEX_ST), dtype=np.float, order='Fortran')
-        
+
         outdata = interp.interpolation.dovertinter(np.asarray(outdata, order='F'),
                                                    np.asarray(array1, order='F'),
                                                    np.asarray(grdROMS.h, order='F'),
@@ -47,7 +47,7 @@ def verticalinterpolation(myvar, array1, array2, grdROMS, grdMODEL):
                                                    int(grdROMS.eta_rho),
                                                    int(grdROMS.xi_rho),
                                                    int(grdROMS.eta_rho))
-
+       
         outdata = np.ma.masked_where(abs(outdata) > 1000, outdata)
         # The BCG has to be capped at 0
         if myvar in ['O3_c','O3_TA','N1_p','N3_p','N3_n','N5_s','O2_o']:
