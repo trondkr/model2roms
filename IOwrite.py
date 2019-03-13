@@ -215,15 +215,12 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
         # Now start creating variables for regular climatology/bry/init creations
         if not confM2R.isclimatology:
             v_time = f1.createVariable('ocean_time', 'd', ('ocean_time',), zlib=myzlib, fill_value=grdROMS.fillval)
-            if confM2R.indatatype == "NORESM":
-                v_time.long_name = 'seconds since 1800-01-01 00:00:00'
-                v_time.units = 'seconds since 1800-01-01 00:00:00'
-                v_time.field = 'time, scalar, series'
+            v_time.long_name = 'seconds since 1948-01-01 00:00:00'
+            v_time.units = 'seconds since 1948-01-01 00:00:00'
+            v_time.field = 'time, scalar, series'
+            if (confM2R.indatatype == "NORESM"):
                 v_time.calendar = 'noleap'
             else:
-                v_time.long_name = 'seconds since 1948-01-01 00:00:00'
-                v_time.units = 'seconds since 1948-01-01 00:00:00'
-                v_time.field = 'time, scalar, series'
                 v_time.calendar = 'standard'
 
             v_u = f1.createVariable('u', 'f', ('ocean_time', 's_rho', 'eta_u', 'xi_u',), zlib=myzlib,
@@ -384,6 +381,49 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
                 sig22.time = "ocean_time"
                 sig22.field = "ice stress 22, scalar, series"
                 #sig22.missing_value = grdROMS.fillval
+            if confM2R.writebcg:
+
+                v_o3_c = f1.createVariable('O3_c', 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho',), zlib=myzlib,
+                                       fill_value=grdROMS.fillval)
+                v_o3_c.long_name = "carbonate/total dissolved inorganic carbon"
+                v_o3_c.time = "ocean_time"
+                v_o3_c.units = "mmol C/m^3"
+                v_o3_c.field = "O3_c, scalar, series"
+
+                v_o3_ta = f1.createVariable('O3_TA', 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho',), zlib=myzlib,
+                                       fill_value=grdROMS.fillval)
+                v_o3_ta.long_name = "carbonate/bioalkalinity"
+                v_o3_ta.time = "ocean_time"
+                v_o3_ta.units = "umol/kg"
+                v_o3_ta.field = "O3_ta, scalar, series"
+
+                v_n1_p = f1.createVariable('N1_p', 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho',), zlib=myzlib,
+                                       fill_value=grdROMS.fillval)
+                v_n1_p.long_name = "phosphate/phosphorus"
+                v_n1_p.time = "ocean_time"
+                v_n1_p.units = "mmol P/m^3"
+                v_n1_p.field = "N1_p, scalar, series"
+
+                v_o2_o = f1.createVariable('O2_o', 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho',), zlib=myzlib,
+                                       fill_value=grdROMS.fillval)
+                v_o2_o.long_name = "oxygen/oxygen"
+                v_o2_o.time = "ocean_time"
+                v_o2_o.units = "mmol O_2/m^3"
+                v_o2_o.field = "O2_o, scalar, series"
+
+                v_n3_n = f1.createVariable('N3_n', 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho',), zlib=myzlib,
+                                       fill_value=grdROMS.fillval)
+                v_n3_n.long_name = "nitrate/nitrogen"
+                v_n3_n.time = "ocean_time"
+                v_n3_n.units = "mmol N/m^3"
+                v_n3_n.field = "N3_n, scalar, series"
+
+                v_n5_s = f1.createVariable('N5_s', 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho',), zlib=myzlib,
+                                       fill_value=grdROMS.fillval)
+                v_n5_s.long_name = "silicate/silicate"
+                v_n5_s.time = "ocean_time"
+                v_n5_s.units = "mmol Si/m^3"
+                v_n5_s.field = "N5_s, scalar, series"
 
         # If we are creating climatology files with loops every 360 days, then create these variables here
         if confM2R.isclimatology:
@@ -450,12 +490,10 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
             if myvar == "ageice":
                 # print "NOTE! Setting values of ageice to ZERO! (IOWrite.py)"
                 data1 = np.where(abs(data1) > 100, 0, data1)
-                print("AGEICE:", np.min(data1), np.max(data1), np.mean(data1), myvar)
                 f1.variables['ageice'][ntime, :, :] = data1
 
             if myvar == 'uice':
                 data1 = np.where(abs(data1) > 120, 0, data1)
-                print("UICE:", np.min(data1 * 0.01), np.max(data1 * 0.01), np.mean(data1 * 0.01), myvar)
                 f1.variables['uice'][ntime, :, :] = data1 * 0.01  # NorESM is cm/s divide by 100 to get m/s
                 f1.variables['sfwat'][ntime, :, :] = 0.
                 f1.variables['tisrf'][ntime, :, :] = 0.
@@ -484,6 +522,27 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
                 data1 = np.where(abs(data1) > 10, 0, data1)
                 f1.variables['snow_thick'][ntime, :, :] = data1
 
+        if confM2R.writebcg:
+            if myvar in ['O3_c','O3_TA','N1_p','N3_n','N5_s','O2_o']:
+                data1 = np.where(abs(data1) < 0, 0, data1)
+                if confM2R.indatatype=="NORESM":
+                    """
+                    Multiply the NORESM variable by conversion factors below:
+                    NORESM name     NORESM units     ERSEM name     ERSEM units    Conversion factor
+                    dissic                      [mol C/m3]           O3_c                   [mmol C/m3]   1e3
+                    talk                         [eq/m3]                 O3_TA                [umol/kg]         1e6/1025
+                    po4                         [mol P/m3]           N1_p                   [mmol P/m3]   1e3
+                    no3                         [mol N/m3]           N3_n                  [mmol N/m3]   1e3
+                    si                             [mol Si/m3]           N5_s                   [mmol Si/m3]   1e3
+                    o2                           [mol O2/m3]         O2_o                  [mmol O2/m3] 1e3
+                    """
+                
+                    if myvar=="O3_TA": 
+                        data1=data1*1.0e6/1025.
+                    else: 
+                        data1=data1*1.0e3
+                f1.variables[myvar][ntime,:,:,:] = data1
+
     if confM2R.isclimatology:
         # Climatological time starts at the 15th of each month
         d = datetime(2012, int(ntime) + 1, 1)
@@ -494,9 +553,9 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
         grdROMS.message = tt.tm_yday + 15
 
         if myvar == 'temperature':
-            f1.variables['temp'][ntime, :, :, :] = data1
+            f1.variables['temp'][ntime,:,:,:] = data1
         if myvar == 'salinity':
-            f1.variables['salt'][ntime, :, :, :] = data1
-            f1.variables['SSS'][ntime, :, :, :] = data1
+            f1.variables['salt'][ntime,:,:,:] = data1
+            f1.variables['SSS'][ntime,:,:,:] = data1
 
     f1.close()

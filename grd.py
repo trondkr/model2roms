@@ -37,13 +37,12 @@ class Grd:
         self.realm = confM2R.realm
         self.grdfilename = None
 
-        print("Creating init for grid object", confM2R.outgrid)
-        print('---> Initialized GRD object for grid type %s' % (self.type))
+        print('Creating init for grid object {}'.format(confM2R.outgrid))
+        print('---> Initialized GRD object for grid type {}'.format(self.type))
 
     def opennetcdf(self, grdfilename):
-        print(self.grdfilename)
+        
         self.grdfilename = grdfilename
-        print(self.grdfilename)
         """Open the netCDF file and store the contents in arrays associated with variable names"""
         try:
             self.cdf = Dataset(self.grdfilename, "r")
@@ -78,8 +77,6 @@ class Grd:
             if self.lon.ndim == 1:
                 self.lon, self.lat = np.meshgrid(self.lon, self.lat)
 
-            IOverticalGrid.get_z_levels(self)
-
             # Create grid for ESMF interpolation
             if confM2R.useesmf:
                 self.esmfgrid = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
@@ -92,30 +89,31 @@ class Grd:
                                           is_sphere=True, coord_names=[str(confM2R.lonname_v), str(confM2R.latname_v)],
                                           add_mask=False)
 
-        if confM2R.indatatype == 'WOAMONTHLY':
-            self.fillval = 9.96921e+36
-        if confM2R.indatatype == 'SODA':
-            self.fillval = -9.99e+33
-        if confM2R.indatatype == 'SODA3':
-            self.fillval = -1.e+20
-        if confM2R.indatatype == 'SODAMONTHLY':
-            self.fillval = -9.99e+33
-        if confM2R.indatatype == 'GLORYS':
-            self.fillval = 9.96921e+36
-        if confM2R.indatatype == 'NS8KMZ':
-            self.fillval = 9.96921e+36
-       
-        if confM2R.indatatype == 'NORESM':
-            # self.h = self.cdf.variables["depth"][:]
-            self.h = np.asarray([0, 5, 10, 15, 20, 25, 30, 40, 50, 62.5, 75, 87.5, 100, 112.5, 125,
-                                 137.5, 150, 175, 200, 225, 250, 275, 300, 350, 400, 450, 500, 550, 600,
-                                 650, 700, 750, 800, 850, 900, 950, 1000, 1050, 1100, 1150, 1200, 1250,
-                                 1300, 1350, 1400, 1450, 1500, 1625, 1750, 1875, 2000, 2250, 2500, 2750,
-                                 3000, 3250, 3500, 3750, 4000, 4250, 4500, 4750, 5000, 5250, 5500, 5750,
-                                 6000, 6250, 6500, 6750])
-            self.fillval=32768
-            self.nlevels=len(self.h) 
-            print(self.h, self.nlevels)
+            if confM2R.indatatype == 'WOAMONTHLY':
+                self.fillval = 9.96921e+36
+            if confM2R.indatatype == 'SODA':
+                self.fillval = -9.99e+33
+            if confM2R.indatatype == 'SODA3':
+                self.fillval = -1.e+20
+            if confM2R.indatatype == 'SODAMONTHLY':
+                self.fillval = -9.99e+33
+            if confM2R.indatatype == 'GLORYS':
+                self.fillval = 9.96921e+36
+            if confM2R.indatatype == 'NS8KMZ':
+                self.fillval = 9.96921e+36
+        
+            if confM2R.indatatype == 'NORESM':
+                # self.h = self.cdf.variables["depth"][:]
+                self.h = np.asarray([0, 5, 10, 15, 20, 25, 30, 40, 50, 62.5, 75, 87.5, 100, 112.5, 125,
+                                    137.5, 150, 175, 200, 225, 250, 275, 300, 350, 400, 450, 500, 550, 600,
+                                    650, 700, 750, 800, 850, 900, 950, 1000, 1050, 1100, 1150, 1200, 1250,
+                                    1300, 1350, 1400, 1450, 1500, 1625, 1750, 1875, 2000, 2250, 2500, 2750,
+                                    3000, 3250, 3500, 3750, 4000, 4250, 4500, 4750, 5000, 5250, 5500, 5750,
+                                    6000, 6250, 6500, 6750])
+                self.fillval=32768
+                self.nlevels=len(self.h)
+            
+            IOverticalGrid.get_z_levels(self)
 
         if self.type == 'STATION':
             self.lon = self.cdf.variables[confM2R.lonname][:]
@@ -154,6 +152,13 @@ class Grd:
             self.lat_rho = self.cdf.variables["lat_rho"][:, :]
             self.h = self.cdf.variables["h"][:, :]
             self.hmin = self.h[self.h > 0].min()
+            self.vtransform=confM2R.vtransform
+            self.nlevels = confM2R.nlevels
+            self.vstretching = confM2R.vstretching     
+            self.theta_s = confM2R.theta_s
+            self.theta_b = confM2R.theta_b
+            self.tcline = confM2R.tcline
+            self.hc = confM2R.hc
             if self.vtransform == 1:
                 self.hc = min(self.hmin, self.tcline)
                 self.hc = self.tcline

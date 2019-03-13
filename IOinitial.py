@@ -181,15 +181,13 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
         vnc.units = "radian"
 
         v_time = f1.createVariable('ocean_time', 'd', ('ocean_time',), zlib=myzlib, fill_value=grdROMS.fillval)
+        
+        v_time.long_name = 'seconds since 1948-01-01 00:00:00'
+        v_time.units = 'seconds since 1948-01-01 00:00:00'
+        v_time.field = 'time, scalar, series'
         if (confM2R.indatatype == "NORESM"):
-            v_time.long_name = 'seconds since 1800-01-01 00:00:00'
-            v_time.units = 'seconds since 1800-01-01 00:00:00'
-            v_time.field = 'time, scalar, series'
             v_time.calendar = 'noleap'
         else:
-            v_time.long_name = 'seconds since 1948-01-01 00:00:00'
-            v_time.units = 'seconds since 1948-01-01 00:00:00'
-            v_time.field = 'time, scalar, series'
             v_time.calendar = 'standard'
 
         v_temp = f1.createVariable('temp', 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho',), zlib=myzlib,
@@ -240,6 +238,50 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
         v_ubar.units = "meter second-1"
         v_ubar.time = "ocean_time"
         #v_ubar.missing_value = grdROMS.fillval
+
+        if confM2R.writebcg:
+
+            v_o3_c = f1.createVariable('O3_c', 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho',), zlib=myzlib,
+                                       fill_value=grdROMS.fillval)
+            v_o3_c.long_name = "carbonate/total dissolved inorganic carbon"
+            v_o3_c.time = "ocean_time"
+            v_o3_c.units = "mmol C/m^3"
+            v_o3_c.field = "O3_c, scalar, series"
+
+            v_o3_ta = f1.createVariable('O3_TA', 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho',), zlib=myzlib,
+                                       fill_value=grdROMS.fillval)
+            v_o3_ta.long_name = "carbonate/bioalkalinity"
+            v_o3_ta.time = "ocean_time"
+            v_o3_ta.units = "umol/kg"
+            v_o3_ta.field = "O3_ta, scalar, series"
+
+            v_n1_p = f1.createVariable('N1_p', 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho',), zlib=myzlib,
+                                       fill_value=grdROMS.fillval)
+            v_n1_p.long_name = "phosphate/phosphorus"
+            v_n1_p.time = "ocean_time"
+            v_n1_p.units = "mmol P/m^3"
+            v_n1_p.field = "N1_p, scalar, series"
+
+            v_o2_o = f1.createVariable('O2_o', 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho',), zlib=myzlib,
+                                       fill_value=grdROMS.fillval)
+            v_o2_o.long_name = "oxygen/oxygen"
+            v_o2_o.time = "ocean_time"
+            v_o2_o.units = "mmol O_2/m^3"
+            v_o2_o.field = "O2_o, scalar, series"
+
+            v_n3_n = f1.createVariable('N3_n', 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho',), zlib=myzlib,
+                                       fill_value=grdROMS.fillval)
+            v_n3_n.long_name = "nitrate/nitrogen"
+            v_n3_n.time = "ocean_time"
+            v_n3_n.units = "mmol N/m^3"
+            v_n3_n.field = "N3_n, scalar, series"
+
+            v_n5_s = f1.createVariable('N5_s', 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho',), zlib=myzlib,
+                                       fill_value=grdROMS.fillval)
+            v_n5_s.long_name = "silicate/silicate"
+            v_n5_s.time = "ocean_time"
+            v_n5_s.units = "mmol Si/m^3"
+            v_n5_s.field = "N5_s, scalar, series"
 
         if confM2R.writeice:
             ageice = f1.createVariable('ageice', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
@@ -408,6 +450,16 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
         f1.variables['ubar'][ntime, :, :] = data3
         f1.variables['vbar'][ntime, :, :] = data4
 
+    if confM2R.writebcg:
+        if var in ['O3_c','O3_TA','N1_p','N3_n','N5_s','O2_o']:
+            data1 = np.where(abs(data1) < 0, 0, data1)
+            if confM2R.indatatype=="NORESM":
+                if var=="O3_TA": 
+                    data1=data1*1.0e6/1025.
+                else: 
+                    data1=data1*1.0e3
+            f1.variables[var][ntime,:,:,:] = data1
+
     if confM2R.writeice:
         if var.lower() == "ageice":
             data1 = np.where(abs(data1) > 120, 0, data1)
@@ -427,7 +479,7 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
             f1.variables['sig12'][ntime, :, :] = 0.
             f1.variables['sig22'][ntime, :, :] = 0.
 
-            if mytype == 'GLORYS':
+            if confM2R.indatatype == 'GLORYS':
                 f1.variables['snow_thick'][ntime, :, :] = 0.
                 f1.variables['ageice'][ntime, :, :] = 0.
 

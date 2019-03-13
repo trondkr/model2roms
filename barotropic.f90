@@ -17,7 +17,7 @@ Module velocity
             ! a python module using the command:
             ! f2py --verbose --fcompiler=intelem -c -m barotropic barotropic.f90
             ! or
-            ! f2py --verbose --fcompiler=intelem -c -m barotropic barotropic.f90
+            ! f2py --verbose c -m barotropic barotropic.f90
             ! The resulting module is imported to python using:
             ! import barotropic
             ! To call the function from python use:

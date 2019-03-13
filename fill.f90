@@ -44,7 +44,7 @@ SUBROUTINE fill(i1,i2,j1,j2,tx,critx,cor,mxs,za,nx,ny)
     ! by Trond Kristiansen, 31.05.2012. Notice that the indexes (j,i) are
     ! flipped compared to original Fortran version.
     !
-    ! f2py --verbose --fcompiler=intelem -c -m extrapolate fill.f90
+    ! f2py --verbose -c -m extrapolate fill.f90
 
     IMPLICIT NONE
 

@@ -62,7 +62,6 @@ Module interpolation
 !f2py intent(in,overwrite) Nroms, Nsoda, JJ, II, xi_rho, eta_rho
 !f2py intent(hide) ic,jc,kc,kT,rz1,rz2, kkT
             fill=-10000
-           
             do jc=1,JJ
               do ic=1,II
                   do kc=1,Nroms

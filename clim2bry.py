@@ -2,16 +2,15 @@
 This is CLM2BRY
 """
 from datetime import datetime
-from netCDF4 import Dataset
-from netCDF4 import num2date
+from netCDF4 import Dataset,num2date
 import numpy as np
 import IOBry
 
 __author__ = 'Trond Kristiansen'
 __email__ = 'me@trondkristiansen.com'
 __created__ = datetime(2009, 3, 2)
-__modified__ = datetime(2018, 4, 5)
-__version__ = "1.2"
+__modified__ = datetime(2019, 3, 12)
+__version__ = "1.5"
 __status__ = "Development"
 
 
@@ -74,6 +73,14 @@ def writebry(confM2R):
         ubar = np.array(clim.variables["ubar"][itime, :, :])
         vbar = np.array(clim.variables["vbar"][itime, :, :])
 
+        if confM2R.writebcg:
+            O3_c = np.array(clim.variables["O3_c"][itime, :, :, :])
+            O3_TA = np.array(clim.variables["O3_TA"][itime, :, :, :])
+            N1_p = np.array(clim.variables["N1_p"][itime, :, :, :])
+            N3_n = np.array(clim.variables["N3_n"][itime, :, :, :])
+            N5_s = np.array(clim.variables["N5_s"][itime, :, :, :])
+            O2_o = np.array(clim.variables["O2_o"][itime, :, :, :])
+
         # Cut the boundary sections along Lpo, and Mpo to create the
         # North, South, West, and East boundary clips. Write each clip
         # to file for each time step
@@ -87,6 +94,14 @@ def writebry(confM2R):
         ubar_west = np.squeeze(ubar[:, 0])
         vbar_west = np.squeeze(vbar[:, 0])
 
+        if confM2R.writebcg:
+            O3_c_west = np.squeeze(O3_c[:, :, 0])
+            O3_ta_west = np.squeeze(O3_TA[:, :, 0])
+            N1_p_west = np.squeeze(N1_p[:, :, 0])
+            N3_n_west = np.squeeze(N3_n[:, :, 0])
+            N5_s_west = np.squeeze(N5_s[:, :, 0])
+            O2_o_west = np.squeeze(O2_o[:, :, 0])
+
         temp_east = np.squeeze(temp[:, :, Lp])
         salt_east = np.squeeze(salt[:, :, Lp])
         ssh_east = np.squeeze(ssh[:, Lp])
@@ -94,6 +109,14 @@ def writebry(confM2R):
         v_east = np.squeeze(v[:, :, Lp])
         ubar_east = np.squeeze(ubar[:, Lp - 1])
         vbar_east = np.squeeze(vbar[:, Lp])
+
+        if confM2R.writebcg:
+            O3_c_east = np.squeeze(O3_c[:, :, Lp])
+            O3_ta_east = np.squeeze(O3_TA[:, :, Lp])
+            N1_p_east = np.squeeze(N1_p[:, :, Lp])
+            N3_n_east = np.squeeze(N3_n[:, :, Lp])
+            N5_s_east = np.squeeze(N5_s[:, :, Lp])
+            O2_o_east = np.squeeze(O2_o[:, :, Lp])
 
         # NOTE: For South and North only U current (u,ubar) have size Lp, others have size Lpo
         temp_south = np.squeeze(temp[:, 0, :])
@@ -104,6 +127,14 @@ def writebry(confM2R):
         ubar_south = np.squeeze(ubar[0, :])
         vbar_south = np.squeeze(vbar[0, :])
 
+        if confM2R.writebcg:
+            O3_c_south = np.squeeze(O3_c[:, 0, :])
+            O3_ta_south = np.squeeze(O3_TA[:, 0, :])
+            N1_p_south = np.squeeze(N1_p[:, 0, :])
+            N3_n_south = np.squeeze(N3_n[:, 0, :])
+            N5_s_south = np.squeeze(N5_s[:, 0, :])
+            O2_o_south = np.squeeze(O2_o[:, 0, :])
+
         temp_north = np.squeeze(temp[:, Mp, :])
         salt_north = np.squeeze(salt[:, Mp, :])
         ssh_north = np.squeeze(ssh[Mp, :])
@@ -111,6 +142,14 @@ def writebry(confM2R):
         v_north = np.squeeze(v[:, Mp - 1, :])
         ubar_north = np.squeeze(ubar[Mp, :])
         vbar_north = np.squeeze(vbar[Mp - 1, :])
+
+        if confM2R.writebcg:
+            O3_c_north = np.squeeze(O3_c[:, Mp, :])
+            O3_ta_north = np.squeeze(O3_TA[:, Mp, :])
+            N1_p_north = np.squeeze(N1_p[:, Mp, :])
+            N3_n_north = np.squeeze(N3_n[:, Mp, :])
+            N5_s_north = np.squeeze(N5_s[:, Mp, :])
+            O2_o_north = np.squeeze(O2_o[:, Mp, :])
 
         if confM2R.writeice:
             ageice = np.array(clim.variables["ageice"][itime, :, :])
@@ -204,6 +243,14 @@ def writebry(confM2R):
         f.variables['ubar_west'][itime, :] = ubar_west
         f.variables['vbar_west'][itime, :] = vbar_west
 
+        if confM2R.writebcg:
+            f.variables['O3_c_west'][itime,:,:] = O3_c_west
+            f.variables['O3_TA_west'][itime,:,:] = O3_ta_west
+            f.variables['N1_p_west'][itime,:,:] = N1_p_west
+            f.variables['N3_n_west'][itime,:,:] = N3_n_west
+            f.variables['N5_s_west'][itime,:,:] = N5_s_west
+            f.variables['O2_o_west'][itime,:,:] = O2_o_west
+
         # ------- Write out eastern boundary variables ------------
 
         f.variables['temp_east'][itime, :, :] = temp_east
@@ -213,6 +260,14 @@ def writebry(confM2R):
         f.variables['v_east'][itime, :, :] = v_east
         f.variables['ubar_east'][itime, :] = ubar_east
         f.variables['vbar_east'][itime, :] = vbar_east
+        
+        if confM2R.writebcg:
+            f.variables['O3_c_east'][itime,:,:] = O3_c_east
+            f.variables['O3_TA_east'][itime,:,:] = O3_ta_east
+            f.variables['N1_p_east'][itime,:,:] = N1_p_east
+            f.variables['N3_n_east'][itime,:,:] = N3_n_east
+            f.variables['N5_s_east'][itime,:,:] = N5_s_east
+            f.variables['O2_o_east'][itime,:,:] = O2_o_east
 
         # ------- Write out southern boundary variables ------------
 
@@ -224,6 +279,14 @@ def writebry(confM2R):
         f.variables['ubar_south'][itime, :] = ubar_south
         f.variables['vbar_south'][itime, :] = vbar_south
 
+        if confM2R.writebcg:
+            f.variables['O3_c_south'][itime,:,:] = O3_c_south
+            f.variables['O3_TA_south'][itime,:,:] = O3_ta_south
+            f.variables['N1_p_south'][itime,:,:] = N1_p_south
+            f.variables['N3_n_south'][itime,:,:] = N3_n_south
+            f.variables['N5_s_south'][itime,:,:] = N5_s_south
+            f.variables['O2_o_south'][itime,:,:] = O2_o_south
+
         # ------- Write out northern boundary variables ------------
 
         f.variables['temp_north'][itime, :, :] = temp_north
@@ -233,6 +296,14 @@ def writebry(confM2R):
         f.variables['v_north'][itime, :, :] = v_north
         f.variables['ubar_north'][itime, :] = ubar_north
         f.variables['vbar_north'][itime, :] = vbar_north
+
+        if confM2R.writebcg:
+            f.variables['O3_c_north'][itime,:,:] = O3_c_north
+            f.variables['O3_TA_north'][itime,:,:] = O3_ta_north
+            f.variables['N1_p_north'][itime,:,:]  = N1_p_north
+            f.variables['N3_n_north'][itime,:,:] = N3_n_north
+            f.variables['N5_s_north'][itime,:,:] = N5_s_north
+            f.variables['O2_o_north'][itime,:,:] = O2_o_north
 
         if confM2R.writeice:
             f.variables['ageice_west'][itime, :] = ageice_west

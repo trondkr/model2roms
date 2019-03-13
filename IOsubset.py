@@ -39,7 +39,7 @@ def findSubsetIndices(grdMODEL, min_lat, max_lat, min_lon, max_lon):
         grdMODEL.lon = np.where(grdMODEL.lon > 180, grdMODEL.lon - 360, grdMODEL.lon)
 
     # Array to store the results returned from the function
-    res = np.zeros((Turns, 4), dtype=np.float64)
+    res = np.zeros((Turns, 4), dtype=np.float)
 
     lats = grdMODEL.lat[:, 0]
     lons = grdMODEL.lon[0, :]

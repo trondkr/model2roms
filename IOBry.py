@@ -188,15 +188,14 @@ def createBryFile(confM2R):
     vnc.units = "radian"
 
     v_time = f1.createVariable('ocean_time', 'd', ('ocean_time',), zlib=myzlib, fill_value=grdROMS.fillval)
+    
+    v_time.long_name = 'seconds since 1948-01-01 00:00:00'
+    v_time.units = 'seconds since 1948-01-01 00:00:00'
+    v_time.field = 'time, scalar, series'
+
     if (confM2R.indatatype == "NORESM"):
-        v_time.long_name = 'seconds since 1800-01-01 00:00:00'
-        v_time.units = 'seconds since 1800-01-01 00:00:00'
-        v_time.field = 'time, scalar, series'
         v_time.calendar = 'noleap'
     else:
-        v_time.long_name = 'seconds since 1948-01-01 00:00:00'
-        v_time.units = 'seconds since 1948-01-01 00:00:00'
-        v_time.field = 'time, scalar, series'
         v_time.calendar = 'standard'
 
     v_temp_west = f1.createVariable('temp_west', 'f', ('ocean_time', 's_rho', 'eta_rho',), zlib=myzlib,
@@ -418,6 +417,59 @@ def createBryFile(confM2R):
     v_ubar_north.field = "ubar_north, scalar, series"
     #v_ubar_north.missing_value = grdROMS.fillval
     v_ubar_north.time = "ocean_time"
+
+    if confM2R.writebcg:
+
+        directions=["east","west","north","south"]
+        lndirections=["eastern","western","northern","southern"]
+        for currentdir,lndirection in zip(directions, lndirections):
+            currentvar='O3_c_'+currentdir
+            longname="carbonate/total dissolved inorganic carbon {} boundary condition".format(lndirection) 
+            O3_c = f1.createVariable(currentvar, 'f', ('ocean_time', 'xi_rho',), zlib=myzlib,
+                                        fill_value=grdROMS.fillval)
+            O3_c.long_name = longname
+            O3_c.field = "{}, scalar, series".format(currentvar) 
+            O3_c.units = "mmol C/m^3" 
+
+            currentvar='O3_TA_'+currentdir
+            longname="carbonate/bioalkalinity {} boundary condition".format(lndirection) 
+            O3_ta = f1.createVariable(currentvar, 'f', ('ocean_time', 'xi_rho',), zlib=myzlib,
+                                        fill_value=grdROMS.fillval)
+            O3_ta.long_name = longname
+            O3_ta.field = "{}, scalar, series".format(currentvar) 
+            O3_ta.units = "umol/kg" 
+
+            currentvar='N1_p_'+currentdir
+            longname="phosphate/phosphorus {} boundary condition".format(lndirection) 
+            N1_p = f1.createVariable(currentvar, 'f', ('ocean_time', 'xi_rho',), zlib=myzlib,
+                                        fill_value=grdROMS.fillval)
+            N1_p.long_name = longname
+            N1_p.field = "{}, scalar, series".format(currentvar) 
+            N1_p.units = "mmol P/m^3" 
+
+            currentvar='N3_n_'+currentdir
+            longname="nitrate/nitrogen {} boundary condition".format(lndirection) 
+            N3_n = f1.createVariable(currentvar, 'f', ('ocean_time', 'xi_rho',), zlib=myzlib,
+                                        fill_value=grdROMS.fillval)
+            N3_n.long_name = longname
+            N3_n.field = "{}, scalar, series".format(currentvar) 
+            N3_n.units = "mmol N/m^3" 
+
+            currentvar='N5_s_'+currentdir
+            longname="silicate/silicate {} boundary condition".format(lndirection) 
+            N5_s = f1.createVariable(currentvar, 'f', ('ocean_time', 'xi_rho',), zlib=myzlib,
+                                        fill_value=grdROMS.fillval)
+            N5_s.long_name = longname
+            N5_s.field = "{}, scalar, series".format(currentvar) 
+            N5_s.units = "mmol Si/m^3" 
+
+            currentvar='O2_o_'+currentdir
+            longname="oxygen/oxygen {} boundary condition".format(lndirection) 
+            O2_o = f1.createVariable(currentvar, 'f', ('ocean_time', 'xi_rho',), zlib=myzlib,
+                                        fill_value=grdROMS.fillval)
+            O2_o.long_name = longname
+            O2_o.field = "{}, scalar, series".format(currentvar) 
+            O2_o.units = "mmol O_2/m^3" 
 
     if confM2R.writeice:
         ageice_west = f1.createVariable('ageice_west', 'f', ('ocean_time', 'eta_rho',), zlib=myzlib,

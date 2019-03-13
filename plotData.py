@@ -1,4 +1,7 @@
 import os
+import matplotlib
+matplotlib.use('Agg')
+
 from mpl_toolkits.basemap import Basemap
 from pylab import *
 
@@ -6,7 +9,7 @@ def contourMap(grdROMS, tlon, tlat, mydata, depthlevel, var):
     map = Basemap(projection='ortho',lon_0=-20,lat_0=25, resolution='c', area_thresh=10000)
     levels = np.arange(-2.0, 30.0, 0.5)
 
-    plt.figure(figsize=(10,10), frameon=False)
+    fig = plt.figure(figsize=(10,10), frameon=False)
     #mydata = np.ma.masked_where(mydata==grdROMS.fill_value,mydata)
 
     if grdROMS.grdName=='GOM':
@@ -110,10 +113,10 @@ def contourMap(grdROMS, tlon, tlat, mydata, depthlevel, var):
     plt.title('Var:%s - depth:%s - time:%s'%(var,depthlevel,grdROMS.time))
     plotfile='figures/'+str(var)+'_depth_ESMF_'+str(depthlevel)+'_time_'+str(grdROMS.time)+'.png'
     if not os.path.exists('figures'):
-        os.makedirs('figure')
+        os.makedirs('figures')
     plt.savefig(plotfile)
     print("Saved figure: %s"%(plotfile))
-    plt.show()
+    plt.close()
 
 def contourStationData(data,timedata,datedata,depthdata,stationName):
 

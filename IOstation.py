@@ -29,10 +29,10 @@ def getAverage(yyyymmdd,gridIndexes,validIndex,validDis):
         
         index =(len(ave.variables["depth"][:]))
         average=True
-        aveTemp=np.zeros((index),np.float64)
-        aveSalt=np.zeros((index),np.float64)
-        aveUvel=np.zeros((index),np.float64)
-        aveVvel=np.zeros((index),np.float64)
+        aveTemp=np.zeros((index),np.float)
+        aveSalt=np.zeros((index),np.float)
+        aveUvel=np.zeros((index),np.float)
+        aveVvel=np.zeros((index),np.float)
         
         for i in validIndex:
             wgt=float(validDis[i])/sum(validDis)
@@ -144,13 +144,13 @@ def initArrays(years,IDS,deepest,name,lon,lat):
     print(('Extracting data for station (%s,%s) for the years %s->%s'%(lon,lat,years[0],years[-1])))
     print(('Size of output data array is ->',index))
    
-    stTemp=np.zeros((index),np.float64)
-    stSalt=np.zeros((index),np.float64)
-    stSSH =np.zeros((indexSSH),np.float64)
-    stUvel=np.zeros((index),np.float64)
-    stVvel=np.zeros((index),np.float64)
-    stTauX=np.zeros((indexSSH),np.float64)
-    stTauY=np.zeros((indexSSH),np.float64)
+    stTemp=np.zeros((index),np.float)
+    stSalt=np.zeros((index),np.float)
+    stSSH =np.zeros((indexSSH),np.float)
+    stUvel=np.zeros((index),np.float)
+    stVvel=np.zeros((index),np.float)
+    stTauX=np.zeros((indexSSH),np.float)
+    stTauY=np.zeros((indexSSH),np.float)
     
     return stTemp, stSalt, stSSH, stUvel, stVvel, stTauX, stTauY
 
@@ -244,7 +244,7 @@ def getStationIndices(grdObject,st_lon,st_lat,type,numberOfPoints):
         longitude=grdObject.lon_rho
         latitude =grdObject.lat_rho 
     
-    distance = np.zeros((longitude.shape),dtype=np.float64)
+    distance = np.zeros((longitude.shape),dtype=np.float)
     listd=[]
     """First, create a list of distances from the station of interest, while
     also save the matrix of dostances that contains the info to get the index pair that the distance

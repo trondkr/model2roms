@@ -35,30 +35,54 @@ def laplacefilter(field, threshold, toxi, toeta):
     return field
 
 
-def dohorinterpolationregulargrid(confM2R, mydata):
+def dohorinterpolationregulargrid(confM2R, mydata, myvar):
     if confM2R.showprogress is True:
         import progressbar
         # http://progressbar-2.readthedocs.org/en/latest/examples.html
         progress = progressbar.ProgressBar(widgets=[progressbar.Percentage(), progressbar.Bar()],
                                            maxval=confM2R.grdMODEL.nlevels).start()
-        # progress = progressbar.ProgressBar(widgets=[progressbar.BouncingBar(marker=progressbar.RotatingMarker(), fill_left=True)], maxval=grdMODEL.Nlevels).start()
 
-    indexROMS_Z_ST = (confM2R.grdMODEL.nlevels, confM2R.grdROMS.eta_rho, confM2R.grdROMS.xi_rho)
-    array1 = np.zeros((indexROMS_Z_ST), dtype=np.float64)
+    indexROMS_Z_ST, toxi, toeta, mymask = setupIndexes(confM2R, myvar)
+    array1 = np.zeros((indexROMS_Z_ST), dtype=np.float)
 
-    for k in range(confM2R.grdMODEL.nlevels):
-
+    # 2D or 3D interpolation
+    depthlevels=confM2R.grdMODEL.nlevels
+    if myvar in ['ssh', 'ageice', 'uice', 'vice', 'aice', 'hice', 'snow_thick','hs']:
+        depthlevels=1
+    
+    for k in range(depthlevels):
         if confM2R.useesmf:
-            print(np.shape(mydata),k,confM2R.grdMODEL.nlevels)
-            confM2R.grdMODEL.fieldSrc.data[:, :] = np.flipud(np.rot90(np.squeeze(mydata[k, :, :])))
-            # Get the actual regridded array
-            field = confM2R.grdMODEL.regridSrc2Dst_rho(confM2R.grdMODEL.fieldSrc, confM2R.grdMODEL.fieldDst_rho)
+            if depthlevels==1:
+                indata=np.squeeze(mydata[:, :])
+            else:
+                indata=np.squeeze(mydata[k, :, :])
 
+            # We interpolate to RHO fields for all variables and then we later interpolate RHO points to U and V points
+            # But input data are read on U and V and RHO grids if they differ (as NorESM does).
+            # EXCEPTION IS UICE AND VICE that are directly interpolated to the U and V grid. This should be fixed as these need to be rotated too
+            if myvar in ['uice']:
+                confM2R.grdMODEL.fieldSrc_u.data[:, :] = np.flipud(np.rot90(indata))
+                field = confM2R.grdMODEL.regridSrc2Dst_u(confM2R.grdMODEL.fieldSrc_u, confM2R.grdMODEL.fieldDst_u)
+            elif myvar in ['vice']:
+                confM2R.grdMODEL.fieldSrc_v.data[:, :] = np.flipud(np.rot90(indata))
+                field = confM2R.grdMODEL.regridSrc2Dst_v(confM2R.grdMODEL.fieldSrc_v, confM2R.grdMODEL.fieldDst_v)
+            elif myvar in ['uvel']:
+                confM2R.grdMODEL.fieldSrc_u.data[:, :] = np.flipud(np.rot90(indata))
+                field = confM2R.grdMODEL.regridSrc2Dst_u(confM2R.grdMODEL.fieldSrc_u, confM2R.grdMODEL.fieldDst_rho)
+            elif myvar in ['vvel']:
+                confM2R.grdMODEL.fieldSrc_v.data[:, :] = np.flipud(np.rot90(indata))
+                field = confM2R.grdMODEL.regridSrc2Dst_v(confM2R.grdMODEL.fieldSrc_v, confM2R.grdMODEL.fieldDst_rho)
+            else:
+                confM2R.grdMODEL.fieldSrc_rho.data[:, :] = np.flipud(np.rot90(indata))
+                field = confM2R.grdMODEL.regridSrc2Dst_rho(confM2R.grdMODEL.fieldSrc_rho, confM2R.grdMODEL.fieldDst_rho)
+            
             # Since ESMF uses coordinates (x,y) we need to rotate and flip to get back to (y,x) order.
             field = np.fliplr(np.rot90(field.data, 3))
-
+           
         if confM2R.usefilter:
-            field = laplacefilter(field, 1000, confM2R.grdROMS.xi_rho, confM2R.grdROMS.eta_rho)
+            field = laplacefilter(field, 1000, toxi, toeta)
+            field = field * mymask
+            array1[0, :, :] = field
         #  field=field*grdROMS.mask_rho
 
         array1[k, :, :] = field
@@ -69,13 +93,17 @@ def dohorinterpolationregulargrid(confM2R, mydata):
         # if __debug__:
         #      print "Data range after horisontal interpolation: ", field.min(), field.max()
 
+        # if myvar in ["hice","aice"]:
+        #     import plotData
+        #     plotData.contourMap(grdROMS,grdROMS.lon_rho,grdROMS.lat_rho, field, "surface", myvar)
+
+
         if confM2R.showprogress is True:
             progress.update(k)
 
     return array1
 
-
-def dohorinterpolationsshregulargrid(confM2R, myvar, mydata):
+def setupIndexes(confM2R, myvar):
     if myvar in ["uice"]:
         indexROMS_Z_ST = (confM2R.grdMODEL.nlevels, confM2R.grdROMS.eta_u, confM2R.grdROMS.xi_u)
         toxi = confM2R.grdROMS.xi_u
@@ -91,32 +119,33 @@ def dohorinterpolationsshregulargrid(confM2R, myvar, mydata):
         toxi = confM2R.grdROMS.xi_rho
         toeta = confM2R.grdROMS.eta_rho
         mymask = confM2R.grdROMS.mask_rho
+    return indexROMS_Z_ST, toxi, toeta, mymask
 
-    array1 = np.zeros((indexROMS_Z_ST), dtype=np.float64)
 
+def setupESMFInterpolationWeights(confM2R):
     if confM2R.useesmf:
+        print("=>Creating the interpolation weights and indexes using ESMF (this may take some time....):")
 
-        confM2R.grdMODEL.fieldSrc.data[:, :] = np.flipud(np.rot90(np.squeeze(mydata[:, :])))
+        print("  -> regridSrc2Dst at RHO points")
+        confM2R.grdMODEL.fieldSrc_rho = ESMF.Field(confM2R.grdMODEL.esmfgrid, "fieldSrc", staggerloc=ESMF.StaggerLoc.CENTER)
+        confM2R.grdMODEL.fieldDst_rho = ESMF.Field(confM2R.grdROMS.esmfgrid, "fieldDst",
+                                                   staggerloc=ESMF.StaggerLoc.CENTER)
+        confM2R.grdMODEL.regridSrc2Dst_rho = ESMF.Regrid(confM2R.grdMODEL.fieldSrc_rho, confM2R.grdMODEL.fieldDst_rho,
+                                                         regrid_method=ESMF.RegridMethod.BILINEAR,
+                                                         unmapped_action=ESMF.UnmappedAction.IGNORE)
 
-        if myvar in ["uice"]:
-            field = confM2R.grdMODEL.regridSrc2Dst_u(confM2R.grdMODEL.fieldSrc, confM2R.grdMODEL.fieldDst_u)
-        elif myvar in ["vice"]:
-            field = confM2R.grdMODEL.regridSrc2Dst_v(confM2R.grdMODEL.fieldSrc, confM2R.grdMODEL.fieldDst_v)
-        else:
-            field = confM2R.grdMODEL.regridSrc2Dst_rho(confM2R.grdMODEL.fieldSrc, confM2R.grdMODEL.fieldDst_rho)
+        print("  -> regridSrc2Dst at U points")
+        confM2R.grdMODEL.fieldSrc_u = ESMF.Field(confM2R.grdMODEL.esmfgrid_u, "fieldSrc", staggerloc=ESMF.StaggerLoc.CENTER)
+        confM2R.grdMODEL.fieldDst_u = ESMF.Field(confM2R.grdROMS.esmfgrid_u, "fieldDst_u",
+                                                 staggerloc=ESMF.StaggerLoc.CENTER)
+        confM2R.grdMODEL.regridSrc2Dst_u = ESMF.Regrid(confM2R.grdMODEL.fieldSrc_u, confM2R.grdMODEL.fieldDst_u,
+                                                       regrid_method=ESMF.RegridMethod.BILINEAR,
+                                                       unmapped_action=ESMF.UnmappedAction.IGNORE)
 
-        field = np.fliplr(np.rot90(field.data, 3))
-        # if myvar in ["hice","aice"]:
-        #     import plotData
-        #     plotData.contourMap(grdROMS,grdROMS.lon_rho,grdROMS.lat_rho, field, "surface", myvar)
-
-    # Smooth the output
-    if confM2R.usefilter:
-        field = laplacefilter(field, 1000, toxi, toeta)
-    field = field * mymask
-    array1[0, :, :] = field
-
-    #  import plotData
-    #  plotData.contourMap(grdROMS, tolon, tolat, field, "34", myvar)
-
-    return array1
+        print("  -> regridSrc2Dst at V points")
+        confM2R.grdMODEL.fieldSrc_v = ESMF.Field(confM2R.grdMODEL.esmfgrid_v, "fieldSrc", staggerloc=ESMF.StaggerLoc.CENTER)
+        confM2R.grdMODEL.fieldDst_v = ESMF.Field(confM2R.grdROMS.esmfgrid_v, "fieldDst_v",
+                                                 staggerloc=ESMF.StaggerLoc.CENTER)
+        confM2R.grdMODEL.regridSrc2Dst_v = ESMF.Regrid(confM2R.grdMODEL.fieldSrc_v, confM2R.grdMODEL.fieldDst_v,
+                                                       regrid_method=ESMF.RegridMethod.BILINEAR,
+                                                       unmapped_action=ESMF.UnmappedAction.IGNORE)

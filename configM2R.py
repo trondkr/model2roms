@@ -91,7 +91,8 @@ class Model2romsConfig(object):
                 'SODA3': ['temperature', 'salinity', 'uvel', 'vvel'],
                 'GLORYS': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel', 'uice', 'vice', 'aice', 'hice'],
                 'WOAMONTHLY': ['temperature', 'salinity'],
-                'NORESM': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel', 'ageice', 'uice', 'vice', 'aice', 'hice']}[
+                'NORESM': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel', 'ageice', 'uice', 'vice', 'aice', 'hice','hs',
+                'O3_c','O3_TA','N1_p','N3_n','N5_s','O2_o']}[
             self.indatatype]
 
     # Define the corresponding name of the variables in the input dataset files. This list needs to correspond
@@ -105,7 +106,7 @@ class Model2romsConfig(object):
                            'ileadfra', 'iicethic'],
                 'WOAMONTHLY': ['temperature', 'salinity'],
                 'NORESM': ['templvl', 'salnlvl', 'sealv', 'uvellvl', 'vvellvl', 'iage', 'uvel', 'vvel', 'aice', 'hi',
-                           'hs']}[self.indatatype]
+                           'hs','dissic','talk','po4','no3','si','o2']}[self.indatatype]
 
     def defineromsgridpath(self):
         return {'A20': '/cluster/projects/nn9412k/A20/Grid/A20niva_grd_v1.nc',
@@ -113,7 +114,7 @@ class Model2romsConfig(object):
 
     def defineforcingdatapath(self):
         return {'SODA3': "/global/home/trondk/Projects/SODA3/SODA3/dsrs.atmos.umd.edu/DATA/soda3.3.1/REGRIDED/",
-                'NORESM': "/cluster/projects/nn9412k/A20/FORCING/RCP85_NORESM/",
+                'NORESM': "/cluster/projects/nn9412k/A20/FORCING/RCP85_ocean/",
                 'WOAMONTHLY': "/Users/trondkr/Projects/is4dvar/createSSS/"}[self.indatatype]
 
     def __init__(self):
@@ -123,7 +124,7 @@ class Model2romsConfig(object):
         # EDIT ===================================================================
         # Set showprogress to "False" if you do not want to see the progress
         # indicator for horizontal interpolation.
-        self.showprogress = False
+        self.showprogress = True
         # Set compileAll to True if you want automatic re-compilation of all the
         # fortran files necessary to run model2roms. Options are "gfortran" or "ifort". Edit
         # compile.py to add other Fortran compilers.
@@ -151,6 +152,8 @@ class Model2romsConfig(object):
         self.decimategridfile = False
         # Write ice values to file (for Arctic regions)
         self.writeice = True
+        # Write biogeochemistry values to file
+        self.writebcg = True
         # ROMS sometimes requires input of ice and ssh, but if you dont have these write zero files to file
         self.set2DvarsToZero=True
         # Use ESMF for the interpolation. This requires that you have ESMF and ESMPy installed (import ESMF)
@@ -189,7 +192,6 @@ class Model2romsConfig(object):
         self.latname_u = "ulat"
         self.lonname_v = "vlon"
         self.latname_v = "vlat"
-
         self.timename = "time"
         self.realm = "ocean"
         self.fillvaluein = -1.e20
@@ -230,7 +232,7 @@ class Model2romsConfig(object):
         # DATE AND TIME DETAILS ---------------------------------------------------------
         # Define the period to create forcing for
         self.start_year = 2006
-        self.end_year = 2007
+        self.end_year = 2008
         self.start_month = 1
         self.end_month = 12
         self.start_day = 15
@@ -275,7 +277,7 @@ class Model2romsConfig(object):
                 except ImportError:
                     raise ImportError("Unable to import ESMF")
                 print("Starting logfile for ESMF")
-                manager = ESMF.Manager(debug=True)
+                ESMF.Manager(debug=True)
 
             # Create the grid object for the output grid
             self.grdROMS = grd.Grd("ROMS", self)
