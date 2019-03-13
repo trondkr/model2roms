@@ -1,11 +1,12 @@
 <h1>Model2roms</h1>
-[![GitHub version](https://badge.fury.io/gh/trondkr%2Fmodel2roms.svg)](http://badge.fury.io/gh/trondkr%2Fmodel2roms)
+<img alt="GitHub last commit (branch)" src="https://img.shields.io/github/last-commit/trondkr/model2roms/master.svg"><img alt="APM" src="https://img.shields.io/apm/l/vim-mode.svg">
 
 Model2roms is a Python toolbox for creating the necessary climatology, boundary, and initial forcing files 
 required to run the ROMS (<a href="http://myroms.org/" target="_blank">Regional Ocean Modeling System</a>) model. The latest version of model2roms can convert several popular model hindcasts and projections including the NORESM (Norways Earth System Model), SODA global re-analysis, HYCOM, World Ocean Atlas (WOA), and GLORYS (Mercator Ocean) to a use as forcing files for a given ROMS grid structure.
 
 <h3>Latest updates</h3>
 <ul>
+<li><b>13.03.2019</b>: Model2roms has been refactored and the code is now easier to read. Added support for interpolating and writing BGC (biogeochemistry) data to the BRY, CLIM, and INIT files. The BGC currently only supports NorESM BGC data as input and the output format (variable names, units) is intended to be used as input to the ERSEM model.</li>
 <li>05.09.2018: Model2roms has been refactored and improved in the following way: we now use an object to store all of the configurations (configM2R.py), the run script has been improved (runM2R.py), supports SODA3 and GLORYS2V4 as forcing inputfiles, and severeal minor bugs has been fixed.</li>
 <li>Support for using Earth System Modeling Framework as the default interpolation method. This allows the input data to be on any kind of grid structure (e.g. irregular) as long as geographical information such as longitude and latitude of grid cells are available. The implementation uses the Python interface to ESMF which can be found here: <a href="https://www.earthsystemcog.org/projects/esmpy/" target="_blank">www.earthsystemcog.org/projects/esmpy/</a>. Using ESMF significantly increases the speed of the interpolation. As an example, interpolating one variable (e.g. temperature distribution) from a global irregular grid to a local non-rectangular grid of size 1250x789, at 70 different depth levels, takes 3 seconds on a Mac Laptop Pro. Additional information as to how to install ESMF and ESMPy from source on Mac OSX is available <a href="http://www.trondkristiansen.com/?page_id=1302" target="_blank">www.trondkristiansen.com/</a>. For most people, installing using Anaconda would be the best option:
 
