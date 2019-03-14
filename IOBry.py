@@ -426,7 +426,7 @@ def createBryFile(confM2R):
         for currentdir,lndirection,dim in zip(directions, lndirections,dimens):
             currentvar='O3_c_'+currentdir
             longname="carbonate/total dissolved inorganic carbon {} boundary condition".format(lndirection) 
-            O3_c = f1.createVariable(currentvar, 'f', ('ocean_time', dim,), zlib=myzlib,
+            O3_c = f1.createVariable(currentvar, 'f', ('ocean_time', 's_rho', dim,), zlib=myzlib,
                                         fill_value=grdROMS.fillval)
             O3_c.long_name = longname
             O3_c.field = "{}, scalar, series".format(currentvar) 
@@ -434,7 +434,7 @@ def createBryFile(confM2R):
 
             currentvar='O3_TA_'+currentdir
             longname="carbonate/bioalkalinity {} boundary condition".format(lndirection) 
-            O3_ta = f1.createVariable(currentvar, 'f', ('ocean_time', dim,), zlib=myzlib,
+            O3_ta = f1.createVariable(currentvar, 'f', ('ocean_time', 's_rho', dim,), zlib=myzlib,
                                         fill_value=grdROMS.fillval)
             O3_ta.long_name = longname
             O3_ta.field = "{}, scalar, series".format(currentvar) 
@@ -442,7 +442,7 @@ def createBryFile(confM2R):
 
             currentvar='N1_p_'+currentdir
             longname="phosphate/phosphorus {} boundary condition".format(lndirection) 
-            N1_p = f1.createVariable(currentvar, 'f', ('ocean_time', dim,), zlib=myzlib,
+            N1_p = f1.createVariable(currentvar, 'f', ('ocean_time','s_rho', dim,), zlib=myzlib,
                                         fill_value=grdROMS.fillval)
             N1_p.long_name = longname
             N1_p.field = "{}, scalar, series".format(currentvar) 
@@ -450,7 +450,7 @@ def createBryFile(confM2R):
 
             currentvar='N3_n_'+currentdir
             longname="nitrate/nitrogen {} boundary condition".format(lndirection) 
-            N3_n = f1.createVariable(currentvar, 'f', ('ocean_time', dim,), zlib=myzlib,
+            N3_n = f1.createVariable(currentvar, 'f', ('ocean_time','s_rho', dim,), zlib=myzlib,
                                         fill_value=grdROMS.fillval)
             N3_n.long_name = longname
             N3_n.field = "{}, scalar, series".format(currentvar) 
@@ -458,7 +458,7 @@ def createBryFile(confM2R):
 
             currentvar='N5_s_'+currentdir
             longname="silicate/silicate {} boundary condition".format(lndirection) 
-            N5_s = f1.createVariable(currentvar, 'f', ('ocean_time', dim,), zlib=myzlib,
+            N5_s = f1.createVariable(currentvar, 'f', ('ocean_time','s_rho', dim,), zlib=myzlib,
                                         fill_value=grdROMS.fillval)
             N5_s.long_name = longname
             N5_s.field = "{}, scalar, series".format(currentvar) 
@@ -466,7 +466,7 @@ def createBryFile(confM2R):
 
             currentvar='O2_o_'+currentdir
             longname="oxygen/oxygen {} boundary condition".format(lndirection) 
-            O2_o = f1.createVariable(currentvar, 'f', ('ocean_time', dim,), zlib=myzlib,
+            O2_o = f1.createVariable(currentvar, 'f', ('ocean_time', 's_rho',dim,), zlib=myzlib,
                                         fill_value=grdROMS.fillval)
             O2_o.long_name = longname
             O2_o.field = "{}, scalar, series".format(currentvar) 

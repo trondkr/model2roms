@@ -12,7 +12,7 @@ except ImportError:
 __author__ = 'Trond Kristiansen'
 __email__ = 'me@trondkristiansen.com'
 __created__ = datetime.datetime(2008, 12, 4)
-__modified__ = datetime.datetime(2018, 4, 25)
+__modified__ = datetime.datetime(2019, 3, 12)
 __version__ = "1.5"
 __status__ = "Development"
 
@@ -82,7 +82,7 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
         if confM2R.usefilter:
             field = laplacefilter(field, 1000, toxi, toeta)
             field = field * mymask
-            array1[0, :, :] = field
+            
         #  field=field*grdROMS.mask_rho
 
         array1[k, :, :] = field

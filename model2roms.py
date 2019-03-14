@@ -41,8 +41,8 @@ def verticalinterpolation(myvar, array1, array2, grdROMS, grdMODEL):
                                                    np.asarray(grdROMS.h, order='F'),
                                                    np.asarray(grdROMS.z_r, order='F'),
                                                    np.asarray(grdMODEL.z_r, order='F'),
-                                                   grdROMS.nlevels,
-                                                   grdMODEL.nlevels, 
+                                                   int(grdROMS.nlevels),
+                                                   int(grdMODEL.nlevels), 
                                                    int(grdROMS.xi_rho),
                                                    int(grdROMS.eta_rho),
                                                    int(grdROMS.xi_rho),
@@ -53,7 +53,7 @@ def verticalinterpolation(myvar, array1, array2, grdROMS, grdMODEL):
         if myvar in ['O3_c','O3_TA','N1_p','N3_p','N3_n','N5_s','O2_o']:
             outdata = np.ma.masked_where(abs(outdata) < 0, outdata)
        # import plotData
-       # for k in range(len(grdROMS.nlevels)-1):
+       # for k in range(grdROMS.nlevels):
        #     plotData.contourMap(grdROMS, grdROMS.lon_rho, grdROMS.lat_rho, np.squeeze(outdata[k,:,:]),k, myvar)
 
         return outdata
