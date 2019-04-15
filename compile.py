@@ -86,19 +86,19 @@ def compileallgfortran():
     #log.writelines(repr(stdout_value))
 
     print("Compiling barotropic.f90 to create ==> barotropic.so")
-    proc = subprocess.Popen('f2py --verbose -c -m barotropic barotropic.f90',
+    proc = subprocess.Popen('f2py -c -m barotropic barotropic.f90',
                             shell=True, stdout=subprocess.PIPE, )
     stdout_value = proc.communicate()
     log.writelines(repr(stdout_value))
 
     print("Compiling interpolation.f90 to create ==> interpolation.so")
-    proc = subprocess.Popen('f2py --verbose  -c -m interpolation interpolation.f90',
+    proc = subprocess.Popen('f2py -c -m interpolation interpolation.f90',
                             shell=True, stdout=subprocess.PIPE, )
     stdout_value = proc.communicate()[0]
     log.writelines(repr(stdout_value))
 
     print("Compiling fill.f90 to create ==> extrapolate.so")
-    proc = subprocess.Popen('f2py --verbose -c -m extrapolate fill.f90',
+    proc = subprocess.Popen('f2py -c -m extrapolate fill.f90',
                             shell=True, stdout=subprocess.PIPE, )
     stdout_value = proc.communicate()[0]
     log.writelines(repr(stdout_value))
@@ -118,4 +118,9 @@ def compilefortran(compiler):
 
 
 if __name__ == "__main__":
+
+    print("Adding LDFALGS required for Python 3")
+    proc = subprocess.Popen('export LDFLAGS="-undefined dynamic_lookup -bundle"',
+                            shell=True, stdout=subprocess.PIPE, )
+
     compilefortran("gfortran")
