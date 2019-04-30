@@ -15,7 +15,7 @@ required to run the ROMS (<a href="http://myroms.org/" target="_blank">Regional 
 conda create -n model2roms
 conda config --add channels conda-forge
 conda activate model2roms
-conda install esmpy netcdf4
+conda install esmpy netcdf4 progressbar
 ```
 
 </li>
