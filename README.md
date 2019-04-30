@@ -41,7 +41,7 @@ UBAR and VBAR (barotropic flow) are calculated from U and V velocities. Time is 
 day from 01/01/1948 (see model2roms.py). Make sure to edit the main.py file before you run the toolbox using:
 
 ```html
-python main.py
+python runM2R.py
 ```
 <h3>Options for interpolation</h3>
 The latest version of model2roms has adapated the use of the ESMF python package to handle all of the horizontal interpolations. This has significantly speeded up the interpolations and also solved a number of problems if the grid covers the Nort or South Poles. In addition, ESMF can handle any input type grid and therefore making it very easy to convert any type of model into forcing files for ROMS. However, often the target grid has higher resolution than the source grid which opens up areas (e.g. along the coastlines) where you have no data. Model2roms contains an option `useFilter` that will extrapolate data to fill these areas with no data using a Laplace operator. This is quite useful, but also time-consuming and should be turned off unless you need it:
