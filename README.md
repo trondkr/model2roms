@@ -52,7 +52,9 @@ Without filter            | With filter
 
 <h3>Optional settings</h3>
 Prior to run model2roms you have to specify a number of settings so that the program can identify where input and grid files can be found. In addition, you can specify what sort of run you are doing by turning options on and off. All of the user settings are done in `configM2R.py`, a few definitions for variable names are found in `model2roms.py`, and finally a few settings for the grid specifications are found in `grd.py`. Eventually, all of the settings will be moved to one file. Still, the main settings are the following:
-``` python
+
+```Python
+
         # Set showprogress to "False" if you do not want to see the progress
         # indicator for horizontal interpolation.
         self.showprogress = False
