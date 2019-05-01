@@ -489,11 +489,6 @@ def convertMODEL2ROMS(confM2R):
                         SSHdata = np.where(abs(SSHdata) == 0, confM2R.grdROMS.fillval, SSHdata)
                         SSHdata = np.where(abs(SSHdata) == confM2R.grdROMS.fillval, 0, SSHdata)
 
-                        # SSHdata = np.ma.masked_where(abs(SSHdata) > 1000, SSHdata)
-
-                     ##   print("Data range of {} after interpolation: {:3.3f}-{:3.3f}".format(
-                      ##  myvar, float(SSHdata.min()), float(SSHdata.max())))
-
                         IOwrite.writeclimfile(confM2R, timecounter, myvar, SSHdata)
 
                         if timecounter == confM2R.grdROMS.inittime:

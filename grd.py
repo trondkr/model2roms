@@ -38,7 +38,7 @@ class Grd:
         self.grdfilename = None
 
         print('Creating init for grid object {}'.format(confM2R.outgrid))
-        print('---> Initialized GRD object for grid type {}'.format(self.type))
+        print('---> Initialized GRD object for grid type {}\n'.format(self.type))
 
     def opennetcdf(self, grdfilename):
         

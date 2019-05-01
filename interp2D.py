@@ -2,6 +2,7 @@ from __future__ import print_function
 import numpy as np
 import datetime
 import extrapolate as ex
+import os
 
 try:
     import ESMF
@@ -38,9 +39,8 @@ def laplacefilter(field, threshold, toxi, toeta):
 def dohorinterpolationregulargrid(confM2R, mydata, myvar):
     if confM2R.showprogress is True:
         import progressbar
-        # http://progressbar-2.readthedocs.org/en/latest/examples.html
-        progress = progressbar.ProgressBar(widgets=[progressbar.Percentage(), progressbar.Bar()],
-                                           maxval=confM2R.grdMODEL.nlevels).start()
+        widgets=['\rHorizontal interpolation:', progressbar.Percentage(), progressbar.Bar()]
+        progress = progressbar.ProgressBar(confM2R.grdMODEL.nlevels, widgets=widgets).start()
 
     indexROMS_Z_ST, toxi, toeta, mymask = setupIndexes(confM2R, myvar)
     array1 = np.zeros((indexROMS_Z_ST), dtype=np.float)
@@ -100,7 +100,8 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
 
         if confM2R.showprogress is True:
             progress.update(k)
-
+    if confM2R.showprogress is True:
+        progress.finish()
     return array1
 
 def setupIndexes(confM2R, myvar):

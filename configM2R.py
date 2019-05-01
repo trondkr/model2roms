@@ -9,6 +9,7 @@ import numpy as np
 import atmosForcing
 import sys
 from datetime import datetime, timedelta
+import os
 
 __author__ = 'Trond Kristiansen'
 __email__ = 'trond.kristiansen@niva.no'
@@ -46,12 +47,11 @@ class Model2romsConfig(object):
 
     def showinfo(self):
         if self.isclimatology:
-            print('\n=>Conversions run for climatological months')
+            print('\n=> Conversions run for climatological months')
         else:
-            print('\n=>Conversions run from %s to year %s' % (self.start_year, self.end_year))
-        print('==> The following variables will be converted:')
-        for myvar in self.globalvarnames:
-            print('===> %s' % myvar)
+            print('\n=> Conversions run from year/month: %s/%s to %s/%s' % (self.start_year,self.start_month, self.end_year,self.end_month))
+        print('==> The following variables will be interpolated: %s'.format(self.globalvarnames))
+      
         if self.useesmf:
             print("=>All horisontal interpolations will be done using ESMF-ESMPy (module ESMF)")
         print("=>Output files are written in format: %s" % self.myformat)
@@ -88,7 +88,7 @@ class Model2romsConfig(object):
     def defineglobalvarnames(self):
 
         return {'SODA': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel'],
-                'SODA3': ['temperature', 'salinity', 'uvel', 'vvel'],
+                'SODA3': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel'],
                 'GLORYS': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel', 'uice', 'vice', 'aice', 'hice'],
                 'WOAMONTHLY': ['temperature', 'salinity'],
                 'NORESM': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel', 'ageice', 'uice', 'vice', 'aice', 'hice','hs',
@@ -109,17 +109,18 @@ class Model2romsConfig(object):
                            'hs','dissic','talk','po4','no3','si','o2']}[self.indatatype]
 
     def defineromsgridpath(self):
-        return {'A20': '/cluster/projects/nn9412k/A20/Grid/A20niva_grd_v1.nc',
+        return {'A20': '/Users/trondkr/Dropbox/NIVA/A20/Grid/A20niva_grd_v1.nc', # '/cluster/projects/nn9412k/A20/Grid/A20niva_grd_v1.nc',
                 'ROHO800': '/global/work/andrest/ROHO800/River_and_Grid_fix/ROHO800_grid_fix.nc'}[self.outgrid]
 
     def defineforcingdatapath(self):
-        return {'SODA3': "/global/home/trondk/Projects/SODA3/SODA3/dsrs.atmos.umd.edu/DATA/soda3.3.1/REGRIDED/",
+        return {'SODA3': "/Volumes/DATASETS/SODA3.3.1/OCEAN/", # "/global/home/trondk/Projects/SODA3/SODA3/dsrs.atmos.umd.edu/DATA/soda3.3.1/REGRIDED/",
                 'NORESM': "/cluster/projects/nn9412k/A20/FORCING/RCP85_ocean/",
                 'WOAMONTHLY': "/Users/trondkr/Projects/is4dvar/createSSS/"}[self.indatatype]
 
     def __init__(self):
         print('\n--------------------------\n')
         print('Started ' + time.ctime(time.time()))
+        os.environ['WRAP_STDERR'] = 'true'
 
         # EDIT ===================================================================
         # Set showprogress to "False" if you do not want to see the progress
@@ -151,11 +152,11 @@ class Model2romsConfig(object):
         # each time run
         self.decimategridfile = False
         # Write ice values to file (for Arctic regions)
-        self.writeice = True
+        self.writeice = False
         # Write biogeochemistry values to file
-        self.writebcg = True
+        self.writebcg = False
         # ROMS sometimes requires input of ice and ssh, but if you dont have these write zero files to file
-        self.set2DvarsToZero=True
+        self.set2DvarsToZero=False
         # Use ESMF for the interpolation. This requires that you have ESMF and ESMPy installed (import ESMF)
         self.useesmf = True
         # Apply filter to smooth the 2D fields after interpolation (time consuming but enhances results)
@@ -171,7 +172,7 @@ class Model2romsConfig(object):
         #  Define what grid type you wnat to interpolate from (input MODEL data)
         # Options:
         # 1. SODA, 2. SODAMONTHLY, 3.WOAMONTHLY, 4. NORESM, 4. GLORYS, 5. SODA3
-        self.indatatype = 'NORESM'
+        self.indatatype = 'SODA3'
 
         # Define contact info for final NetCDF files
         self.authorname = "Trond Kristiansen"
@@ -185,13 +186,13 @@ class Model2romsConfig(object):
 
         # Define the names of the geographical variables in the input files
         self.grdtype = 'regular'
-        self.lonname = "plon"
-        self.latname = "plat"
-        self.depthname = "pdepth"
-        self.lonname_u = "ulon"
-        self.latname_u = "ulat"
-        self.lonname_v = "vlon"
-        self.latname_v = "vlat"
+        self.lonname = "longitude"
+        self.latname = "latitude"
+        self.depthname = "depth"
+        self.lonname_u = "longitude"
+        self.latname_u = "latitude"
+        self.lonname_v = "longitude"
+        self.latname_v = "latitude"
         self.timename = "time"
         self.realm = "ocean"
         self.fillvaluein = -1.e20
@@ -232,9 +233,9 @@ class Model2romsConfig(object):
         # DATE AND TIME DETAILS ---------------------------------------------------------
         # Define the period to create forcing for
         self.start_year = 2006
-        self.end_year = 2049
+        self.end_year = 2006
         self.start_month = 1
-        self.end_month = 12
+        self.end_month = 3
         self.start_day = 15
         self.end_day = 15
 
