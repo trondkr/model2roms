@@ -6,6 +6,7 @@ required to run the ROMS (<a href="http://myroms.org/" target="_blank">Regional 
 
 <h3>Latest updates</h3>
 <ul>
+<li><b>30.04.2019</b>:Fixed progressbar options for Python 3.7</li>
 <li><b>15.04.2019</b>:Added `LDFLAG` option in `compile.py` for compiling Fortran files using f2py on Python3.7</li>
 <li><b>13.03.2019</b>: Model2roms has been refactored and the code is now easier to read. Added support for interpolating and writing BGC (biogeochemistry) data to the BRY, CLIM, and INIT files. The BGC currently only supports NorESM BGC data as input and the output format (variable names, units) is intended to be used as input to the ERSEM model.</li>
 <li>05.09.2018: Model2roms has been refactored and improved in the following way: we now use an object to store all of the configurations (configM2R.py), the run script has been improved (runM2R.py), supports SODA3 and GLORYS2V4 as forcing inputfiles, and severeal minor bugs has been fixed.</li>
