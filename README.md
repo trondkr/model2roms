@@ -84,7 +84,11 @@ Prior to run model2roms you have to specify a number of settings so that the pro
         # each time run
         self.decimategridfile = False
         # Write ice values to file (for Arctic regions)
-        self.writeice = True
+        self.writeice = False
+        # Write biogeochemistry values to file
+        self.writebcg = False
+        # ROMS sometimes requires input of ice and ssh, but if you dont have these write zero files to file
+        self.set2DvarsToZero=False
         # Use ESMF for the interpolation. This requires that you have ESMF and ESMPy installed (import ESMF)
         self.useesmf = True
         # Apply filter to smooth the 2D fields after interpolation (time consuming but enhances results)
