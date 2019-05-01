@@ -38,7 +38,11 @@ def laplacefilter(field, threshold, toxi, toeta):
 
 def dohorinterpolationregulargrid(confM2R, mydata, myvar):
     if confM2R.showprogress is True:
-        import progressbar
+        try:
+            import progressbar
+        except ImportError:
+            print("Could not find module progressbar")
+        pass
         widgets=['\rHorizontal interpolation:', progressbar.Percentage(), progressbar.Bar()]
         progress = progressbar.ProgressBar(confM2R.grdMODEL.nlevels, widgets=widgets).start()
 

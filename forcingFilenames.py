@@ -4,32 +4,33 @@ import os
 def getFilename(confM2R,year,month,defaultvar):
     if confM2R.indatatype == 'SODA':
         if defaultvar is None:defaultvar="salinity"
-        filenamein = getSODAfilename(confM2R, confM2R.start_year, confM2R.start_month, defaultvar)
+        filenamein = getSODAfilename(confM2R, year, month, defaultvar)
     if confM2R.indatatype == 'SODA3':
         if defaultvar is None:defaultvar="salinity"
-        filenamein = getSODA3filename(confM2R, confM2R.start_year, confM2R.start_month, defaultvar)
+        filenamein = getSODA3filename(confM2R, year, month, defaultvar)
     if confM2R.indatatype == 'SODAMONTHLY':
         if defaultvar is None:defaultvar="salinity"
-        filenamein = getSODAfilename(confM2R, confM2R.start_year, confM2R.start_month, defaultvar)
+        filenamein = getSODAfilename(confM2R, year, month,  defaultvar)
     if confM2R.indatatype == 'NORESM':
         if defaultvar is None:defaultvar="grid"
-        filenamein = getNORESMfilename(confM2R, confM2R.start_year, confM2R.start_month, defaultvar)
+        filenamein = getNORESMfilename(confM2R, year, month, defaultvar)
     if confM2R.indatatype == 'WOAMONTHLY':
         if defaultvar is None:defaultvar="temperature"
-        filenamein = getWOAMONTHLYfilename(confM2R, confM2R.start_year, confM2R.start_month, defaultvar)
+        filenamein = getWOAMONTHLYfilename(confM2R, year, month, defaultvar)
     if confM2R.indatatype == 'GLORYS':
         if defaultvar is None:defaultvar="S"
-        filenamein = getGLORYSfilename(confM2R, confM2R.start_year, confM2R.start_month, defaultvar)
+        filenamein = getGLORYSfilename(confM2R, year, month, defaultvar)
     if confM2R.indatatype == 'GLORYS':
         if defaultvar is None:defaultvar="S"
-        filenamein = getGLORYSfilename(confM2R, confM2R.start_year, confM2R.start_month, defaultvar)
+        filenamein = getGLORYSfilename(confM2R, year, month, defaultvar)
     if confM2R.indatatype == 'NS8KM':
         if defaultvar is None:defaultvar="salinity"
-        filenamein = getNS8KMfilename(confM2R, confM2R.start_year, confM2R.start_month, defaultvar)
+        filenamein = getNS8KMfilename(confM2R, year, month, defaultvar)
     if confM2R.indatatype == 'NS8KMZ':
         if defaultvar is None:defaultvar="salinity"
-        filenamein, readFromOneFile = getNS8KMZfilename(confM2R, confM2R.start_year, confM2R.start_month, defaultvar)
+        filenamein, readFromOneFile = getNS8KMZfilename(confM2R, year, month, defaultvar)
     return filenamein
+    
 # private functions called from within module
 def getGLORYSfilename(confM2R, year, month, myvar):
     # Month indicates month
