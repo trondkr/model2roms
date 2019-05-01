@@ -15,7 +15,7 @@ required to run the ROMS (<a href="http://myroms.org/" target="_blank">Regional 
 conda create -n model2roms
 conda config --add channels conda-forge
 conda activate model2roms
-conda install esmpy netcdf4
+conda install esmpy netcdf4 progressbar
 ```
 
 </li>
@@ -41,7 +41,7 @@ UBAR and VBAR (barotropic flow) are calculated from U and V velocities. Time is 
 day from 01/01/1948 (see model2roms.py). Make sure to edit the main.py file before you run the toolbox using:
 
 ```html
-python main.py
+python runM2R.py
 ```
 <h3>Options for interpolation</h3>
 The latest version of model2roms has adapated the use of the ESMF python package to handle all of the horizontal interpolations. This has significantly speeded up the interpolations and also solved a number of problems if the grid covers the Nort or South Poles. In addition, ESMF can handle any input type grid and therefore making it very easy to convert any type of model into forcing files for ROMS. However, often the target grid has higher resolution than the source grid which opens up areas (e.g. along the coastlines) where you have no data. Model2roms contains an option `useFilter` that will extrapolate data to fill these areas with no data using a Laplace operator. This is quite useful, but also time-consuming and should be turned off unless you need it:
@@ -52,7 +52,9 @@ Without filter            | With filter
 
 <h3>Optional settings</h3>
 Prior to run model2roms you have to specify a number of settings so that the program can identify where input and grid files can be found. In addition, you can specify what sort of run you are doing by turning options on and off. All of the user settings are done in `configM2R.py`, a few definitions for variable names are found in `model2roms.py`, and finally a few settings for the grid specifications are found in `grd.py`. Eventually, all of the settings will be moved to one file. Still, the main settings are the following:
-``` python
+
+```Python
+
         # Set showprogress to "False" if you do not want to see the progress
         # indicator for horizontal interpolation.
         self.showprogress = False
