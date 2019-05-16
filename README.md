@@ -1,5 +1,6 @@
 <h1>Model2roms</h1>
 <img alt="GitHub" src="https://img.shields.io/github/license/trondkr/model2roms.svg"><img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/trondkr/model2roms.svg">
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e51ca8fa177042e3a329e688858c5d75)](https://app.codacy.com/app/trondkr/model2roms?utm_source=github.com&utm_medium=referral&utm_content=trondkr/model2roms&utm_campaign=Badge_Grade_Dashboard)
 
 Model2roms is a Python toolbox for creating the necessary climatology, boundary, and initial forcing files 
 required to run the ROMS (<a href="http://myroms.org/" target="_blank">Regional Ocean Modeling System</a>) model. The latest version of model2roms can convert several popular model hindcasts and projections including the NORESM (Norways Earth System Model), SODA global re-analysis, HYCOM, World Ocean Atlas (WOA), and GLORYS (Mercator Ocean) to a use as forcing files for a given ROMS grid structure.
@@ -57,8 +58,6 @@ Prior to run model2roms you have to specify a number of settings so that the pro
 ```Python
 
         # Set showprogress to "False" if you do not want to see the progress
-
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e51ca8fa177042e3a329e688858c5d75)](https://app.codacy.com/app/trondkr/model2roms?utm_source=github.com&utm_medium=referral&utm_content=trondkr/model2roms&utm_campaign=Badge_Grade_Dashboard)
 
         # indicator for horizontal interpolation.
         self.showprogress = False
