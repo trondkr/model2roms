@@ -68,6 +68,17 @@ def createlistofdays(confM2R, year, month):
         # We start and end on different days in the same month         
         if (confM2R.startdate.month == confM2R.enddate.month and confM2R.startdate.year == confM2R.enddate.year):
             days = [i for i in range(confM2R.startdate.day, confM2R.enddate.day, daystep)]
+    
+    if confM2R.timefrequencyofinputdata == '5days':
+        
+        for dd in confM2R.timeobject[:]:
+            dd_date = num2date(dd,units=confM2R.timeobject.units, calendar=confM2R.timeobject.calendar)
+
+            if dd_date.year==year and dd_date.month==month:
+                days.append(dd_date.day)
+                print(dd_date)
+
+        return days
 
     if confM2R.timefrequencyofinputdata == 'month':
         days = [15]

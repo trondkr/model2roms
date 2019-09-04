@@ -1,16 +1,21 @@
 import os
+from netCDF4 import MFDataset, date2index, date2num, num2date
+from datetime import datetime
 
 # Main function called from model2roms
-def getFilename(confM2R,year,month,defaultvar):
+def getFilename(confM2R,year,month,day,defaultvar):
     if confM2R.indatatype == 'SODA':
         if defaultvar is None:defaultvar="salinity"
-        filenamein = getSODAfilename(confM2R, year, month, defaultvar)
+        filenamein = getSODAfilename(confM2R, year, month, day, defaultvar)
     if confM2R.indatatype == 'SODA3':
         if defaultvar is None:defaultvar="salinity"
         filenamein = getSODA3filename(confM2R, year, month, defaultvar)
+    if confM2R.indatatype == 'SODA3_5DAY':
+        if defaultvar is None:defaultvar="salinity"
+        filenamein = getSODA3_5DAYfilename(confM2R, year, month, day, defaultvar)
     if confM2R.indatatype == 'SODAMONTHLY':
         if defaultvar is None:defaultvar="salinity"
-        filenamein = getSODAfilename(confM2R, year, month,  defaultvar)
+        filenamein = getSODAfilename(confM2R, year, month, day, defaultvar)
     if confM2R.indatatype == 'NORESM':
         if defaultvar is None:defaultvar="grid"
         filenamein = getNORESMfilename(confM2R, year, month, defaultvar)
@@ -141,15 +146,30 @@ def getSODAMONTHLYfilename(confM2R, year, month, myvar):
         return confM2R.modelpath + 'SODA_2.0.2_' + str(year) + str(month) + '.cdf'
 
 
-def getSODAfilename(confM2R, year, month, myvar):
+def getSODAfilename(confM2R, year, month, day, myvar):
     return confM2R.modelpath + "SODA_2.0.2_" + str(year) + "_" + str(month) + ".cdf"
 
-
-def getSODA3filename(confM2R, year, month, myvar):
+def getSODA3filename(confM2R, year, month, day, myvar):
     if (myvar in ['cn', 'hi', 'hs']):
         return confM2R.modelpath + "soda3.3.1_mn_ice_reg_" + str(year) + ".nc"
     else:
         return confM2R.modelpath + "soda3.3.1_mn_ocean_reg_" + str(year) + ".nc"
+
+def getSODA3_5DAYfilename(confM2R, year, month, day, myvar):
+
+    if len(confM2R.timeobject)==0:
+        mcdf = MFDataset(confM2R.modelpath+"*.nc")
+        confM2R.timeobject = mcdf.variables["time"]
+        
+        print("Loaded all timesteps: {}".format(confM2R.timeobject[:]))
+    index = date2index(datetime(year,month,day,0,0),confM2R.timeobject,calendar=confM2R.timeobject.calendar,select="nearest")
+    seldate=num2date(confM2R.timeobject[index],units=confM2R.timeobject.units, calendar=confM2R.timeobject.calendar)
+
+    print("selected index {}".format(seldate))
+    if (myvar in ['cn', 'hi', 'hs']):
+        return '{}soda3.3.2_5dy_ocean_ice_{:04}_{:02}_{:02}.nc'.format(confM2R.modelpath,seldate.year,seldate.month,seldate.day)
+    else:
+        return '{}soda3.3.2_5dy_ocean_reg_{:04}_{:02}_{:02}.nc'.format(confM2R.modelpath,seldate.year,seldate.month,seldate.day)
 
 
 def getWOAMONTHLYfilename(confM2R, year, month, myvar):

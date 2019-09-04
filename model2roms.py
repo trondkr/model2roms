@@ -177,10 +177,13 @@ def getTime(confM2R, year, month, day, ntime):
     Go here to check results:http://lena.gsfc.nasa.gov/lenaDEV/html/doy_conv.html
     """
     if confM2R.indatatype == 'SODA':
-        filename = fc.getSODAfilename(confM2R, year, month, None)
+        filename = fc.getSODAfilename(confM2R, year, month, day, None)
 
     if confM2R.indatatype == 'SODA3':
-        filename = fc.getSODA3filename(confM2R, year, month, None)
+        filename = fc.getSODA3filename(confM2R, year, month, day, None)
+
+    if confM2R.indatatype == 'SODA3_5DAY':
+        filename = fc.getSODA3_5DAYfilename(confM2R, year, month, day, None)
 
     if confM2R.indatatype == 'SODAMONTHLY':
         filename = fc.getSODAMONTHLYfilename(confM2R, year, month, None)
@@ -215,6 +218,8 @@ def getTime(confM2R, year, month, day, ntime):
                          calendar=cdf.variables["ocean_time"].calendar)
     elif confM2R.indatatype == 'SODA3':
         jdref = date2num(datetime(1948, 1, 1), units="days since 1948-01-01 00:00:00", calendar="standard")
+    elif confM2R.indatatype == 'SODA3_5DAY':
+        jdref = date2num(datetime(1948, 1, 1), units=confM2R.timeobject.units, calendar=confM2R.timeobject.calendar)
     else:
         jdref = date2num(datetime(1948, 1, 1), cdf.variables["time"].units, calendar=cdf.variables["time"].calendar)
 
@@ -226,6 +231,11 @@ def getTime(confM2R, year, month, day, ntime):
         myunits = cdf.variables["time"].units
         currentdate = datetime(year, month, day)
         jd = date2num(currentdate, myunits, calendar=mycalendar)
+
+    if confM2R.indatatype == 'SODA3_5DAY':
+        currentdate = datetime(year, month, day)
+        myunits=confM2R.timeobject.units
+        jd = date2num(currentdate, units=confM2R.timeobject.units, calendar=confM2R.timeobject.calendar)
 
     if confM2R.indatatype == 'SODA3':
         # Each SODA file represents 12 month averages.
@@ -283,7 +293,7 @@ def get3ddata(confM2R, myvar, year, month, day, timecounter):
     # The variable splitExtract is defined in IOsubset.py and depends on the orientation
     # and indatatype of grid (-180-180 or 0-360). Assumes regular grid.
     if confM2R.useesmf:
-        filename = fc.getFilename(confM2R,year,month,confM2R.inputdatavarnames[varN])
+        filename = fc.getFilename(confM2R,year,month,day,confM2R.inputdatavarnames[varN])
         print(filename,confM2R.inputdatavarnames[varN])
         try:
             cdf = Dataset(filename)
@@ -291,7 +301,7 @@ def get3ddata(confM2R, myvar, year, month, day, timecounter):
             print("Unable to open input file {}".format(filename))
             return
 
-        if confM2R.indatatype == "SODA":
+        if confM2R.indatatype in ["SODA","SODA3_5DAY"]:
             data = cdf.variables[confM2R.inputdatavarnames[varN]][0,:,:,:]
 
         if confM2R.indatatype == "SODA3":
@@ -340,14 +350,14 @@ def get2ddata(confM2R, myvar, year, month, day, timecounter):
     if confM2R.useesmf:
         
         if not confM2R.set2DvarsToZero:
-            filename = fc.getFilename(confM2R,year,month,confM2R.inputdatavarnames[varN])
+            filename = fc.getFilename(confM2R,year,month,day,confM2R.inputdatavarnames[varN])
             try:
                 cdf = Dataset(filename)
             except:
                 print("Unable to open input file {}".format(filename))
                 return
 
-            if confM2R.indatatype == "SODA":
+            if confM2R.indatatype in ["SODA","SODA3_5DAY"]:
                 data = cdf.variables[confM2R.inputdatavarnames[varN]][0,:,:]
 
             if confM2R.indatatype == "SODA3":
@@ -390,7 +400,7 @@ def get2ddata(confM2R, myvar, year, month, day, timecounter):
 
 def convertMODEL2ROMS(confM2R):
     # First opening of input file is just for initialization of grid
-    filenamein = fc.getFilename(confM2R,confM2R.start_year,confM2R.start_month,None)
+    filenamein = fc.getFilename(confM2R,confM2R.start_year,confM2R.start_month,confM2R.start_day,None)
 
     # Finalize creating the model grd object now that we know the filename for input data
     confM2R.grdMODEL.opennetcdf(filenamein)
@@ -417,7 +427,7 @@ def convertMODEL2ROMS(confM2R):
 
         for month in months:
             days = datetimeFunctions.createlistofdays(confM2R, year, month)
-
+            print("days {}".format(days))
             for day in days:
                 # Get the current date for given timestep 
                 getTime(confM2R, year, month, day, timecounter)

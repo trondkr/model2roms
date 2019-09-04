@@ -50,7 +50,7 @@ class Model2romsConfig(object):
             print('\n=> Conversions run for climatological months')
         else:
             print('\n=> Conversions run from year/month: %s/%s to %s/%s' % (self.start_year,self.start_month, self.end_year,self.end_month))
-        print('==> The following variables will be interpolated: %s'.format(self.globalvarnames))
+        print('==> The following variables will be interpolated: {}'.format(self.globalvarnames))
       
         if self.useesmf:
             print("=>All horisontal interpolations will be done using ESMF-ESMPy (module ESMF)")
@@ -89,6 +89,7 @@ class Model2romsConfig(object):
 
         return {'SODA': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel'],
                 'SODA3': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel'],
+                'SODA3_5DAY': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel'],
                 'GLORYS': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel', 'uice', 'vice', 'aice', 'hice'],
                 'WOAMONTHLY': ['temperature', 'salinity'],
                 'NORESM': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel', 'ageice', 'uice', 'vice', 'aice', 'hice','hs',
@@ -102,6 +103,7 @@ class Model2romsConfig(object):
 
         return {'SODA': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel'],
                 'SODA3': ['temp', 'salt', 'ssh', 'u', 'v'],
+                'SODA3_5DAY': ['temp', 'salt', 'ssh', 'u', 'v'],
                 'GLORYS': ['votemper', 'vosaline', 'sossheig', 'vozocrtx', 'vomecrty', 'iicevelu', 'iicevelv',
                            'ileadfra', 'iicethic'],
                 'WOAMONTHLY': ['temperature', 'salinity'],
@@ -110,11 +112,13 @@ class Model2romsConfig(object):
 
     def defineromsgridpath(self):
         return {'A20': '/Users/trondkr/Dropbox/NIVA/A20/Grid/A20niva_grd_v1.nc', # '/cluster/projects/nn9412k/A20/Grid/A20niva_grd_v1.nc',
-                'ROHO800': '/global/work/andrest/ROHO800/River_and_Grid_fix/ROHO800_grid_fix.nc'}[self.outgrid]
+                'ROHO800': '/cluster/projects/nn9490k/ROHO800/Grid/ROHO800_grid_fix3.nc'}[self.outgrid]
 
     def defineforcingdatapath(self):
-        return {'SODA3': "/Volumes/DATASETS/SODA3.3.1/OCEAN/", # "/global/home/trondk/Projects/SODA3/SODA3/dsrs.atmos.umd.edu/DATA/soda3.3.1/REGRIDED/",
+        return {'SODA3': "/Volumes/DATASETS/SODA3.3.1/OCEAN/", 
+                'SODA3_5DAY': "/cluster/work/users/trondk/SODA3.3.2/",  
                 'NORESM': "/cluster/projects/nn9412k/A20/FORCING/RCP85_ocean/",
+                'GLORYS': "/cluster/projects/nn9412k/glorys/",
                 'WOAMONTHLY': "/Users/trondkr/Projects/is4dvar/createSSS/"}[self.indatatype]
 
     def __init__(self):
@@ -166,13 +170,13 @@ class Model2romsConfig(object):
         self.myformat = 'NETCDF4'
         self.myzlib = True
         # Frequency of the input data: usually monthly
-        self.timefrequencyofinputdata = "month"  # , "month", "hour"
+        self.timefrequencyofinputdata = "5days"  # , "month", "hour", "5days"
 
         # IN GRIDTYPES ------------------------------------------------------------------------------
         #  Define what grid type you wnat to interpolate from (input MODEL data)
         # Options:
-        # 1. SODA, 2. SODAMONTHLY, 3.WOAMONTHLY, 4. NORESM, 4. GLORYS, 5. SODA3
-        self.indatatype = 'SODA3'
+        # 1. SODA, 2. SODAMONTHLY, 3.WOAMONTHLY, 4. NORESM, 4. GLORYS, 5. SODA3, 6. SODA3_5DAY
+        self.indatatype = 'SODA3_5DAY'
 
         # Define contact info for final NetCDF files
         self.authorname = "Trond Kristiansen"
@@ -193,6 +197,17 @@ class Model2romsConfig(object):
         self.latname_u = "latitude"
         self.lonname_v = "longitude"
         self.latname_v = "latitude"
+
+        if self.indatatype=='SODA3_5DAY':
+            self.lonname = "xt_ocean"
+            self.latname = "yt_ocean"
+            self.depthname = "st_ocean"
+            self.lonname_u = "xu_ocean"
+            self.latname_u = "yu_ocean"
+            self.lonname_v = "xu_ocean"
+            self.latname_v = "yu_ocean"
+            self.timeobject = []
+
         self.timename = "time"
         self.realm = "ocean"
         self.fillvaluein = -1.e20
@@ -200,7 +215,7 @@ class Model2romsConfig(object):
         # OUT GRIDTYPES ------------------------------------------------------------------------------
         # Define what grid type you wnat to interpolate to
         # Options: This is just the name of your grid used to identify your selection later
-        self.outgrid = "A20" #"ROHO800"
+        self.outgrid = "ROHO800"
         self.outgridtype = "ROMS"
 
         # Subset input data. If you have global data you may want to seubset these to speed up reading. Make
@@ -232,12 +247,12 @@ class Model2romsConfig(object):
 
         # DATE AND TIME DETAILS ---------------------------------------------------------
         # Define the period to create forcing for
-        self.start_year = 2006
-        self.end_year = 2008
+        self.start_year = 2002
+        self.end_year = 2017
         self.start_month = 1
-        self.end_month = 3
+        self.end_month = 12
         self.start_day = 15
-        self.end_day = 15
+        self.end_day = 31
 
         if int(calendar.monthrange(self.start_year, self.start_month)[1]) < self.start_day:
             self.start_day = int(calendar.monthrange(self.start_year, self.start_month)[1])
