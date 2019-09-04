@@ -1,12 +1,12 @@
 <h1>Model2roms</h1>
 <img alt="GitHub" src="https://img.shields.io/github/license/trondkr/model2roms.svg"><img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/trondkr/model2roms.svg">
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e51ca8fa177042e3a329e688858c5d75)](https://app.codacy.com/app/trondkr/model2roms?utm_source=github.com&utm_medium=referral&utm_content=trondkr/model2roms&utm_campaign=Badge_Grade_Dashboard)
 
 Model2roms is a Python toolbox for creating the necessary climatology, boundary, and initial forcing files 
 required to run the ROMS (<a href="http://myroms.org/" target="_blank">Regional Ocean Modeling System</a>) model. The latest version of model2roms can convert several popular model hindcasts and projections including the NORESM (Norways Earth System Model), SODA global re-analysis, HYCOM, World Ocean Atlas (WOA), and GLORYS (Mercator Ocean) to a use as forcing files for a given ROMS grid structure.
 
 <h3>Latest updates</h3>
 <ul>
+<li><b>03.09.2019</b>:Added option to use <a href="http://dsrs.atmos.umd.edu/DATA/soda3.3.2/REGRIDED/ocean/" target="_blank" SODA3 5 day averages</a> as forcing files (<b>SODA3_5DAY</b>)</li>
 <li><b>30.04.2019</b>:Fixed progressbar options for Python 3.7</li>
 <li><b>15.04.2019</b>:Added `LDFLAG` option in `compile.py` for compiling Fortran files using f2py on Python3.7</li>
 <li><b>13.03.2019</b>: Model2roms has been refactored and the code is now easier to read. Added support for interpolating and writing BGC (biogeochemistry) data to the BRY, CLIM, and INIT files. The BGC currently only supports NorESM BGC data as input and the output format (variable names, units) is intended to be used as input to the ERSEM model.</li>
