@@ -40,11 +40,12 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
     if confM2R.showprogress is True:
         try:
             import progressbar
+            widgets=['\rHorizontal interpolation:', progressbar.Percentage(), progressbar.Bar()]
+            progress = progressbar.ProgressBar(confM2R.grdMODEL.nlevels, widgets=widgets).start()
         except ImportError:
             print("Could not find module progressbar")
+            confM2R.showprogress=False
         pass
-        widgets=['\rHorizontal interpolation:', progressbar.Percentage(), progressbar.Bar()]
-        progress = progressbar.ProgressBar(confM2R.grdMODEL.nlevels, widgets=widgets).start()
 
     indexROMS_Z_ST, toxi, toeta, mymask = setupIndexes(confM2R, myvar)
     array1 = np.zeros((indexROMS_Z_ST), dtype=np.float)
@@ -62,18 +63,11 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
                 indata=np.squeeze(mydata[k, :, :])
 
             # We interpolate to RHO fields for all variables and then we later interpolate RHO points to U and V points
-            # But input data are read on U and V and RHO grids if they differ (as NorESM does).
-            # EXCEPTION IS UICE AND VICE that are directly interpolated to the U and V grid. This should be fixed as these need to be rotated too
-            if myvar in ['uice']:
-                confM2R.grdMODEL.fieldSrc_u.data[:, :] = np.flipud(np.rot90(indata))
-                field = confM2R.grdMODEL.regridSrc2Dst_u(confM2R.grdMODEL.fieldSrc_u, confM2R.grdMODEL.fieldDst_u)
-            elif myvar in ['vice']:
-                confM2R.grdMODEL.fieldSrc_v.data[:, :] = np.flipud(np.rot90(indata))
-                field = confM2R.grdMODEL.regridSrc2Dst_v(confM2R.grdMODEL.fieldSrc_v, confM2R.grdMODEL.fieldDst_v)
-            elif myvar in ['uvel']:
+            # But input data are read on U and V and RHO grids if they differ (as NorESM and GLORYS does).
+            if myvar in ['uice','uvel']:
                 confM2R.grdMODEL.fieldSrc_u.data[:, :] = np.flipud(np.rot90(indata))
                 field = confM2R.grdMODEL.regridSrc2Dst_u(confM2R.grdMODEL.fieldSrc_u, confM2R.grdMODEL.fieldDst_rho)
-            elif myvar in ['vvel']:
+            elif myvar in ['vice','vvel']:
                 confM2R.grdMODEL.fieldSrc_v.data[:, :] = np.flipud(np.rot90(indata))
                 field = confM2R.grdMODEL.regridSrc2Dst_v(confM2R.grdMODEL.fieldSrc_v, confM2R.grdMODEL.fieldDst_rho)
             else:
@@ -87,8 +81,6 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
             field = laplacefilter(field, 1000, toxi, toeta)
             field = field * mymask
             
-        #  field=field*grdROMS.mask_rho
-
         array1[k, :, :] = field
 
         # if k in [34,17,2]:
@@ -100,7 +92,6 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
         # if myvar in ["hice","aice"]:
         #     import plotData
         #     plotData.contourMap(grdROMS,grdROMS.lon_rho,grdROMS.lat_rho, field, "surface", myvar)
-
 
         if confM2R.showprogress is True:
             progress.update(k)
@@ -132,25 +123,28 @@ def setupESMFInterpolationWeights(confM2R):
         print("=>Creating the interpolation weights and indexes using ESMF (this may take some time....):")
 
         print("  -> regridSrc2Dst at RHO points")
-        confM2R.grdMODEL.fieldSrc_rho = ESMF.Field(confM2R.grdMODEL.esmfgrid, "fieldSrc", staggerloc=ESMF.StaggerLoc.CENTER)
+        confM2R.grdMODEL.fieldSrc_rho = ESMF.Field(confM2R.grdMODEL.esmfgrid, "fieldSrc", 
+                                                    staggerloc=ESMF.StaggerLoc.CENTER)
         confM2R.grdMODEL.fieldDst_rho = ESMF.Field(confM2R.grdROMS.esmfgrid, "fieldDst",
                                                    staggerloc=ESMF.StaggerLoc.CENTER)
-        confM2R.grdMODEL.regridSrc2Dst_rho = ESMF.Regrid(confM2R.grdMODEL.fieldSrc_rho, confM2R.grdMODEL.fieldDst_rho,
+
+        confM2R.grdMODEL.regridSrc2Dst_rho = ESMF.Regrid(confM2R.grdMODEL.fieldSrc_rho, 
+                                                         confM2R.grdMODEL.fieldDst_rho,
                                                          regrid_method=ESMF.RegridMethod.BILINEAR,
                                                          unmapped_action=ESMF.UnmappedAction.IGNORE)
 
-        print("  -> regridSrc2Dst at U points")
-        confM2R.grdMODEL.fieldSrc_u = ESMF.Field(confM2R.grdMODEL.esmfgrid_u, "fieldSrc", staggerloc=ESMF.StaggerLoc.CENTER)
-        confM2R.grdMODEL.fieldDst_u = ESMF.Field(confM2R.grdROMS.esmfgrid_u, "fieldDst_u",
-                                                 staggerloc=ESMF.StaggerLoc.CENTER)
-        confM2R.grdMODEL.regridSrc2Dst_u = ESMF.Regrid(confM2R.grdMODEL.fieldSrc_u, confM2R.grdMODEL.fieldDst_u,
+        print("  -> regridSrc2Dst at U points to RHO")
+        confM2R.grdMODEL.fieldSrc_u = ESMF.Field(confM2R.grdMODEL.esmfgrid_u, "fieldSrc", 
+                                                       staggerloc=ESMF.StaggerLoc.CENTER)
+        confM2R.grdMODEL.regridSrc2Dst_u = ESMF.Regrid(confM2R.grdMODEL.fieldSrc_u, 
+                                                       confM2R.grdMODEL.fieldDst_rho,
                                                        regrid_method=ESMF.RegridMethod.BILINEAR,
                                                        unmapped_action=ESMF.UnmappedAction.IGNORE)
 
-        print("  -> regridSrc2Dst at V points")
-        confM2R.grdMODEL.fieldSrc_v = ESMF.Field(confM2R.grdMODEL.esmfgrid_v, "fieldSrc", staggerloc=ESMF.StaggerLoc.CENTER)
-        confM2R.grdMODEL.fieldDst_v = ESMF.Field(confM2R.grdROMS.esmfgrid_v, "fieldDst_v",
-                                                 staggerloc=ESMF.StaggerLoc.CENTER)
-        confM2R.grdMODEL.regridSrc2Dst_v = ESMF.Regrid(confM2R.grdMODEL.fieldSrc_v, confM2R.grdMODEL.fieldDst_v,
+        print("  -> regridSrc2Dst at V points to RHO")
+        confM2R.grdMODEL.fieldSrc_v = ESMF.Field(confM2R.grdMODEL.esmfgrid_v, "fieldSrc", 
+                                                       staggerloc=ESMF.StaggerLoc.CENTER)
+        confM2R.grdMODEL.regridSrc2Dst_v = ESMF.Regrid(confM2R.grdMODEL.fieldSrc_v, 
+                                                       confM2R.grdMODEL.fieldDst_rho,
                                                        regrid_method=ESMF.RegridMethod.BILINEAR,
                                                        unmapped_action=ESMF.UnmappedAction.IGNORE)

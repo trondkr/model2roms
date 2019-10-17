@@ -7,3 +7,5 @@
 *.pyc
 *.pdf
 \.DS_Store
+
+interpolation\.mod

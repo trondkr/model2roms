@@ -193,7 +193,7 @@ def createBryFile(confM2R):
     v_time.units = 'seconds since 1948-01-01 00:00:00'
     v_time.field = 'time, scalar, series'
 
-    if (confM2R.indatatype == "NORESM"):
+    if (confM2R.oceanindatatype == "NORESM"):
         v_time.calendar = 'noleap'
     else:
         v_time.calendar = 'standard'

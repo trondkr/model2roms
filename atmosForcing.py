@@ -17,7 +17,7 @@ _author_   = 'Trond Kristiansen'
 _email_    = 'me@trondkristiansen.com'
 _created_  = datetime(2014, 12, 16)
 _modified_ = datetime(2014, 12, 16)
-_version_  = "0.1.0"
+_version_  = "0.2.0"
 _status_   = "Development"
 
 
@@ -49,44 +49,18 @@ def laplaceFilter(field, threshold, toxi, toeta):
     return field
 
 
-def getNORESMfilename(year,month,day,myvar,dataPath):
+def getERA5Filename(confM2R):
+    return confM2R.atmosphericpath+''
 
-    if (myvar=='grid'):
-        filename = dataPath + 'GRID/NorESM.nc'
-    else:
-        if myvar in ['U10','TAUX','TAUY']:
-            if (month < 10):
-                if (day < 10):
-                    filename = dataPath + 'NRCP45AERCN_f19_g16_CLE_01.cam2.h5.'+str(year)+'-0'+str(month)+'-0'+str(day)+'-00000.nc'
-                else:
-                    filename = dataPath + 'NRCP45AERCN_f19_g16_CLE_01.cam2.h5.'+str(year)+'-0'+str(month)+'-'+str(day)+'-00000.nc'
-            else:
-                if (day < 10):
-                    filename = dataPath + 'NRCP45AERCN_f19_g16_CLE_01.cam2.h5.'+str(year)+'-'+str(month)+'-0'+str(day)+'-00000.nc'
-                else:
-                    filename = dataPath + 'NRCP45AERCN_f19_g16_CLE_01.cam2.h5.'+str(year)+'-'+str(month)+'-'+str(day)+'-00000.nc'
-        print(filename)
-    return filename
-
-
-def createAtmosFileUV(grdROMS,modelpath,atmospath,startdate,enddate,useESMF,myformat,abbreviation,mytype,gridtype,showprogress):
-
-    # Setup 
-    print("\nGenerating atmospheric forcing for: %s to %s\n"%(startdate, enddate))
-    years = [(int(startdate.year) + kk) for kk in range(1 + int(enddate.year) - int(startdate.year))]
-   
-    if showprogress is True:
+def createAtmosFileUV(confM2R):
+    
+    if confM2R.showprogress is True:
         import progressbar
         progress = progressbar.ProgressBar(widgets=[progressbar.Percentage(), progressbar.Bar()], maxval=len(years)).start()
     
     # Create the objects for source and destination grids
    
-    # Get the "Fraction of sfc area covered by ocean
-    nor = atmospath + "NRCP45AERCN_f19_g16_CLE_02.cam2.h0.2006-01.nc"
-    cdf = Dataset(nor,"r")
-    OCENFRAC = cdf.variables["OCNFRAC"][:]
-    cdf.close()
-    Fill = -999.0
+    getERA5_1DAYfilename
 
     grdMODEL = grd.grdClass(nor, mytype, mytype, useESMF,'atmos')
     

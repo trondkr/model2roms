@@ -13,7 +13,6 @@ __modified__ = datetime(2019, 3, 12)
 __version__ = "1.5"
 __status__ = "Development"
 
-
 def myhelp():
     """
     This script generates boundary (BRY) files from the climatology (CLIM) files. The
@@ -231,7 +230,7 @@ def writebry(confM2R):
         print('clim2bry.py => Appending data to file %s for time %s' % (confM2R.bryname, d))
 
         f.variables['ocean_time'][itime] = climtime[itime]
-
+      
         # ------- Write out western boundary variables ------------
 
         f.variables['temp_west'][itime, :, :] = temp_west
@@ -242,7 +241,7 @@ def writebry(confM2R):
         f.variables['v_west'][itime, :, :] = v_west
         f.variables['ubar_west'][itime, :] = ubar_west
         f.variables['vbar_west'][itime, :] = vbar_west
-
+      
         if confM2R.writebcg:
             f.variables['O3_c_west'][itime,:,:] = O3_c_west
             f.variables['O3_TA_west'][itime,:,:] = O3_ta_west
@@ -260,7 +259,7 @@ def writebry(confM2R):
         f.variables['v_east'][itime, :, :] = v_east
         f.variables['ubar_east'][itime, :] = ubar_east
         f.variables['vbar_east'][itime, :] = vbar_east
-        
+    
         if confM2R.writebcg:
             f.variables['O3_c_east'][itime,:,:] = O3_c_east
             f.variables['O3_TA_east'][itime,:,:] = O3_ta_east
@@ -296,7 +295,7 @@ def writebry(confM2R):
         f.variables['v_north'][itime, :, :] = v_north
         f.variables['ubar_north'][itime, :] = ubar_north
         f.variables['vbar_north'][itime, :] = vbar_north
-
+     
         if confM2R.writebcg:
             f.variables['O3_c_north'][itime,:,:] = O3_c_north
             f.variables['O3_TA_north'][itime,:,:] = O3_ta_north

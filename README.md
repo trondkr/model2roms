@@ -8,7 +8,7 @@ required to run the ROMS (<a href="http://myroms.org/" target="_blank">Regional 
 <ul>
 <li><b>03.09.2019</b>:Added option to use <a href="http://dsrs.atmos.umd.edu/DATA/soda3.3.2/REGRIDED/ocean/" target="_blank"> SODA3 5 day averages</a> as forcing files (<b>SODA3_5DAY</b>). This provides a great opportunity to generate forcing that contains much higher temporal resolution compared to the usual monthly forcing fields. To use this option, define 
         <ul>
-                <li><code>self.indatatype = 'SODA3_5DAY'</code></li>
+                <li><code>self.oceanindatatype = 'SODA3_5DAY'</code></li>
                 <li><code>self.timefrequencyofinputdata = "5days"</code>(used in method: createlistofdays)</li>
         </ul>
 </li>
@@ -113,7 +113,7 @@ Prior to run model2roms you have to specify a number of settings so that the pro
         #  Define what grid type you wnat to interpolate from (input MODEL data)
         # Options:
         # 1. SODA, 2. SODAMONTHLY, 3.WOAMONTHLY, 4. NORESM, 4. GLORYS, 5. SODA3
-        self.indatatype = 'SODA3'
+        self.oceanindatatype = 'SODA3'
 
         # Define contact info for final NetCDF files
         self.authorname = "Trond Kristiansen"
@@ -165,7 +165,7 @@ Prior to run model2roms you have to specify a number of settings so that the pro
         self.romsgridpath = self.defineromsgridpath()
 
         # Climatology is only monthly and model2roms needs to know this
-        self.isclimatology = True if self.indatatype == 'WOAMONTHLY' else False
+        self.isclimatology = True if self.oceanindatatype == 'WOAMONTHLY' else False
 
         # DATE AND TIME DETAILS ---------------------------------------------------------
         # Define the period to create forcing for

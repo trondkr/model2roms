@@ -4,34 +4,34 @@ from datetime import datetime
 
 # Main function called from model2roms
 def getFilename(confM2R,year,month,day,defaultvar):
-    if confM2R.indatatype == 'SODA':
+    if confM2R.oceanindatatype == 'SODA':
         if defaultvar is None:defaultvar="salinity"
         filenamein = getSODAfilename(confM2R, year, month, day, defaultvar)
-    if confM2R.indatatype == 'SODA3':
+    if confM2R.oceanindatatype == 'SODA3':
         if defaultvar is None:defaultvar="salinity"
-        filenamein = getSODA3filename(confM2R, year, month, defaultvar)
-    if confM2R.indatatype == 'SODA3_5DAY':
+        filenamein = getSODA3filename(confM2R, year, month, day, defaultvar)
+    if confM2R.oceanindatatype == 'SODA3_5DAY':
         if defaultvar is None:defaultvar="salinity"
         filenamein = getSODA3_5DAYfilename(confM2R, year, month, day, defaultvar)
-    if confM2R.indatatype == 'SODAMONTHLY':
+    if confM2R.oceanindatatype == 'SODAMONTHLY':
         if defaultvar is None:defaultvar="salinity"
         filenamein = getSODAfilename(confM2R, year, month, day, defaultvar)
-    if confM2R.indatatype == 'NORESM':
+    if confM2R.oceanindatatype == 'NORESM':
         if defaultvar is None:defaultvar="grid"
         filenamein = getNORESMfilename(confM2R, year, month, defaultvar)
-    if confM2R.indatatype == 'WOAMONTHLY':
+    if confM2R.oceanindatatype == 'WOAMONTHLY':
         if defaultvar is None:defaultvar="temperature"
         filenamein = getWOAMONTHLYfilename(confM2R, year, month, defaultvar)
-    if confM2R.indatatype == 'GLORYS':
+    if confM2R.oceanindatatype == 'GLORYS':
         if defaultvar is None:defaultvar="S"
         filenamein = getGLORYSfilename(confM2R, year, month, defaultvar)
-    if confM2R.indatatype == 'GLORYS':
+    if confM2R.oceanindatatype == 'GLORYS':
         if defaultvar is None:defaultvar="S"
         filenamein = getGLORYSfilename(confM2R, year, month, defaultvar)
-    if confM2R.indatatype == 'NS8KM':
+    if confM2R.oceanindatatype == 'NS8KM':
         if defaultvar is None:defaultvar="salinity"
         filenamein = getNS8KMfilename(confM2R, year, month, defaultvar)
-    if confM2R.indatatype == 'NS8KMZ':
+    if confM2R.oceanindatatype == 'NS8KMZ':
         if defaultvar is None:defaultvar="salinity"
         filenamein, readFromOneFile = getNS8KMZfilename(confM2R, year, month, defaultvar)
     return filenamein
@@ -170,6 +170,21 @@ def getSODA3_5DAYfilename(confM2R, year, month, day, myvar):
         return '{}soda3.3.2_5dy_ocean_ice_{:04}_{:02}_{:02}.nc'.format(confM2R.modelpath,seldate.year,seldate.month,seldate.day)
     else:
         return '{}soda3.3.2_5dy_ocean_reg_{:04}_{:02}_{:02}.nc'.format(confM2R.modelpath,seldate.year,seldate.month,seldate.day)
+
+def getERA5_1DAYfilename(confM2R, year, month, day, myvar):
+    
+    if len(confM2R.timeobject)==0:
+        mcdf = MFDataset(confM2R.atmosphericpath+"*.nc")
+        confM2R.timeobject = mcdf.variables["time"]
+        
+        print("Loaded all ERA5 timesteps: {}".format(confM2R.timeobject[:]))
+    index = date2index(datetime(year,month,day,0,0),confM2R.timeobject,calendar=confM2R.timeobject.calendar,select="nearest")
+    seldate=num2date(confM2R.timeobject[index],units=confM2R.timeobject.units, calendar=confM2R.timeobject.calendar)
+
+    print("selected index {}".format(seldate))
+ 
+    return '{}soda3.3.2_5dy_ocean_reg_{:04}_{:02}_{:02}.nc'.format(confM2R.atmosphericpath,seldate.year,seldate.month,seldate.day)
+
 
 
 def getWOAMONTHLYfilename(confM2R, year, month, myvar):
