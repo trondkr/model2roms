@@ -42,7 +42,7 @@ def createlistofmonths(confM2R, currentyear):
     return IDS
 
 
-def createlistofdays(confM2R, year, month):
+def createlistofdays(confM2R, year, month, first_run):
     days = []
     if confM2R.timefrequencyofinputdata == 'day':
         daystep = 7
@@ -55,7 +55,11 @@ def createlistofdays(confM2R, year, month):
         # Regulary we want all days in each month                
         ndays = int(calendar.monthrange(year, month)[1])
         days = [d + 1 for d in range(0, ndays, daystep)]
-
+        if first_run:
+            for day in days:
+                if confM2R.start_day>day:
+                    days.remove(day)
+                
         # Exceptions:
         # We start in the first month after day one
         if (month == confM2R.startdate.month and year == confM2R.startdate.year and confM2R.startdate.day > 1):
@@ -77,7 +81,13 @@ def createlistofdays(confM2R, year, month):
             if dd_date.year==year and dd_date.month==month:
                 days.append(dd_date.day)
                 print(dd_date)
-
+        if first_run:
+            days_tmp=days.copy()
+            for day in days:
+                if day < confM2R.start_day:
+                    days_tmp.remove(day)
+                    print("Removing day {} from days {}".format(day, days_tmp))
+            days=days_tmp 
         return days
 
     if confM2R.timefrequencyofinputdata == 'month':

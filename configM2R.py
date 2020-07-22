@@ -112,11 +112,12 @@ class Model2romsConfig(object):
 
     def defineromsgridpath(self):
         return {'A20': '/Users/trondkr/Dropbox/NIVA/A20/Grid/A20niva_grd_v1.nc', # '/cluster/projects/nn9412k/A20/Grid/A20niva_grd_v1.nc',
-                'ROHO800': '/cluster/projects/nn9490k/ROHO800/Grid/ROHO800_grid_fix3.nc'}[self.outgrid]
+           #     'ROHO800': '/cluster/projects/nn9490k/ROHO800/Grid/ROHO800_grid_fix3.nc'}[self.outgrid]
+                'ROHO800': '/Users/trondkr/Dropbox/NIVA/ROHO800/Grid/ROHO800_grid_fix3.nc'}[self.outgrid]
 
     def defineoceanforcingdatapath(self):
         return {'SODA3': "/Volumes/DATASETS/SODA3.3.1/OCEAN/", 
-                'SODA3_5DAY': "/cluster/work/users/trondk/SODA3.3.2/",  
+                'SODA3_5DAY': "/Volumes/DATASETS/SODA2002/", #"/cluster/projects/nn9297k/SODA3.3.2/",  
                 'NORESM': "/cluster/projects/nn9412k/A20/FORCING/RCP85_ocean/",
                 'GLORYS': "/cluster/projects/nn9412k/glorys/",
                 'WOAMONTHLY': "/Users/trondkr/Projects/is4dvar/createSSS/"}[self.oceanindatatype]
@@ -177,13 +178,13 @@ class Model2romsConfig(object):
         self.myformat = 'NETCDF4'
         self.myzlib = True
         # Frequency of the input data: usually monthly
-        self.timefrequencyofinputdata = "month"  # , "month", "hour", "5days"
+        self.timefrequencyofinputdata = "5days"  # , "month", "hour", "5days"
 
         # IN GRIDTYPES ------------------------------------------------------------------------------
         #  Define what grid type you wnat to interpolate from (input MODEL data)
         # Options:
         # 1. SODA, 2. SODAMONTHLY, 3.WOAMONTHLY, 4. NORESM, 4. GLORYS, 5. SODA3, 6. SODA3_5DAY
-        self.oceanindatatype = 'SODA3'
+        self.oceanindatatype = 'SODA3_5DAY'
         self.atmosindatatype = 'ERA5'
 
         # Define contact info for final NetCDF files
@@ -226,7 +227,7 @@ class Model2romsConfig(object):
         # OUT GRIDTYPES ------------------------------------------------------------------------------
         # Define what grid type you wnat to interpolate to
         # Options: This is just the name of your grid used to identify your selection later
-        self.outgrid = 'A20' #"ROHO800"
+        self.outgrid = 'ROHO800' #"ROHO800", "A20"
         self.outgridtype = "ROMS"
 
         # Subset input data. If you have global data you may want to seubset these to speed up reading. Make
@@ -260,9 +261,9 @@ class Model2romsConfig(object):
         # DATE AND TIME DETAILS ---------------------------------------------------------
         # Define the period to create forcing for
         self.start_year = 2002
-        self.end_year = 2002
+        self.end_year = 2003
         self.start_month = 5
-        self.end_month = 6
+        self.end_month = 12
         self.start_day = 15
         self.end_day = 31
 

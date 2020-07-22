@@ -161,7 +161,7 @@ def getSODA3_5DAYfilename(confM2R, year, month, day, myvar):
         mcdf = MFDataset(confM2R.modelpath+"*.nc")
         confM2R.timeobject = mcdf.variables["time"]
         
-        print("Loaded all timesteps: {}".format(confM2R.timeobject[:]))
+       # print("Loaded all timesteps: {}".format(confM2R.timeobject[:]))
     index = date2index(datetime(year,month,day,0,0),confM2R.timeobject,calendar=confM2R.timeobject.calendar,select="nearest")
     seldate=num2date(confM2R.timeobject[index],units=confM2R.timeobject.units, calendar=confM2R.timeobject.calendar)
 

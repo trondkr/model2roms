@@ -83,9 +83,9 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
             
         array1[k, :, :] = field
 
-        # if k in [34,17,2]:
-        #     import plotData
-        #     plotData.contourMap(grdROMS, grdROMS.lon_rho, grdROMS.lat_rho, field, str(k)+'_withfilter', myvar)
+        if k in [34,17,2]:
+            import plotData
+            plotData.contourMap(grdROMS, grdROMS.lon_rho, grdROMS.lat_rho, field, str(k)+'_withfilter', myvar)
         # if __debug__:
         #      print "Data range after horisontal interpolation: ", field.min(), field.max()
 

@@ -95,6 +95,8 @@ class Grd:
                 self.fillval = -9.99e+33
             if confM2R.oceanindatatype == 'SODA3':
                 self.fillval = -1.e+20
+            if confM2R.oceanindatatype == 'SODA3_5DAY':
+                    self.fillval = -1.e+20
             if confM2R.oceanindatatype == 'SODAMONTHLY':
                 self.fillval = -9.99e+33
             if confM2R.oceanindatatype == 'GLORYS':

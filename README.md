@@ -1,11 +1,31 @@
 <h1>Model2roms</h1>
-<img alt="GitHub" src="https://img.shields.io/github/license/trondkr/model2roms.svg"><img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/trondkr/model2roms.svg">
+
+![Build status][image-1]
+![CodeBeat][image-2]
+![License][image-3]
+![License][image-4]
+
+
+[image-1]:	https://badge.buildkite.com/8b25e9518aca90534a2a0755dd0623dc91533ba7ca5bd42dde.svg
+[image-2]:	https://codebeat.co/badges/cf0f4bfc-a186-4dfc-9e6a-291b7e985492
+[image-3]:	https://img.shields.io/github/license/trondkr/model2roms.svg
+[image-4]:	https://img.shields.io/github/last-commit/trondkr/model2roms.svg
 
 Model2roms is a Python toolbox for creating the necessary climatology, boundary, and initial forcing files 
 required to run the ROMS (<a href="http://myroms.org/" target="_blank">Regional Ocean Modeling System</a>) model. The latest version of model2roms can convert several popular model hindcasts and projections including the NORESM (Norways Earth System Model), SODA global re-analysis, HYCOM, World Ocean Atlas (WOA), and GLORYS (Mercator Ocean) to a use as forcing files for a given ROMS grid structure.
 
 <h3>Latest updates</h3>
 <ul>
+
+<li><b>22.07.2020</b>: NEW <a href="https://github.com/trondkr/ERA5-ROMS" target="_blank"> atmospheric forcing toolbox </a> 
+for generating <a href="https://www.ecmwf.int/en/forecasts/datasets/reanalysis-datasets/era5" target="_blank"> ERA5 </a>  forcing for ROMS to be used together with <b>models2roms</b>). 
+This makes it easy to generate  high temporal (hourly) and spatial (0.25x0.25) atmospheric forcing for any grid. The toolbox downloads and converts all ERA5 atmospheric variables
+into the proper units and names as required by ROMS. The new atmospheric forcing requires the time variables for all atmospheric variables to be changed to  
+        <ul>
+                <li><code>ocean_time</code></li>
+        </ul>
+in the `varinfo.dat file Using one time unit across ROMS makes it less prone to errors.
+</li>
 <li><b>03.09.2019</b>:Added option to use <a href="http://dsrs.atmos.umd.edu/DATA/soda3.3.2/REGRIDED/ocean/" target="_blank"> SODA3 5 day averages</a> as forcing files (<b>SODA3_5DAY</b>). This provides a great opportunity to generate forcing that contains much higher temporal resolution compared to the usual monthly forcing fields. To use this option, define 
         <ul>
                 <li><code>self.oceanindatatype = 'SODA3_5DAY'</code></li>
@@ -20,7 +40,7 @@ required to run the ROMS (<a href="http://myroms.org/" target="_blank">Regional 
 <li>Support for using Earth System Modeling Framework as the default interpolation method. This allows the input data to be on any kind of grid structure (e.g. irregular) as long as geographical information such as longitude and latitude of grid cells are available. The implementation uses the Python interface to ESMF which can be found here: <a href="https://www.earthsystemcog.org/projects/esmpy/" target="_blank">www.earthsystemcog.org/projects/esmpy/</a>. Using ESMF significantly increases the speed of the interpolation. As an example, interpolating one variable (e.g. temperature distribution) from a global irregular grid to a local non-rectangular grid of size 1250x789, at 70 different depth levels, takes 3 seconds on a Mac Laptop Pro. Additional information as to how to install ESMF and ESMPy from source on Mac OSX is available <a href="http://www.trondkristiansen.com/?page_id=1302" target="_blank">www.trondkristiansen.com/</a>. For most people, installing using Anaconda would be the best option:
 
 ```bash
-conda create -n model2roms
+conda create -n model2roms`
 conda config --add channels conda-forge
 conda activate model2roms
 conda install esmpy netcdf4 progressbar
@@ -198,3 +218,4 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+

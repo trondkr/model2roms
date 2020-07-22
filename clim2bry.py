@@ -2,7 +2,7 @@
 This is CLM2BRY
 """
 from datetime import datetime
-from netCDF4 import Dataset,num2date
+from netCDF4 import Dataset, num2date
 import numpy as np
 import IOBry
 
@@ -12,6 +12,7 @@ __created__ = datetime(2009, 3, 2)
 __modified__ = datetime(2019, 3, 12)
 __version__ = "1.5"
 __status__ = "Development"
+
 
 def myhelp():
     """
@@ -230,7 +231,7 @@ def writebry(confM2R):
         print('clim2bry.py => Appending data to file %s for time %s' % (confM2R.bryname, d))
 
         f.variables['ocean_time'][itime] = climtime[itime]
-      
+
         # ------- Write out western boundary variables ------------
 
         f.variables['temp_west'][itime, :, :] = temp_west
@@ -241,14 +242,14 @@ def writebry(confM2R):
         f.variables['v_west'][itime, :, :] = v_west
         f.variables['ubar_west'][itime, :] = ubar_west
         f.variables['vbar_west'][itime, :] = vbar_west
-      
+
         if confM2R.writebcg:
-            f.variables['O3_c_west'][itime,:,:] = O3_c_west
-            f.variables['O3_TA_west'][itime,:,:] = O3_ta_west
-            f.variables['N1_p_west'][itime,:,:] = N1_p_west
-            f.variables['N3_n_west'][itime,:,:] = N3_n_west
-            f.variables['N5_s_west'][itime,:,:] = N5_s_west
-            f.variables['O2_o_west'][itime,:,:] = O2_o_west
+            f.variables['O3_c_west'][itime, :, :] = O3_c_west
+            f.variables['O3_TA_west'][itime, :, :] = O3_ta_west
+            f.variables['N1_p_west'][itime, :, :] = N1_p_west
+            f.variables['N3_n_west'][itime, :, :] = N3_n_west
+            f.variables['N5_s_west'][itime, :, :] = N5_s_west
+            f.variables['O2_o_west'][itime, :, :] = O2_o_west
 
         # ------- Write out eastern boundary variables ------------
 
@@ -259,14 +260,14 @@ def writebry(confM2R):
         f.variables['v_east'][itime, :, :] = v_east
         f.variables['ubar_east'][itime, :] = ubar_east
         f.variables['vbar_east'][itime, :] = vbar_east
-    
+
         if confM2R.writebcg:
-            f.variables['O3_c_east'][itime,:,:] = O3_c_east
-            f.variables['O3_TA_east'][itime,:,:] = O3_ta_east
-            f.variables['N1_p_east'][itime,:,:] = N1_p_east
-            f.variables['N3_n_east'][itime,:,:] = N3_n_east
-            f.variables['N5_s_east'][itime,:,:] = N5_s_east
-            f.variables['O2_o_east'][itime,:,:] = O2_o_east
+            f.variables['O3_c_east'][itime, :, :] = O3_c_east
+            f.variables['O3_TA_east'][itime, :, :] = O3_ta_east
+            f.variables['N1_p_east'][itime, :, :] = N1_p_east
+            f.variables['N3_n_east'][itime, :, :] = N3_n_east
+            f.variables['N5_s_east'][itime, :, :] = N5_s_east
+            f.variables['O2_o_east'][itime, :, :] = O2_o_east
 
         # ------- Write out southern boundary variables ------------
 
@@ -279,12 +280,12 @@ def writebry(confM2R):
         f.variables['vbar_south'][itime, :] = vbar_south
 
         if confM2R.writebcg:
-            f.variables['O3_c_south'][itime,:,:] = O3_c_south
-            f.variables['O3_TA_south'][itime,:,:] = O3_ta_south
-            f.variables['N1_p_south'][itime,:,:] = N1_p_south
-            f.variables['N3_n_south'][itime,:,:] = N3_n_south
-            f.variables['N5_s_south'][itime,:,:] = N5_s_south
-            f.variables['O2_o_south'][itime,:,:] = O2_o_south
+            f.variables['O3_c_south'][itime, :, :] = O3_c_south
+            f.variables['O3_TA_south'][itime, :, :] = O3_ta_south
+            f.variables['N1_p_south'][itime, :, :] = N1_p_south
+            f.variables['N3_n_south'][itime, :, :] = N3_n_south
+            f.variables['N5_s_south'][itime, :, :] = N5_s_south
+            f.variables['O2_o_south'][itime, :, :] = O2_o_south
 
         # ------- Write out northern boundary variables ------------
 
@@ -295,14 +296,14 @@ def writebry(confM2R):
         f.variables['v_north'][itime, :, :] = v_north
         f.variables['ubar_north'][itime, :] = ubar_north
         f.variables['vbar_north'][itime, :] = vbar_north
-     
+
         if confM2R.writebcg:
-            f.variables['O3_c_north'][itime,:,:] = O3_c_north
-            f.variables['O3_TA_north'][itime,:,:] = O3_ta_north
-            f.variables['N1_p_north'][itime,:,:]  = N1_p_north
-            f.variables['N3_n_north'][itime,:,:] = N3_n_north
-            f.variables['N5_s_north'][itime,:,:] = N5_s_north
-            f.variables['O2_o_north'][itime,:,:] = O2_o_north
+            f.variables['O3_c_north'][itime, :, :] = O3_c_north
+            f.variables['O3_TA_north'][itime, :, :] = O3_ta_north
+            f.variables['N1_p_north'][itime, :, :] = N1_p_north
+            f.variables['N3_n_north'][itime, :, :] = N3_n_north
+            f.variables['N5_s_north'][itime, :, :] = N5_s_north
+            f.variables['O2_o_north'][itime, :, :] = O2_o_north
 
         if confM2R.writeice:
             f.variables['ageice_west'][itime, :] = ageice_west
