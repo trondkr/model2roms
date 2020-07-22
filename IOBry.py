@@ -37,11 +37,11 @@ def createBryFile(confM2R):
         myzlib = False
     grdROMS = confM2R.grdROMS
 
-    if os.path.exists(confM2R.bryname):
-        os.remove(confM2R.bryname)
-    print(('\n=>Creating initial Boundary (BRY) file {}'.format(confM2R.bryname)))
+    if os.path.exists(confM2R.bry_name):
+        os.remove(confM2R.bry_name)
+    print(('\n=>Creating initial Boundary (BRY) file {}'.format(confM2R.bry_name)))
 
-    f1 = Dataset(confM2R.bryname, mode='w', format=confM2R.myformat)
+    f1 = Dataset(confM2R.bry_name, mode='w', format=confM2R.myformat)
     f1.title = "Boundary forcing file (BRY) used for forcing of the ROMS model"
     f1.description = "Created for the {} grid file".format(confM2R.romsgridpath)
     f1.grdFile = "{}".format(confM2R.romsgridpath)
@@ -193,7 +193,7 @@ def createBryFile(confM2R):
     v_time.units = 'seconds since 1948-01-01 00:00:00'
     v_time.field = 'time, scalar, series'
 
-    if (confM2R.oceanindatatype == "NORESM"):
+    if (confM2R.ocean_indata_type == "NORESM"):
         v_time.calendar = 'noleap'
     else:
         v_time.calendar = 'standard'

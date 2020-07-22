@@ -38,10 +38,10 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
 
     if confM2R.grdROMS.ioClimInitialized is False:
         confM2R.grdROMS.ioClimInitialized = True
-        if os.path.exists(confM2R.climname):
-            os.remove(confM2R.climname)
+        if os.path.exists(confM2R.clim_name):
+            os.remove(confM2R.clim_name)
 
-        f1 = Dataset(confM2R.climname, mode='w', format=confM2R.myformat)
+        f1 = Dataset(confM2R.clim_name, mode='w', format=confM2R.myformat)
         f1.title = "Climatology forcing file (CLIM) used for forcing the ROMS model"
         f1.description = "Created for grid file: %s" % (confM2R.romsgridpath)
         f1.grd_file = "Gridfile: %s" % (confM2R.romsgridpath)
@@ -218,7 +218,7 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
             v_time.long_name = 'seconds since 1948-01-01 00:00:00'
             v_time.units = 'seconds since 1948-01-01 00:00:00'
             v_time.field = 'time, scalar, series'
-            if (confM2R.oceanindatatype == "NORESM"):
+            if (confM2R.ocean_indata_type == "NORESM"):
                 v_time.calendar = 'noleap'
             else:
                 v_time.calendar = 'standard'
@@ -456,7 +456,7 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
             #v_temp.missing_value = grdROMS.fillval
 
     else:
-        f1 = Dataset(confM2R.climname, mode='a', format=confM2R.myformat)
+        f1 = Dataset(confM2R.clim_name, mode='a', format=confM2R.myformat)
 
     if confM2R.isclimatology is False:
         if myvar == confM2R.globalvarnames[0]:
@@ -502,7 +502,7 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
                 f1.variables['sig12'][ntime, :, :] = 0.
                 f1.variables['sig22'][ntime, :, :] = 0.
 
-                if confM2R.oceanindatatype == 'GLORYS':
+                if confM2R.ocean_indata_type == 'GLORYS':
                     # Special care for GLORYS as dataset does not contain sea ice age and snow thickness
                     f1.variables['ageice'][ntime, :, :] = 0.
                     f1.variables['snow_thick'][ntime, :, :] = 0
@@ -525,7 +525,7 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
         if confM2R.writebcg:
             if myvar in ['O3_c','O3_TA','N1_p','N3_n','N5_s','O2_o']:
                 data1 = np.where(abs(data1) < 0, 0, data1)
-                if confM2R.oceanindatatype=="NORESM":
+                if confM2R.ocean_indata_type== "NORESM":
                     """
                     Multiply the NORESM variable by conversion factors below:
                     NORESM name     NORESM units     ERSEM name     ERSEM units    Conversion factor

@@ -1,15 +1,11 @@
-import time, calendar
-from netCDF4 import Dataset, date2num, num2date
-import model2roms
-import IOstation
-import clim2bry
-import decimateGrid
-import grd
-import numpy as np
-import atmosForcing
-import sys
-from datetime import datetime, timedelta
+import calendar
 import os
+import time
+from datetime import datetime
+
+import numpy as np
+
+import grd
 
 __author__ = 'Trond Kristiansen'
 __email__ = 'trond.kristiansen@niva.no'
@@ -41,7 +37,7 @@ class Model2romsConfig(object):
         return subset
 
     # Define abbreviation for the run: sued to name output files etc.
-    def defineabbreviation(self):
+    def define_abbreviation(self):
         return {"A20": "a20",
                 "ROHO800": "roho800"}[self.outgrid]
 
@@ -49,15 +45,16 @@ class Model2romsConfig(object):
         if self.isclimatology:
             print('\n=> Conversions run for climatological months')
         else:
-            print('\n=> Conversions run from year/month: %s/%s to %s/%s' % (self.start_year,self.start_month, self.end_year,self.end_month))
+            print('\n=> Conversions run from year/month: %s/%s to %s/%s' % (
+            self.start_year, self.start_month, self.end_year, self.end_month))
         print('==> The following variables will be interpolated: {}'.format(self.globalvarnames))
-      
+
         if self.useesmf:
             print("=>All horisontal interpolations will be done using ESMF-ESMPy (module ESMF)")
         print("=>Output files are written in format: %s" % self.myformat)
         print('\n=>Output grid file is: %s' % self.romsgridpath)
 
-    def formatdatesforoutputnames(self):
+    def format_dates_for_outputnames(self):
         # Format the date for use in output filenames
         startmonth = ("0%s" % self.start_month if self.start_month < 10 else "%s" % self.start_month)
         startday = ("0%s" % self.start_day if self.start_day < 10 else "%s" % self.start_day)
@@ -70,14 +67,14 @@ class Model2romsConfig(object):
 
         return modelperiod
 
-    def defineoutputfilenames(self):
+    def define_output_filenames(self):
         # Get string representation of start and end dates
-        modelperiod = self.formatdatesforoutputnames()
+        modelperiod = self.format_dates_for_outputnames()
 
         # Name of output files for CLIM, BRY, and INIT files
-        climname = self.abbreviation + '_clim_' + str(self.oceanindatatype) + '_' + str(modelperiod) + '.nc'
-        initname = self.abbreviation + '_init_' + str(self.oceanindatatype) + '_' + str(modelperiod) + '.nc'
-        bryname = self.abbreviation + '_bry_' + str(self.oceanindatatype) + '_' + str(modelperiod) + '.nc'
+        climname = self.abbreviation + '_clim_' + str(self.ocean_indata_type) + '_' + str(modelperiod) + '.nc'
+        initname = self.abbreviation + '_init_' + str(self.ocean_indata_type) + '_' + str(modelperiod) + '.nc'
+        bryname = self.abbreviation + '_bry_' + str(self.ocean_indata_type) + '_' + str(modelperiod) + '.nc'
 
         return climname, initname, bryname
 
@@ -85,21 +82,22 @@ class Model2romsConfig(object):
     # e.g. sea ice so those variables can not be included. the SODA3si for example does not contain ssh.
     # OPTIONS: ['temperature', 'salinity', 'ssh', 'uvel', 'vvel', 'ageice', 'uice', 'vice', 'aice', 'hice']
 
-    def defineglobalvarnames(self):
+    def define_global_varnames(self):
 
         return {'SODA': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel'],
                 'SODA3': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel'],
                 'SODA3_5DAY': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel'],
                 'GLORYS': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel', 'uice', 'vice', 'aice', 'hice'],
                 'WOAMONTHLY': ['temperature', 'salinity'],
-                'NORESM': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel', 'ageice', 'uice', 'vice', 'aice', 'hice','hs',
-                'O3_c','O3_TA','N1_p','N3_n','N5_s','O2_o']}[
-            self.oceanindatatype]
+                'NORESM': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel', 'ageice', 'uice', 'vice', 'aice', 'hice',
+                           'hs',
+                           'O3_c', 'O3_TA', 'N1_p', 'N3_n', 'N5_s', 'O2_o']}[
+            self.ocean_indata_type]
 
     # Define the corresponding name of the variables in the input dataset files. This list needs to correspond
     # exactly with the list given in the function defineglobalvarnames:
 
-    def defineinputdatavarnames(self):
+    def define_input_data_varnames(self):
 
         return {'SODA': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel'],
                 'SODA3': ['temp', 'salt', 'ssh', 'u', 'v'],
@@ -108,26 +106,33 @@ class Model2romsConfig(object):
                            'ileadfra', 'iicethic'],
                 'WOAMONTHLY': ['temperature', 'salinity'],
                 'NORESM': ['templvl', 'salnlvl', 'sealv', 'uvellvl', 'vvellvl', 'iage', 'uvel', 'vvel', 'aice', 'hi',
-                           'hs','dissic','talk','po4','no3','si','o2']}[self.oceanindatatype]
+                           'hs', 'dissic', 'talk', 'po4', 'no3', 'si', 'o2']}[self.ocean_indata_type]
 
-    def defineromsgridpath(self):
-        return {'A20': '/Users/trondkr/Dropbox/NIVA/A20/Grid/A20niva_grd_v1.nc', # '/cluster/projects/nn9412k/A20/Grid/A20niva_grd_v1.nc',
-           #     'ROHO800': '/cluster/projects/nn9490k/ROHO800/Grid/ROHO800_grid_fix3.nc'}[self.outgrid]
-                'ROHO800': '/Users/trondkr/Dropbox/NIVA/ROHO800/Grid/ROHO800_grid_fix3.nc'}[self.outgrid]
+    def define_roms_grid_path(self):
+        try:
+            return {'A20': '/Users/trondkr/Dropbox/NIVA/A20/Grid/A20niva_grd_v1.nc',
+                    # '/cluster/projects/nn9412k/A20/Grid/A20niva_grd_v1.nc',
+                    #     'ROHO800': '/cluster/projects/nn9490k/ROHO800/Grid/ROHO800_grid_fix3.nc'}[self.outgrid]
+                    'ROHO800': '/Users/trondkr/Dropbox/NIVA/ROHO800/Grid/ROHO800_grid_fix3.nc'}[self.outgrid]
+        except KeyError:
+            return KeyError
 
-    def defineoceanforcingdatapath(self):
-        return {'SODA3': "/Volumes/DATASETS/SODA3.3.1/OCEAN/", 
-                'SODA3_5DAY': "/Volumes/DATASETS/SODA2002/", #"/cluster/projects/nn9297k/SODA3.3.2/",  
-                'NORESM': "/cluster/projects/nn9412k/A20/FORCING/RCP85_ocean/",
-                'GLORYS': "/cluster/projects/nn9412k/glorys/",
-                'WOAMONTHLY': "/Users/trondkr/Projects/is4dvar/createSSS/"}[self.oceanindatatype]
+    def define_ocean_forcing_data_path(self):
+        try:
+            return {'SODA3': "/Volumes/DATASETS/SODA3.3.1/OCEAN/",
+                    'SODA3_5DAY': "/Volumes/DATASETS/SODA2002/",  # "/cluster/projects/nn9297k/SODA3.3.2/",
+                    'NORESM': "/cluster/projects/nn9412k/A20/FORCING/RCP85_ocean/",
+                    'GLORYS': "/cluster/projects/nn9412k/glorys/",
+                    'WOAMONTHLY': "/Users/trondkr/Projects/is4dvar/createSSS/"}[self.ocean_indata_type]
+        except KeyError:
+            return KeyError
 
-    def defineatmosphericforcingpath(self):
-         return {'ERA5': "/Volumes/DATASETS/ERA5/"}[self.atmosindatatype]
+    def define_atmospheric_forcing_path(self):
+        return {'ERA5': "/Volumes/DATASETS/ERA5/"}[self.atmosindatatype]
 
     def defineatmosinputdatavarnames(self):
-    
-        return {'ERA5': ['swrad','lwrad','precip','u10','v10']}[self.atmosindatatype]
+
+        return {'ERA5': ['swrad', 'lwrad', 'precip', 'u10', 'v10']}[self.atmosindatatype]
 
     def __init__(self):
         print('\n--------------------------\n')
@@ -154,7 +159,7 @@ class Model2romsConfig(object):
             self.stationnames = ["Ytre Utsira", "Indre Utsira", "Lista"]
             self.latlist = [59.316667, 59.316667, 58.016667]
             self.lonlist = [4.800000, 4.983333, 6.533333]
-            self.numberofpoints = 4 # Number of points around lat/lon to extract and average as output
+            self.numberofpoints = 4  # Number of points around lat/lon to extract and average as output
 
         # Create the bry, init, and clim files for a given grid and input data
         self.createoceanforcing = True
@@ -168,7 +173,7 @@ class Model2romsConfig(object):
         # Write biogeochemistry values to file
         self.writebcg = False
         # ROMS sometimes requires input of ice and ssh, but if you dont have these write zero files to file
-        self.set2DvarsToZero=True
+        self.set2DvarsToZero = True
         # Use ESMF for the interpolation. This requires that you have ESMF and ESMPy installed (import ESMF)
         self.useesmf = True
         # Apply filter to smooth the 2D fields after interpolation (time consuming but enhances results)
@@ -184,7 +189,7 @@ class Model2romsConfig(object):
         #  Define what grid type you wnat to interpolate from (input MODEL data)
         # Options:
         # 1. SODA, 2. SODAMONTHLY, 3.WOAMONTHLY, 4. NORESM, 4. GLORYS, 5. SODA3, 6. SODA3_5DAY
-        self.oceanindatatype = 'SODA3_5DAY'
+        self.ocean_indata_type = 'SODA3_5DAY'
         self.atmosindatatype = 'ERA5'
 
         # Define contact info for final NetCDF files
@@ -194,7 +199,7 @@ class Model2romsConfig(object):
         # Define what grid type you wnat to interpolate from: Can be Z for SIGMA for ROMS
         # vertical coordinate system or ZLEVEL. also define the name of the dimensions in the input files.
         # Options:
-        # 1. SIGMA (not prpoerly implemented yet), 2. ZLEVEL
+        # 1. SIGMA (not properly implemented yet), 2. ZLEVEL
         self.ingridtype = "ZLEVEL"
 
         # Define the names of the geographical variables in the input files. These may 
@@ -210,7 +215,7 @@ class Model2romsConfig(object):
         self.lonname_v = "longitude"
         self.latname_v = "latitude"
 
-        if self.oceanindatatype=='SODA3_5DAY':
+        if self.ocean_indata_type == 'SODA3_5DAY':
             self.lonname = "xt_ocean"
             self.latname = "yt_ocean"
             self.depthname = "st_ocean"
@@ -225,15 +230,15 @@ class Model2romsConfig(object):
         self.fillvaluein = -1.e20
 
         # OUT GRIDTYPES ------------------------------------------------------------------------------
-        # Define what grid type you wnat to interpolate to
+        # Define what grid type you want to interpolate to
         # Options: This is just the name of your grid used to identify your selection later
-        self.outgrid = 'ROHO800' #"ROHO800", "A20"
+        self.outgrid = 'ROHO800'  # "ROHO800", "A20"
         self.outgridtype = "ROMS"
 
         # Subset input data. If you have global data you may want to seubset these to speed up reading. Make
         # sure that your input data are cartesian (0-360 or -180:180, -90:90)
-        self.subsetindata = False
-        if self.subsetindata:
+        self.subset_indata = False
+        if self.subset_indata:
             self.subset = self.definesubsetforindata()
 
         # Define nmber of output depth levels
@@ -246,17 +251,17 @@ class Model2romsConfig(object):
         self.tcline = 250.0
         self.hc = 250
 
-        # PATH TO FORCINGDATA --------------------------------------------------------------------
+        # PATH TO FORCING DATA --------------------------------------------------------------------
         # Define the path to the input data
-        self.modelpath = self.defineoceanforcingdatapath()
-        self.atmosphericpath = self.defineatmosphericforcingpath()
+        self.modelpath = self.define_ocean_forcing_data_path()
+        self.atmosphericpath = self.define_atmospheric_forcing_path()
 
         # PATH TO GRID -----------------------------------------------------------------------------
         # Define the path to the grid file
-        self.romsgridpath = self.defineromsgridpath()
+        self.romsgridpath = self.define_roms_grid_path()
 
         # Climatology is only monthly and model2roms needs to know this
-        self.isclimatology = True if self.oceanindatatype == 'WOAMONTHLY' else False
+        self.isclimatology = True if self.ocean_indata_type == 'WOAMONTHLY' else False
 
         # DATE AND TIME DETAILS ---------------------------------------------------------
         # Define the period to create forcing for
@@ -282,8 +287,8 @@ class Model2romsConfig(object):
         # -> myvars is the name model2roms uses to identify variables
         # -> varNames is the name of the variable found in the NetCDF input files
 
-        self.globalvarnames = self.defineglobalvarnames()
-        self.inputdatavarnames = self.defineinputdatavarnames()
+        self.globalvarnames = self.define_global_varnames()
+        self.inputdatavarnames = self.define_input_data_varnames()
 
         # NO EDIT BELOW ====================================================================================================
         if self.compileall is True:
@@ -291,12 +296,12 @@ class Model2romsConfig(object):
             compile.compileallgfortran()
 
         if self.createatmosforcing or self.createoceanforcing:
-            self.abbreviation = self.defineabbreviation()
+            self.abbreviation = self.define_abbreviation()
 
-            self.climname, self.initname, self.bryname = self.defineoutputfilenames()
+            self.clim_name, self.init_name, self.bry_name = self.define_output_filenames()
 
             if self.isclimatology is True:
-                self.climname = self.abbreviation + '_' + str(self.oceanindatatype) + '_climatology.nc'
+                self.clim_name = self.abbreviation + '_' + str(self.ocean_indata_type) + '_climatology.nc'
 
             self.showinfo()
 
@@ -310,7 +315,7 @@ class Model2romsConfig(object):
 
             # Create the grid object for the output grid
             self.grdROMS = grd.Grd("ROMS", self)
-            self.grdROMS.nlevels =self.nlevels
+            self.grdROMS.nlevels = self.nlevels
             self.grdROMS.vstretching = self.vstretching
             self.grdROMS.vtransform = self.vtransform
             self.grdROMS.theta_s = self.theta_s

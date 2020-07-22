@@ -38,10 +38,10 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
 
     if not grdROMS.ioInitInitialized:
         grdROMS.ioInitInitialized = True
-        if os.path.exists(confM2R.initname):
-            os.remove(confM2R.initname)
+        if os.path.exists(confM2R.init_name):
+            os.remove(confM2R.init_name)
 
-        f1 = Dataset(confM2R.initname, mode='w', format=confM2R.myformat)
+        f1 = Dataset(confM2R.init_name, mode='w', format=confM2R.myformat)
         f1.title = "Initial forcing file (INIT) used for foring of the ROMS model"
         f1.description = "Created for the %s grid file" % (confM2R.romsgridpath)
         f1.grd_file = "Gridfile: %s" % (confM2R.romsgridpath)
@@ -185,7 +185,7 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
         v_time.long_name = 'seconds since 1948-01-01 00:00:00'
         v_time.units = 'seconds since 1948-01-01 00:00:00'
         v_time.field = 'time, scalar, series'
-        if (confM2R.oceanindatatype == "NORESM"):
+        if (confM2R.ocean_indata_type == "NORESM"):
             v_time.calendar = 'noleap'
         else:
             v_time.calendar = 'standard'
@@ -425,7 +425,7 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
         print('=========================================================================')
         print('\n')
     else:
-        f1 = Dataset(confM2R.initname, mode='a', format=confM2R.myformat)
+        f1 = Dataset(confM2R.init_name, mode='a', format=confM2R.myformat)
 
     ntime = 0
     if (grdROMS.timeunits[0:7] == "seconds"):
@@ -453,7 +453,7 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
     if confM2R.writebcg:
         if var in ['O3_c','O3_TA','N1_p','N3_n','N5_s','O2_o']:
             data1 = np.where(abs(data1) < 0, 0, data1)
-            if confM2R.oceanindatatype=="NORESM":
+            if confM2R.ocean_indata_type== "NORESM":
                 if var=="O3_TA": 
                     data1=data1*1.0e6/1025.
                 else: 
@@ -479,7 +479,7 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
             f1.variables['sig12'][ntime, :, :] = 0.
             f1.variables['sig22'][ntime, :, :] = 0.
 
-            if confM2R.oceanindatatype == 'GLORYS':
+            if confM2R.ocean_indata_type == 'GLORYS':
                 f1.variables['snow_thick'][ntime, :, :] = 0.
                 f1.variables['ageice'][ntime, :, :] = 0.
 

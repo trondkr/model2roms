@@ -133,7 +133,7 @@ Prior to run model2roms you have to specify a number of settings so that the pro
         #  Define what grid type you wnat to interpolate from (input MODEL data)
         # Options:
         # 1. SODA, 2. SODAMONTHLY, 3.WOAMONTHLY, 4. NORESM, 4. GLORYS, 5. SODA3
-        self.oceanindatatype = 'SODA3'
+        self.ocean_indata_type = 'SODA3'
 
         # Define contact info for final NetCDF files
         self.authorname = "Trond Kristiansen"
@@ -162,8 +162,8 @@ Prior to run model2roms you have to specify a number of settings so that the pro
 
         # Subset input data. If you have global data you may want to seubset these to speed up reading. Make
         # sure that your input data are cartesian (0-360 or -180:180, -90:90)
-        self.subsetindata = False
-        if self.subsetindata:
+        self.subset_indata = False
+        if self.subset_indata:
             self.subset = self.definesubsetforindata()
 
         # Define nmber of output depth levels
@@ -185,7 +185,7 @@ Prior to run model2roms you have to specify a number of settings so that the pro
         self.romsgridpath = self.defineromsgridpath()
 
         # Climatology is only monthly and model2roms needs to know this
-        self.isclimatology = True if self.oceanindatatype == 'WOAMONTHLY' else False
+        self.isclimatology = True if self.ocean_indata_type == 'WOAMONTHLY' else False
 
         # DATE AND TIME DETAILS ---------------------------------------------------------
         # Define the period to create forcing for

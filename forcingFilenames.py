@@ -4,34 +4,34 @@ from datetime import datetime
 
 # Main function called from model2roms
 def getFilename(confM2R,year,month,day,defaultvar):
-    if confM2R.oceanindatatype == 'SODA':
+    if confM2R.ocean_indata_type == 'SODA':
         if defaultvar is None:defaultvar="salinity"
         filenamein = getSODAfilename(confM2R, year, month, day, defaultvar)
-    if confM2R.oceanindatatype == 'SODA3':
+    if confM2R.ocean_indata_type == 'SODA3':
         if defaultvar is None:defaultvar="salinity"
         filenamein = getSODA3filename(confM2R, year, month, day, defaultvar)
-    if confM2R.oceanindatatype == 'SODA3_5DAY':
+    if confM2R.ocean_indata_type == 'SODA3_5DAY':
         if defaultvar is None:defaultvar="salinity"
         filenamein = getSODA3_5DAYfilename(confM2R, year, month, day, defaultvar)
-    if confM2R.oceanindatatype == 'SODAMONTHLY':
+    if confM2R.ocean_indata_type == 'SODAMONTHLY':
         if defaultvar is None:defaultvar="salinity"
         filenamein = getSODAfilename(confM2R, year, month, day, defaultvar)
-    if confM2R.oceanindatatype == 'NORESM':
+    if confM2R.ocean_indata_type == 'NORESM':
         if defaultvar is None:defaultvar="grid"
         filenamein = getNORESMfilename(confM2R, year, month, defaultvar)
-    if confM2R.oceanindatatype == 'WOAMONTHLY':
+    if confM2R.ocean_indata_type == 'WOAMONTHLY':
         if defaultvar is None:defaultvar="temperature"
         filenamein = getWOAMONTHLYfilename(confM2R, year, month, defaultvar)
-    if confM2R.oceanindatatype == 'GLORYS':
+    if confM2R.ocean_indata_type == 'GLORYS':
         if defaultvar is None:defaultvar="S"
         filenamein = getGLORYSfilename(confM2R, year, month, defaultvar)
-    if confM2R.oceanindatatype == 'GLORYS':
+    if confM2R.ocean_indata_type == 'GLORYS':
         if defaultvar is None:defaultvar="S"
         filenamein = getGLORYSfilename(confM2R, year, month, defaultvar)
-    if confM2R.oceanindatatype == 'NS8KM':
+    if confM2R.ocean_indata_type == 'NS8KM':
         if defaultvar is None:defaultvar="salinity"
         filenamein = getNS8KMfilename(confM2R, year, month, defaultvar)
-    if confM2R.oceanindatatype == 'NS8KMZ':
+    if confM2R.ocean_indata_type == 'NS8KMZ':
         if defaultvar is None:defaultvar="salinity"
         filenamein, readFromOneFile = getNS8KMZfilename(confM2R, year, month, defaultvar)
     return filenamein

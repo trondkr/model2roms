@@ -89,22 +89,22 @@ class Grd:
                                           is_sphere=True, coord_names=[str(confM2R.lonname_v), str(confM2R.latname_v)],
                                           add_mask=False)
 
-            if confM2R.oceanindatatype == 'WOAMONTHLY':
+            if confM2R.ocean_indata_type == 'WOAMONTHLY':
                 self.fillval = 9.96921e+36
-            if confM2R.oceanindatatype == 'SODA':
+            if confM2R.ocean_indata_type == 'SODA':
                 self.fillval = -9.99e+33
-            if confM2R.oceanindatatype == 'SODA3':
+            if confM2R.ocean_indata_type == 'SODA3':
                 self.fillval = -1.e+20
-            if confM2R.oceanindatatype == 'SODA3_5DAY':
+            if confM2R.ocean_indata_type == 'SODA3_5DAY':
                     self.fillval = -1.e+20
-            if confM2R.oceanindatatype == 'SODAMONTHLY':
+            if confM2R.ocean_indata_type == 'SODAMONTHLY':
                 self.fillval = -9.99e+33
-            if confM2R.oceanindatatype == 'GLORYS':
+            if confM2R.ocean_indata_type == 'GLORYS':
                 self.fillval = 9.96921e+36
-            if confM2R.oceanindatatype == 'NS8KMZ':
+            if confM2R.ocean_indata_type == 'NS8KMZ':
                 self.fillval = 9.96921e+36
         
-            if confM2R.oceanindatatype == 'NORESM':
+            if confM2R.ocean_indata_type == 'NORESM':
                 # self.h = self.cdf.variables["depth"][:]
                 self.h = np.asarray([0, 5, 10, 15, 20, 25, 30, 40, 50, 62.5, 75, 87.5, 100, 112.5, 125,
                                     137.5, 150, 175, 200, 225, 250, 275, 300, 350, 400, 450, 500, 550, 600,

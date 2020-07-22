@@ -52,11 +52,11 @@ def writebry(confM2R):
     Mp = grdROMS.Mp - 1
 
     # Open the CLIM file
-    clim = Dataset(confM2R.climname, 'r')
+    clim = Dataset(confM2R.clim_name, 'r')
     # Generate the BRY netcdf4 file that we will use to fill in data
     IOBry.createBryFile(confM2R)
     # Now open the file we created
-    f = Dataset(confM2R.bryname, mode='a', format=confM2R.myformat, zlib=confM2R.myzlib)
+    f = Dataset(confM2R.bry_name, mode='a', format=confM2R.myformat, zlib=confM2R.myzlib)
 
     # Get the time from the clim file
     climtime = np.array(clim.variables["ocean_time"][:])
@@ -228,7 +228,7 @@ def writebry(confM2R):
         # ------- Write time to file -------------------------------
         d = num2date(climtime[itime], units=clim.variables['ocean_time'].long_name,
                      calendar=clim.variables['ocean_time'].calendar)
-        print('clim2bry.py => Appending data to file %s for time %s' % (confM2R.bryname, d))
+        print('clim2bry.py => Appending data to file %s for time %s' % (confM2R.bry_name, d))
 
         f.variables['ocean_time'][itime] = climtime[itime]
 
