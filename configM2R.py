@@ -284,9 +284,9 @@ class Model2romsConfig(object):
         # -> varNames is the name of the variable found in the NetCDF input files
 
         self.global_varnames = self.define_global_varnames()
-        self.inputdata_varnames = self.define_input_data_varnames()
-        assert (len(self.global_varnames)==len(self.input_varnames)), "Number and order of global variable " \
-                                                                      "names must equal input variable names"
+        self.input_varnames = self.define_input_data_varnames()
+        assert (len(self.global_varnames) == len(self.input_varnames)), "Number and order of global variable " \
+                                                                        "names must equal input variable names"
         # NO EDIT BELOW ==============================================================================================
         if self.compile_all is True:
             import compile;
