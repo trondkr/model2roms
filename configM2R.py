@@ -322,8 +322,8 @@ class Model2romsConfig(object):
             self.grdROMS.lonname = 'lon_rho'
             self.grdROMS.latname = 'lat_rho'
 
-            self.grdROMS.opennetcdf(self.roms_grid_path)
-            self.grdROMS.createobject(self)
+            self.grdROMS.open_netcdf(self.roms_grid_path)
+            self.grdROMS.create_object(self)
             self.grdROMS.getdims()
 
             # Create the grid object for the input grid

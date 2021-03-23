@@ -4,8 +4,9 @@ two types of structures as input: SODA or ROMS
 """
 
 from datetime import datetime
-from netCDF4 import Dataset
+
 import numpy as np
+from netCDF4 import Dataset
 
 import IOverticalGrid
 
@@ -18,10 +19,9 @@ except ImportError:
 __author__ = 'Trond Kristiansen'
 __email__ = 'me@trondkristiansen.com'
 __created__ = datetime(2008, 12, 9)
-__modified__ = datetime(2017, 1, 3)
+__modified__ = datetime(2021, 3, 23)
 __version__ = "1.5"
 __status__ = "Development"
-
 
 class Grd:
 
@@ -36,23 +36,24 @@ class Grd:
         self.grdName = confM2R.outgrid_name
         self.realm = confM2R.realm
         self.grdfilename = None
+        self.cdf = None
 
         print('Creating init for grid object {}'.format(confM2R.outgrid_name))
         print('---> Initialized GRD object for grid type {}\n'.format(self.type))
 
-    def opennetcdf(self, grdfilename):
-        
+    def open_netcdf(self, grdfilename):
+
         self.grdfilename = grdfilename
         """Open the netCDF file and store the contents in arrays associated with variable names"""
         try:
             self.cdf = Dataset(self.grdfilename, "r")
-            print('GRD file : opennetcdf opened file {}'.format(self.grdfilename))
+            print('GRD file : open_netcdf opened file {}'.format(self.grdfilename))
 
         except IOError:
             print('Could not open file {}'.format(self.grdfilename))
-            print('Exception caught in: opennetcdf(grdfilename)')
+            print('Exception caught in: open_netcdf(grdfilename)')
 
-    def createobject(self, confM2R):
+    def create_object(self, confM2R):
         """
         This method creates a new object by reading the grd input file. All
         dimensions (eta, xi, lon, lat etc.) are defined here and used througout these scripts.
@@ -60,7 +61,7 @@ class Grd:
         input model depths, the depth array is a one dimensional. If input data has 2 or 3 dimensions, this
         has to be accounted for througout the soda2roms package as one dimension is currently only supported.
 
-        Object types currently supported: HYCOM,SODA,SODAMONTHLY,STATION,ROMS,SODA3,NORESM
+        Object types currently supported: STATION, GLORYS, SODA3
 
         Trond Kristiansen, 18.11.2009, edited 03.01.2017
         """

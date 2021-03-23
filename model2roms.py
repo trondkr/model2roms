@@ -410,8 +410,8 @@ def convertMODEL2ROMS(confM2R):
     filenamein = fc.get_filename(confM2R, confM2R.start_year, confM2R.start_month, confM2R.start_day, None)
 
     # Finalize creating the model grd object now that we know the filename for input data
-    confM2R.grdMODEL.opennetcdf(filenamein)
-    confM2R.grdMODEL.createobject(confM2R)
+    confM2R.grdMODEL.open_netcdf(filenamein)
+    confM2R.grdMODEL.create_object(confM2R)
     confM2R.grdMODEL.getdims()
     # Create the ESMF weights used to do all of the horizontal interpolation
     interp2D.setupESMFInterpolationWeights(confM2R)
