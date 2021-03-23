@@ -50,11 +50,12 @@ class Grd:
 
         Object types currently supported: STATION, GLORYS, SODA3
 
-        Trond Kristiansen, 18.11.2009, edited 03.01.2017
+        Trond Kristiansen, 18.11.2009, edited 03.01.2017, 23.03.2021
         """
+        ds = xr.open_dataset(grd_filename)
+
         if self.type == 'FORCINGDATA':
 
-            ds = xr.open_dataset(grd_filename)
             print('---> Assuming %s grid type for %s' % (confM2R.grd_type, self.type))
             print("---> Using dimension names %s and %s and %s" % (confM2R.lon_name,
                                                                    confM2R.lat_name,
