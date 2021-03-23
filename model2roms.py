@@ -193,7 +193,7 @@ def getTime(confM2R, year, month, day, ntime):
         filename = fc.getSODAMONTHLYfilename(confM2R, year, month, None)
 
     if confM2R.ocean_indata_type == 'GLORYS':
-        filename = fc.get_GLORYS_filename(confM2R, year, month, "S")
+        filename = fc.get_GLORYS_filename(confM2R, year, month, "So")
 
     if confM2R.ocean_indata_type == 'WOAMONTHLY':
         filename = fc.getWOAMONTHLYfilename(confM2R, year, month, "temperature")

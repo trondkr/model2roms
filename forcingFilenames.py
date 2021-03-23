@@ -15,7 +15,7 @@ def get_filename(confM2R, year, month, day, defaultvar):
         if defaultvar is None: defaultvar = "grid"
         filenamein = getNORESMfilename(confM2R, year, month, defaultvar)
     if confM2R.ocean_indata_type == 'GLORYS':
-        if defaultvar is None: defaultvar = "S"
+        if defaultvar is None: defaultvar = "So"
         filenamein = get_GLORYS_filename(confM2R, year, month, defaultvar)
     return filenamein
 

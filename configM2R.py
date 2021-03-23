@@ -90,8 +90,8 @@ class Model2romsConfig(object):
         return {'SODA': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel'],
                 'SODA3': ['temp', 'salt', 'ssh', 'u', 'v'],
                 'SODA3_5DAY': ['temp', 'salt', 'ssh', 'u', 'v'],
-                'GLORYS': ['votemper', 'vosaline', 'sossheig', 'vozocrtx', 'vomecrty', 'iicevelu', 'iicevelv',
-                           'ileadfra', 'iicethic'],
+                'GLORYS': ['thetao', 'so', 'zos', 'uo', 'vo', 'uoi', 'voi',
+                           'siconc', 'sithick'],
                 'WOAMONTHLY': ['temperature', 'salinity'],
                 'NORESM': ['templvl', 'salnlvl', 'sealv', 'uvellvl', 'vvellvl', 'iage', 'uvel', 'vvel', 'aice', 'hi',
                            'hs', 'dissic', 'talk', 'po4', 'no3', 'si', 'o2']}[self.ocean_indata_type]
