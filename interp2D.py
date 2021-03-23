@@ -1,8 +1,9 @@
 from __future__ import print_function
-import numpy as np
+
 import datetime
+
 import extrapolate as ex
-import os
+import numpy as np
 
 try:
     import ESMF
@@ -92,9 +93,9 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
         # if __debug__:
         #      print "Data range after horisontal interpolation: ", field.min(), field.max()
 
-        # if myvar in ["hice","aice"]:
+        # if varname in ["hice","aice"]:
         #     import plotData
-        #     plotData.contourMap(grdROMS,grdROMS.lon_rho,grdROMS.lat_rho, field, "surface", myvar)
+        #     plotData.contourMap(grdROMS,grdROMS.lon_rho,grdROMS.lat_rho, field, "surface", varname)
 
         if confM2R.show_progress is True:
             progress.update(k)

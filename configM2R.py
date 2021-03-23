@@ -17,36 +17,30 @@ __status__ = "Development"
 
 class Model2romsConfig(object):
 
-    def definesubsetforindata(self):
+    def define_subset_for_indata(self):
         # Subset the input data. The more you subset the less memory is needed for calculations
         # and the faster the process is performed. The subset is initially performed in IOsubset.py
         subset = np.zeros(4)
 
         if self.outgrid_name == "NS8KM":
-            subset[1] = 40
-            subset[1] = 70
-            subset[2] = -30
-            subset[3] = 40
+            return subset[40, 70, -30, 40]
 
-        if self.outgrid_name == "A20":
-            subset[0] = 30
-            subset[1] = 90
-            subset[2] = -179
-            subset[3] = 360
-
-        return subset
+        elif self.outgrid_name == "A20":
+            return subset[30, 90, -179, 360]
+        else:
+            raise Exception("Unable to subset {}".format(self.outgrid_name))
 
     def showinfo(self):
         if self.isclimatology:
             print('\n=> Conversions run for climatological months')
         else:
             print('\n=> Conversions run from year/month: %s/%s to %s/%s' % (
-            self.start_year, self.start_month, self.end_year, self.end_month))
+                self.start_year, self.start_month, self.end_year, self.end_month))
         print('==> The following variables will be interpolated: {}'.format(self.global_varnames))
 
         if self.use_esmf:
-            print("=>All horisontal interpolations will be done using ESMF-ESMPy (module ESMF)")
-        print("=>Output files are written in format: %s" % self.myformat)
+            print("=>All horisontal interpolations will be done using ESMF")
+        print("=>Output files are written in format: %s" % self.output_format)
         print('\n=>Output grid file is: %s' % self.roms_grid_path)
 
     def format_dates_for_outputnames(self):
@@ -105,7 +99,7 @@ class Model2romsConfig(object):
     # Define the path to where the  ROMS grid can be found
     def define_roms_grid_path(self):
         try:
-            return {'Antarctic': 'Grids/ANT_01.nc',
+            return {'Antarctic': '../oceanography/model2roms_grids/ANT_01.nc',
                     'A20': '/Users/trondkr/Dropbox/NIVA/A20/Grid/A20niva_grd_v1.nc',
                     # '/cluster/projects/nn9412k/A20/Grid/A20niva_grd_v1.nc',
                     #     'ROHO800': '/cluster/projects/nn9490k/ROHO800/Grid/ROHO800_grid_fix3.nc'}[self.outgrid_name]
@@ -124,7 +118,7 @@ class Model2romsConfig(object):
             return {'SODA3': "/Volumes/DATASETS/SODA3.3.1/OCEAN/",
                     'SODA3_5DAY': "/Volumes/DATASETS/SODA2002/",  # "/cluster/projects/nn9297k/SODA3.3.2/",
                     'NORESM': "/cluster/projects/nn9412k/A20/FORCING/RCP85_ocean/",
-                    'GLORYS': "/cluster/projects/nn9412k/glorys/",
+                    'GLORYS': "../oceanography/copernicus-marine-data/Global/",
                     'WOAMONTHLY': "/Users/trondkr/Projects/is4dvar/createSSS/"}[self.ocean_indata_type]
         except KeyError:
             return KeyError
@@ -169,7 +163,7 @@ class Model2romsConfig(object):
         self.create_atmos_forcing = False  # currently in beta stages
         # Create a smaller resolution grid based on your original. Decimates every second for
         # each time run
-        self.decimategridfile = False
+        self.decimate_gridfile = False
         # Write ice values to file (for Arctic regions)
         self.write_ice = True
         # Write biogeochemistry values to file
@@ -182,15 +176,15 @@ class Model2romsConfig(object):
         self.use_filter = True
         # Format to write the ouput to: 'NETCDF4', 'NETCDF4_CLASSIC', 'NETCDF3_64BIT', or 'NETCDF3_CLASSIC'
         # Using NETCDF4 automatically turns on compression of files (ZLIB)
-        self.myformat = 'NETCDF4'
-        self.myzlib = True
+        self.output_format = 'NETCDF4'
+        self.use_zlib = True
         # Frequency of the input data: usually monthly
-        self.time_frequency_inputdata = "month"  #  Possible options: "month", "hour", "5days"
+        self.time_frequency_inputdata = "month"  # Possible options: "month", "hour", "5days"
 
         # IN GRIDTYPES ------------------------------------------------------------------------------
         # Define what grid type you want to interpolate from (input MODEL data)
         # Currently supported options:
-        # 1. SODA, 2. SODAMONTHLY, 3.WOAMONTHLY, 4. NORESM, 4. GLORYS, 5. SODA3, 6. SODA3_5DAY
+        # 1. NORESM, 2. GLORYS, 3. SODA3, 4. SODA3_5DAY
         self.ocean_indata_type = 'GLORYS'
         self.atmos_indata_type = 'ERA5'
 
@@ -241,7 +235,7 @@ class Model2romsConfig(object):
         # sure that your input data are cartesian (0-360 or -180:180, -90:90)
         self.subset_indata = False
         if self.subset_indata:
-            self.subset = self.definesubsetforindata()
+            self.subset = self.define_subset_for_indata()
 
         # Define nmber of output depth levels
         self.nlevels = 40
@@ -263,7 +257,7 @@ class Model2romsConfig(object):
         self.roms_grid_path = self.define_roms_grid_path()
 
         # Climatology is only monthly and model2roms needs to know this
-        self.isclimatology = True if self.ocean_indata_type == 'WOAMONTHLY' else False
+        self.isclimatology = True
 
         # DATE AND TIME DETAILS ---------------------------------------------------------
         # Define the period to create forcing for

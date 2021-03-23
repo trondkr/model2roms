@@ -1,16 +1,18 @@
 from __future__ import print_function
-from netCDF4 import Dataset, date2num, num2date
-from datetime import datetime, timedelta
-import numpy as np
-import interp2D
-import interpolation as interp
-import IOwrite
-import os
+
+from datetime import datetime
+
 import barotropic
+import interpolation as interp
+import numpy as np
+from netCDF4 import Dataset, date2num, num2date
+
 import IOinitial
 import IOsubset
+import IOwrite
 import datetimeFunctions
 import forcingFilenames as fc
+import interp2D
 
 try:
     import ESMF
@@ -55,7 +57,7 @@ def verticalinterpolation(myvar, array1, array2, grdROMS, grdMODEL):
             outdata = np.ma.masked_where(abs(outdata) < 0, outdata)
         # import plotData
         # for k in range(grdROMS.nlevels):
-        #     plotData.contourMap(grdROMS, grdROMS.lon_rho, grdROMS.lat_rho, np.squeeze(outdata[k,:,:]),k, myvar)
+        #     plotData.contourMap(grdROMS, grdROMS.lon_rho, grdROMS.lat_rho, np.squeeze(outdata[k,:,:]),k, varname)
 
         return outdata
 
@@ -191,7 +193,7 @@ def getTime(confM2R, year, month, day, ntime):
         filename = fc.getSODAMONTHLYfilename(confM2R, year, month, None)
 
     if confM2R.ocean_indata_type == 'GLORYS':
-        filename = fc.getGLORYSfilename(confM2R, year, month, "S")
+        filename = fc.get_GLORYS_filename(confM2R, year, month, "S")
 
     if confM2R.ocean_indata_type == 'WOAMONTHLY':
         filename = fc.getWOAMONTHLYfilename(confM2R, year, month, "temperature")
@@ -296,7 +298,7 @@ def get3ddata(confM2R, myvar, year, month, day, timecounter):
     # The variable splitExtract is defined in IOsubset.py and depends on the orientation
     # and ocean_indata_type of grid (-180-180 or 0-360). Assumes regular grid.
     if confM2R.use_esmf:
-        filename = fc.getFilename(confM2R, year, month, day, confM2R.inputdata_varnames[varN])
+        filename = fc.get_filename(confM2R, year, month, day, confM2R.inputdata_varnames[varN])
         print(filename, confM2R.inputdata_varnames[varN])
         try:
             cdf = Dataset(filename)
@@ -356,7 +358,7 @@ def get2ddata(confM2R, myvar, year, month, day, timecounter):
                                                                            'hs']:
             return np.zeros((np.shape(confM2R.grdMODEL.lon)))
         else:
-            filename = fc.getFilename(confM2R, year, month, day, confM2R.inputdata_varnames[varN])
+            filename = fc.get_filename(confM2R, year, month, day, confM2R.inputdata_varnames[varN])
             try:
                 cdf = Dataset(filename)
             except:
@@ -405,7 +407,7 @@ def get2ddata(confM2R, myvar, year, month, day, timecounter):
 
 def convertMODEL2ROMS(confM2R):
     # First opening of input file is just for initialization of grid
-    filenamein = fc.getFilename(confM2R, confM2R.start_year, confM2R.start_month, confM2R.start_day, None)
+    filenamein = fc.get_filename(confM2R, confM2R.start_year, confM2R.start_month, confM2R.start_day, None)
 
     # Finalize creating the model grd object now that we know the filename for input data
     confM2R.grdMODEL.opennetcdf(filenamein)

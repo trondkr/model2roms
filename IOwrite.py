@@ -1,9 +1,10 @@
+import os
+import time
 from datetime import datetime
+
+import numpy as np
 from netCDF4 import Dataset
 from netCDF4 import num2date
-import numpy as np
-import time
-import os
 
 __author__ = 'Trond Kristiansen'
 __email__ = 'me@trondkristiansen.com'
@@ -29,7 +30,7 @@ def help():
 
 
 def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, data4=None):
-    if confM2R.myformat == 'NETCDF4':
+    if confM2R.output_format == 'NETCDF4':
         myzlib = True
     else:
         myzlib = False
@@ -41,13 +42,13 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
         if os.path.exists(confM2R.clim_name):
             os.remove(confM2R.clim_name)
 
-        f1 = Dataset(confM2R.clim_name, mode='w', format=confM2R.myformat)
+        f1 = Dataset(confM2R.clim_name, mode='w', format=confM2R.output_format)
         f1.title = "Climatology forcing file (CLIM) used for forcing the ROMS model"
         f1.description = "Created for grid file: %s" % (confM2R.roms_grid_path)
         f1.grd_file = "Gridfile: %s" % (confM2R.roms_grid_path)
         f1.history = "Created " + time.ctime(time.time())
-        f1.source = "{} ({})".format(confM2R.authorname,confM2R.authoremail)
-        f1.type = "File in %s format created using MODEL2ROMS" % (confM2R.myformat)
+        f1.source = "{} ({})".format(confM2R.authorname, confM2R.authoremail)
+        f1.type = "File in %s format created using MODEL2ROMS" % (confM2R.output_format)
         f1.link = "https://github.com/trondkr/model2roms"
         f1.Conventions = "CF-1.0"
 
@@ -456,7 +457,7 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
             #v_temp.missing_value = grdROMS.fillval
 
     else:
-        f1 = Dataset(confM2R.clim_name, mode='a', format=confM2R.myformat)
+        f1 = Dataset(confM2R.clim_name, mode='a', format=confM2R.output_format)
 
     if confM2R.isclimatology is False:
         if myvar == confM2R.global_varnames[0]:

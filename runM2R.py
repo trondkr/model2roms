@@ -1,11 +1,11 @@
 import time
-from datetime import datetime, timedelta
-import configM2R
-import model2roms
+from datetime import datetime
+
 import IOstation
 import clim2bry
+import configM2R
 import decimateGrid
-import atmosForcing
+import model2roms
 
 __author__ = 'Trond Kristiansen'
 __email__ = 'trond.kristiansen@niva.no'
@@ -33,7 +33,7 @@ def run():
       #  if confM2R.createAtmosForcing:
       #      atmosForcing.createAtmosFileUV(confM2R)
 
-    if confM2R.decimategridfile:
+    if confM2R.decimate_gridfile:
         decimateGrid.createGrid(confM2R.grdROMS, "/Users/trondkr/Projects/KINO/GRID/kino_1600m_18072015.nc",
                                 "/Users/trondkr/Projects/KINO/GRID/kino_1600m_18072015v2.nc", 2)
 

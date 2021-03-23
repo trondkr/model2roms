@@ -1,8 +1,8 @@
+import os
 import time
-from datetime import datetime, timedelta
-import os, sys, string
+from datetime import datetime
+
 from netCDF4 import Dataset
-import numpy as np
 
 _author_ = 'Trond Kristiansen'
 _email_ = 'me@trondkristiansen.com'
@@ -31,7 +31,7 @@ def help():
 
 
 def createBryFile(confM2R):
-    if (confM2R.myformat == 'NETCDF4'):
+    if (confM2R.output_format == 'NETCDF4'):
         myzlib = True
     else:
         myzlib = False
@@ -41,13 +41,13 @@ def createBryFile(confM2R):
         os.remove(confM2R.bry_name)
     print(('\n=>Creating initial Boundary (BRY) file {}'.format(confM2R.bry_name)))
 
-    f1 = Dataset(confM2R.bry_name, mode='w', format=confM2R.myformat)
+    f1 = Dataset(confM2R.bry_name, mode='w', format=confM2R.output_format)
     f1.title = "Boundary forcing file (BRY) used for forcing of the ROMS model"
     f1.description = "Created for the {} grid file".format(confM2R.roms_grid_path)
     f1.grdFile = "{}".format(confM2R.roms_grid_path)
     f1.history = 'Created ' + time.ctime(time.time())
     f1.source = "{} ({})".format(confM2R.authorname, confM2R.authoremail)
-    f1.type = "File in {} format created using MODEL2ROMS".format(confM2R.myformat)
+    f1.type = "File in {} format created using MODEL2ROMS".format(confM2R.output_format)
     f1.link = "https://github.com/trondkr/model2roms"
     f1.Conventions = "CF-1.0"
 

@@ -2,8 +2,10 @@
 This is CLM2BRY
 """
 from datetime import datetime
-from netCDF4 import Dataset, num2date
+
 import numpy as np
+from netCDF4 import Dataset, num2date
+
 import IOBry
 
 __author__ = 'Trond Kristiansen'
@@ -56,7 +58,7 @@ def writebry(confM2R):
     # Generate the BRY netcdf4 file that we will use to fill in data
     IOBry.createBryFile(confM2R)
     # Now open the file we created
-    f = Dataset(confM2R.bry_name, mode='a', format=confM2R.myformat, zlib=confM2R.myzlib)
+    f = Dataset(confM2R.bry_name, mode='a', format=confM2R.output_format, zlib=confM2R.use_zlib)
 
     # Get the time from the clim file
     climtime = np.array(clim.variables["ocean_time"][:])

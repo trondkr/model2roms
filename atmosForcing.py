@@ -1,11 +1,12 @@
-import time
-from datetime import datetime, timedelta
-import os, sys, string
-from netCDF4 import Dataset, num2date
+import sys
+from datetime import datetime
+
+import extrapolate as ex
 import numpy as np
+from netCDF4 import Dataset, num2date
+
 import IOatmos
 import grd
-import extrapolate as ex
 
 try:
     import ESMF
@@ -25,7 +26,7 @@ def help ():
     """
     This function creates atmospheric forcing files for ROMS
 
-    def createAtmosFileUV(grdROMS, outfilename, myformat)
+    def createAtmosFileUV(grdROMS, outfilename, output_format)
 
     To check the file for CF compliancy: http://titania.badc.rl.ac.uk/cgi-bin/cf-checker.pl?cfversion=1.0
     """

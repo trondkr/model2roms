@@ -111,7 +111,7 @@ self.create_ocean_forcing = True
 self.create_atmos_forcing = False  # currently in beta stages and unavailable
 # Create a smaller resolution grid based on your original. Decimates every second for
 # each time run
-self.decimategridfile = False
+self.decimate_gridfile = False
 # Write ice values to file (for Arctic regions)
 self.write_ice = False
 # Write biogeochemistry values to file
@@ -124,8 +124,8 @@ self.use_esmf = True
 self.use_filter = True
 # Format to write the ouput to: 'NETCDF4', 'NETCDF4_CLASSIC', 'NETCDF3_64BIT', or 'NETCDF3_CLASSIC'
 # Using NETCDF4 automatically turns on compression of files (ZLIB)
-self.myformat = 'NETCDF4'
-self.myzlib = True
+self.output_format = 'NETCDF4'
+self.use_zlib = True
 # Frequency of the input data: usually monthly
 self.time_frequency_inputdata = "month"  # , "month", "hour"
 
@@ -164,7 +164,7 @@ self.outgrid_type = "ROMS"
 # sure that your input data are cartesian (0-360 or -180:180, -90:90)
 self.subset_indata = False
 if self.subset_indata:
-    self.subset = self.definesubsetforindata()
+    self.subset = self.define_subset_for_indata()
 
 # Define nmber of output depth levels
 self.nlevels = 40

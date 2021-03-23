@@ -1,15 +1,15 @@
+import os
 import time
-from datetime import datetime, timedelta
-import os, sys, string
-from netCDF4 import Dataset
-import numpy as np
+from datetime import datetime
 
-_author_   = 'Trond Kristiansen'
-_email_    = 'me@trondkristiansen.com'
-_created_  = datetime(2014, 12, 16)
+from netCDF4 import Dataset
+
+_author_ = 'Trond Kristiansen'
+_email_ = 'me@trondkristiansen.com'
+_created_ = datetime(2014, 12, 16)
 _modified_ = datetime(2014, 12, 16)
-_version_  = "0.1.0"
-_status_   = "Development"
+_version_ = "0.1.0"
+_status_ = "Development"
 
 
 def help ():
@@ -17,7 +17,7 @@ def help ():
     This function generates the initial netcdf atmospheric forcing file for the U and V wind component
     for ROMS. Methods:
 
-    def createNetCDFFileUV(grdROMS, outfilename, myformat):
+    def createNetCDFFileUV(grdROMS, outfilename, output_format):
 
     To check the file for CF compliancy: http://titania.badc.rl.ac.uk/cgi-bin/cf-checker.pl?cfversion=1.0
     """

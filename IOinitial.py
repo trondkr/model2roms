@@ -1,9 +1,10 @@
+import os
 import time
-from datetime import datetime, timedelta
-import os, sys, string
+from datetime import datetime
+
+import numpy as np
 from netCDF4 import Dataset
 from netCDF4 import num2date
-import numpy as np
 
 __author__ = 'Trond Kristiansen'
 __email__ = 'me@trondkristiansen.com'
@@ -29,7 +30,7 @@ def help():
 def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data4=None):
     # Create initial file for use with ROMS. This is the same as extracting time 0 from
     # the climatology file.
-    if (confM2R.myformat == 'NETCDF4'):
+    if (confM2R.output_format == 'NETCDF4'):
         myzlib = True
     else:
         myzlib = False
@@ -41,13 +42,13 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
         if os.path.exists(confM2R.init_name):
             os.remove(confM2R.init_name)
 
-        f1 = Dataset(confM2R.init_name, mode='w', format=confM2R.myformat)
+        f1 = Dataset(confM2R.init_name, mode='w', format=confM2R.output_format)
         f1.title = "Initial forcing file (INIT) used for foring of the ROMS model"
         f1.description = "Created for the %s grid file" % (confM2R.roms_grid_path)
         f1.grd_file = "Gridfile: %s" % (confM2R.roms_grid_path)
         f1.history = "Created " + time.ctime(time.time())
         f1.source = "Trond Kristiansen (me@trondkristiansen.com)"
-        f1.type = "File in %s format created using MODEL2ROMS" % (confM2R.myformat)
+        f1.type = "File in %s format created using MODEL2ROMS" % (confM2R.output_format)
         f1.link = "https://github.com/trondkr/model2roms"
         f1.Conventions = "CF-1.0"
 
@@ -425,7 +426,7 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
         print('=========================================================================')
         print('\n')
     else:
-        f1 = Dataset(confM2R.init_name, mode='a', format=confM2R.myformat)
+        f1 = Dataset(confM2R.init_name, mode='a', format=confM2R.output_format)
 
     ntime = 0
     if (grdROMS.timeunits[0:7] == "seconds"):
