@@ -156,7 +156,7 @@ def initArrays(years,IDS,deepest,name,lon,lat):
 
 def getStationData(confM2R):
 
-    fileNameIn=confM2R.modelpath+'SODA_2.0.2_'+str(years[0])+'_'+str(IDS[0])+'.cdf'
+    fileNameIn= confM2R.ocean_forcing_path + 'SODA_2.0.2_' + str(years[0]) + '_' + str(IDS[0]) + '.cdf'
     
     """First time in loop, get the essential old grid information"""
     """SODA data already at Z-levels. No need to interpolate to fixed depths, but we use the one we have"""
@@ -180,7 +180,7 @@ def getStationData(confM2R):
         for year in years:
             for ID in IDS:
                 file="SODA_2.0.2_"+str(year)+"_"+str(ID)+".cdf"
-                filename=confM2R.modelpath + file
+                filename= confM2R.ocean_forcing_path + file
                
                 jdsoda, yyyymmdd, message = getStationTime(confM2R.grdMODEL,year,ID)
                 
@@ -194,7 +194,7 @@ def getStationData(confM2R):
                 if year==years[0] and ID==IDS[0]:
                     validIndex, validDis = testValidStation(cdf,dis,confM2R.numberofpoints, gridIndexes)
                     deepest              = testValidDepth(cdf,confM2R.numberofpoints, gridIndexes,confM2R.grdMODEL.depth)
-                    stTemp, stSalt, stSSH, stUvel, stVvel, stTauX, stTauY = initArrays(years,IDS,deepest,confM2R.stationnames[station],lon,lat)
+                    stTemp, stSalt, stSSH, stUvel, stVvel, stTauX, stTauY = initArrays(years, IDS, deepest, confM2R.station_names[station], lon, lat)
                 
                 for i in validIndex:
                     wgt=float(validDis[i])/sum(validDis)
@@ -219,7 +219,7 @@ def getStationData(confM2R):
         print(('Total time steps saved to file %s for station %s'%(time,station)))
         #plotData.contourStationData(stTemp,stTime,stDate,-grdMODEL.depth[0:deepest],stationNames[station])
         
-        outfilename='station_'+str(confM2R.stationnames[station])+'.nc'
+        outfilename='station_' + str(confM2R.station_names[station]) + '.nc'
         print(('Results saved to file %s'%(outfilename)))
         writeStationNETCDF4(stTemp,stSalt,stUvel,stVvel,stSSH,stTauX,stTauY,stTime,
                             confM2R.grdMODEL.depth[0:deepest],lat,lon,outfilename)

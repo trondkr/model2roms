@@ -43,8 +43,8 @@ def createBryFile(confM2R):
 
     f1 = Dataset(confM2R.bry_name, mode='w', format=confM2R.myformat)
     f1.title = "Boundary forcing file (BRY) used for forcing of the ROMS model"
-    f1.description = "Created for the {} grid file".format(confM2R.romsgridpath)
-    f1.grdFile = "{}".format(confM2R.romsgridpath)
+    f1.description = "Created for the {} grid file".format(confM2R.roms_grid_path)
+    f1.grdFile = "{}".format(confM2R.roms_grid_path)
     f1.history = 'Created ' + time.ctime(time.time())
     f1.source = "{} ({})".format(confM2R.authorname, confM2R.authoremail)
     f1.type = "File in {} format created using MODEL2ROMS".format(confM2R.myformat)
@@ -418,7 +418,7 @@ def createBryFile(confM2R):
     #v_ubar_north.missing_value = grdROMS.fillval
     v_ubar_north.time = "ocean_time"
 
-    if confM2R.writebcg:
+    if confM2R.write_bcg:
         directions=['east','west','north','south']
         dimens=['eta_rho','eta_rho','xi_rho','xi_rho']
 
@@ -472,7 +472,7 @@ def createBryFile(confM2R):
             O2_o.field = "{}, scalar, series".format(currentvar) 
             O2_o.units = "mmol O_2/m^3" 
 
-    if confM2R.writeice:
+    if confM2R.write_ice:
         ageice_west = f1.createVariable('ageice_west', 'f', ('ocean_time', 'eta_rho',), zlib=myzlib,
                                         fill_value=grdROMS.fillval)
         ageice_west.long_name = "time-averaged age of the ice western boundary conditions"

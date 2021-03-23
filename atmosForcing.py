@@ -50,11 +50,11 @@ def laplaceFilter(field, threshold, toxi, toeta):
 
 
 def getERA5Filename(confM2R):
-    return confM2R.atmosphericpath+''
+    return confM2R.atmospheric_forcing_path + ''
 
 def createAtmosFileUV(confM2R):
     
-    if confM2R.showprogress is True:
+    if confM2R.show_progress is True:
         import progressbar
         progress = progressbar.ProgressBar(widgets=[progressbar.Percentage(), progressbar.Bar()], maxval=len(years)).start()
     

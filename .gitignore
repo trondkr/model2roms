@@ -18,6 +18,7 @@ __pycache__
 *.png
 *.mp4
 *DS_Store*
+Grids/*/*.nc
 *.so
 *.xcuserstate
 *DS_Store*

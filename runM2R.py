@@ -23,9 +23,9 @@ def run():
     print("Started model2roms")
     confM2R = configM2R.Model2romsConfig()
 
-    if confM2R.createatmosforcing or confM2R.createoceanforcing:
+    if confM2R.create_atmos_forcing or confM2R.create_ocean_forcing:
 
-        if confM2R.createoceanforcing:
+        if confM2R.create_ocean_forcing:
             model2roms.convertMODEL2ROMS(confM2R)
 
             clim2bry.writebry(confM2R)
@@ -37,7 +37,7 @@ def run():
         decimateGrid.createGrid(confM2R.grdROMS, "/Users/trondkr/Projects/KINO/GRID/kino_1600m_18072015.nc",
                                 "/Users/trondkr/Projects/KINO/GRID/kino_1600m_18072015v2.nc", 2)
 
-    if confM2R.extractstations:
+    if confM2R.extract_stations:
         print("Running in station mode and extracting pre-defined station locations")
         IOstation.getStationData(confM2R)
 

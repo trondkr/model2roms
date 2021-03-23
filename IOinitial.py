@@ -43,8 +43,8 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
 
         f1 = Dataset(confM2R.init_name, mode='w', format=confM2R.myformat)
         f1.title = "Initial forcing file (INIT) used for foring of the ROMS model"
-        f1.description = "Created for the %s grid file" % (confM2R.romsgridpath)
-        f1.grd_file = "Gridfile: %s" % (confM2R.romsgridpath)
+        f1.description = "Created for the %s grid file" % (confM2R.roms_grid_path)
+        f1.grd_file = "Gridfile: %s" % (confM2R.roms_grid_path)
         f1.history = "Created " + time.ctime(time.time())
         f1.source = "Trond Kristiansen (me@trondkristiansen.com)"
         f1.type = "File in %s format created using MODEL2ROMS" % (confM2R.myformat)
@@ -239,7 +239,7 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
         v_ubar.time = "ocean_time"
         #v_ubar.missing_value = grdROMS.fillval
 
-        if confM2R.writebcg:
+        if confM2R.write_bcg:
 
             v_o3_c = f1.createVariable('O3_c', 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho',), zlib=myzlib,
                                        fill_value=grdROMS.fillval)
@@ -283,7 +283,7 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
             v_n5_s.units = "mmol Si/m^3"
             v_n5_s.field = "N5_s, scalar, series"
 
-        if confM2R.writeice:
+        if confM2R.write_ice:
             ageice = f1.createVariable('ageice', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
                                        fill_value=grdROMS.fillval)
             ageice.long_name = "time-averaged age of the ice"
@@ -435,11 +435,11 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
 
     if var.lower() == 'temperature':
         f1.variables['temp'][ntime, :, :, :] = data1
-        if confM2R.writeice:
+        if confM2R.write_ice:
             f1.variables['t0mk'][ntime, :, :] = np.squeeze(data1[len(grdROMS.z_r) - 1, :, :])
     if var.lower() == 'salinity':
         f1.variables['salt'][ntime, :, :, :] = data1
-        if confM2R.writeice:
+        if confM2R.write_ice:
             f1.variables['s0mk'][ntime, :, :] = np.squeeze(data1[len(grdROMS.z_r) - 1, :, :])
 
     if var.lower() == 'ssh':
@@ -450,7 +450,7 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
         f1.variables['ubar'][ntime, :, :] = data3
         f1.variables['vbar'][ntime, :, :] = data4
 
-    if confM2R.writebcg:
+    if confM2R.write_bcg:
         if var in ['O3_c','O3_TA','N1_p','N3_n','N5_s','O2_o']:
             data1 = np.where(abs(data1) < 0, 0, data1)
             if confM2R.ocean_indata_type== "NORESM":
@@ -460,7 +460,7 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
                     data1=data1*1.0e3
             f1.variables[var][ntime,:,:,:] = data1
 
-    if confM2R.writeice:
+    if confM2R.write_ice:
         if var.lower() == "ageice":
             data1 = np.where(abs(data1) > 120, 0, data1)
             f1.variables['ageice'][ntime, :, :] = data1

@@ -83,118 +83,118 @@ Prior to run model2roms you have to specify a number of settings so that the pro
 
 ```Python
 
-        # Set showprogress to "False" if you do not want to see the progress
+# Set show_progress to "False" if you do not want to see the progress
 
-        # indicator for horizontal interpolation.
-        self.showprogress = False
-        # Set compileAll to True if you want automatic re-compilation of all the
-        # fortran files necessary to run model2roms. Options are "gfortran" or "ifort". Edit
-        # compile.py to add other Fortran compilers.
-        self.compileall = False
-        # Extract time-series of data for given longitude/latitude
-        self.extractstations = False
-        # Define a set of longitude/latitude positions with names to extract into
-        # station files (using extractStations)
-        if self.extractstations:
-            #  stationNames = ['NorthSea', 'Iceland', 'EastandWestGreenland', 'Lofoten', 'Georges Bank']
-            #  lonlist = [2.4301, -22.6001, -47.0801, 13.3801, -67.2001]
-            #  latlist = [54.5601, 63.7010, 60.4201, 67.5001, 41.6423]
+# indicator for horizontal interpolation.
+self.show_progress = False
+# Set compileAll to True if you want automatic re-compilation of all the
+# fortran files necessary to run model2roms. Options are "gfortran" or "ifort". Edit
+# compile.py to add other Fortran compilers.
+self.compile_all = False
+# Extract time-series of data for given longitude/latitude
+self.extract_stations = False
+# Define a set of longitude/latitude positions with names to extract into
+# station files (using extractStations)
+if self.extract_stations:
+    #  stationNames = ['NorthSea', 'Iceland', 'EastandWestGreenland', 'Lofoten', 'Georges Bank']
+    #  lonlist = [2.4301, -22.6001, -47.0801, 13.3801, -67.2001]
+    #  latlist = [54.5601, 63.7010, 60.4201, 67.5001, 41.6423]
 
-            self.stationnames = ["Ytre Utsira", "Indre Utsira", "Lista"]
-            self.latlist = [59.316667, 59.316667, 58.016667]
-            self.lonlist = [4.800000, 4.983333, 6.533333]
-            self.numberofpoints = 4 # Number of points around lat/lon to extract and average as output
+    self.station_names = ["Ytre Utsira", "Indre Utsira", "Lista"]
+    self.latlist = [59.316667, 59.316667, 58.016667]
+    self.lonlist = [4.800000, 4.983333, 6.533333]
+    self.numberofpoints = 4  # Number of points around lat/lon to extract and average as output
 
-        # Create the bry, init, and clim files for a given grid and input data
-        self.createoceanforcing = True
-        # Create atmospheric forcing for the given grid
-        self.createatmosforcing = False  # currently in beta stages and unavailable
-        # Create a smaller resolution grid based on your original. Decimates every second for
-        # each time run
-        self.decimategridfile = False
-        # Write ice values to file (for Arctic regions)
-        self.writeice = False
-        # Write biogeochemistry values to file
-        self.writebcg = False
-        # ROMS sometimes requires input of ice and ssh, but if you dont have these write zero files to file
-        self.set2DvarsToZero=False
-        # Use ESMF for the interpolation. This requires that you have ESMF and ESMPy installed (import ESMF)
-        self.useesmf = True
-        # Apply filter to smooth the 2D fields after interpolation (time consuming but enhances results)
-        self.usefilter = True
-        # Format to write the ouput to: 'NETCDF4', 'NETCDF4_CLASSIC', 'NETCDF3_64BIT', or 'NETCDF3_CLASSIC'
-        # Using NETCDF4 automatically turns on compression of files (ZLIB)
-        self.myformat = 'NETCDF4'
-        self.myzlib = True
-        # Frequency of the input data: usually monthly
-        self.timefrequencyofinputdata = "month"  # , "month", "hour"
+# Create the bry, init, and clim files for a given grid and input data
+self.create_ocean_forcing = True
+# Create atmospheric forcing for the given grid
+self.create_atmos_forcing = False  # currently in beta stages and unavailable
+# Create a smaller resolution grid based on your original. Decimates every second for
+# each time run
+self.decimategridfile = False
+# Write ice values to file (for Arctic regions)
+self.write_ice = False
+# Write biogeochemistry values to file
+self.write_bcg = False
+# ROMS sometimes requires input of ice and ssh, but if you dont have these write zero files to file
+self.set_2d_vars_to_zero = False
+# Use ESMF for the interpolation. This requires that you have ESMF and ESMPy installed (import ESMF)
+self.use_esmf = True
+# Apply filter to smooth the 2D fields after interpolation (time consuming but enhances results)
+self.use_filter = True
+# Format to write the ouput to: 'NETCDF4', 'NETCDF4_CLASSIC', 'NETCDF3_64BIT', or 'NETCDF3_CLASSIC'
+# Using NETCDF4 automatically turns on compression of files (ZLIB)
+self.myformat = 'NETCDF4'
+self.myzlib = True
+# Frequency of the input data: usually monthly
+self.time_frequency_inputdata = "month"  # , "month", "hour"
 
-        # IN GRIDTYPES ------------------------------------------------------------------------------
-        #  Define what grid type you wnat to interpolate from (input MODEL data)
-        # Options:
-        # 1. SODA, 2. SODAMONTHLY, 3.WOAMONTHLY, 4. NORESM, 4. GLORYS, 5. SODA3
-        self.ocean_indata_type = 'SODA3'
+# IN GRIDTYPES ------------------------------------------------------------------------------
+#  Define what grid type you wnat to interpolate from (input MODEL data)
+# Options:
+# 1. SODA, 2. SODAMONTHLY, 3.WOAMONTHLY, 4. NORESM, 4. GLORYS, 5. SODA3
+self.ocean_indata_type = 'SODA3'
 
-        # Define contact info for final NetCDF files
-        self.authorname = "Trond Kristiansen"
-        self.authoremail = "trond.kristiansen (at) niva.no"
+# Define contact info for final NetCDF files
+self.authorname = "Trond Kristiansen"
+self.authoremail = "trond.kristiansen (at) niva.no"
 
-        # Define what grid type you wnat to interpolate from: Can be Z for SIGMA for ROMS
-        # vertical coordinate system or ZLEVEL. also define the name of the dimensions in the input files.
-        # Options:
-        # 1. SIGMA (not prpoerly implemented yet), 2. ZLEVEL
-        self.ingridtype = "SIGMA"
+# Define what grid type you wnat to interpolate from: Can be Z for SIGMA for ROMS
+# vertical coordinate system or ZLEVEL. also define the name of the dimensions in the input files.
+# Options:
+# 1. SIGMA (not prpoerly implemented yet), 2. ZLEVEL
+self.ingrid_type = "SIGMA"
 
-        # Define the names of the geographical variables in the input files
-        self.grdtype = 'regular'
-        self.lonname = "longitude"
-        self.latname = "latitude"
-        self.depthname = "depth"
-        self.timename = "time"
-        self.realm = "ocean"
-        self.fillvaluein = -1.e20
+# Define the names of the geographical variables in the input files
+self.grd_type = 'regular'
+self.lon_name = "longitude"
+self.lat_name = "latitude"
+self.depth_name = "depth"
+self.time_name = "time"
+self.realm = "ocean"
+self.fillvaluein = -1.e20
 
-        # OUT GRIDTYPES ------------------------------------------------------------------------------
-        # Define what grid type you wnat to interpolate to
-        # Options: This is just the name of your grid used to identify your selection later
-        self.outgrid = "ROHO800"
-        self.outgridtype = "ROMS"
+# OUT GRIDTYPES ------------------------------------------------------------------------------
+# Define what grid type you wnat to interpolate to
+# Options: This is just the name of your grid used to identify your selection later
+self.outgrid_name = "ROHO800"
+self.outgrid_type = "ROMS"
 
-        # Subset input data. If you have global data you may want to seubset these to speed up reading. Make
-        # sure that your input data are cartesian (0-360 or -180:180, -90:90)
-        self.subset_indata = False
-        if self.subset_indata:
-            self.subset = self.definesubsetforindata()
+# Subset input data. If you have global data you may want to seubset these to speed up reading. Make
+# sure that your input data are cartesian (0-360 or -180:180, -90:90)
+self.subset_indata = False
+if self.subset_indata:
+    self.subset = self.definesubsetforindata()
 
-        # Define nmber of output depth levels
-        self.nlevels = 40
-        # Define the grid stretching properties (leave default if uncertain what to pick)
-        self.vstretching = 4
-        self.vtransform = 2
-        self.theta_s = 7.0
-        self.theta_b = 0.1
-        self.tcline = 250.0
-        self.hc = 250
+# Define nmber of output depth levels
+self.nlevels = 40
+# Define the grid stretching properties (leave default if uncertain what to pick)
+self.vstretching = 4
+self.vtransform = 2
+self.theta_s = 7.0
+self.theta_b = 0.1
+self.tcline = 250.0
+self.hc = 250
 
-        # PATH TO FORCINGDATA --------------------------------------------------------------------
-        # Define the path to the input data
-        self.modelpath = self.defineforcingdatapath()
+# PATH TO FORCINGDATA --------------------------------------------------------------------
+# Define the path to the input data
+self.ocean_forcing_path = self.defineforcingdatapath()
 
-        # PATH TO GRID -----------------------------------------------------------------------------
-        # Define the path to the grid file
-        self.romsgridpath = self.defineromsgridpath()
+# PATH TO GRID -----------------------------------------------------------------------------
+# Define the path to the grid file
+self.roms_grid_path = self.defineromsgridpath()
 
-        # Climatology is only monthly and model2roms needs to know this
-        self.isclimatology = True if self.ocean_indata_type == 'WOAMONTHLY' else False
+# Climatology is only monthly and model2roms needs to know this
+self.isclimatology = True if self.ocean_indata_type == 'WOAMONTHLY' else False
 
-        # DATE AND TIME DETAILS ---------------------------------------------------------
-        # Define the period to create forcing for
-        self.start_year = 1980
-        self.end_year = 2014
-        self.start_month = 1
-        self.end_month = 12
-        self.start_day = 15
-        self.end_day = 15
+# DATE AND TIME DETAILS ---------------------------------------------------------
+# Define the period to create forcing for
+self.start_year = 1980
+self.end_year = 2014
+self.start_month = 1
+self.end_month = 12
+self.start_day = 15
+self.end_day = 15
 ```  
 <p style="clear: both;">
 

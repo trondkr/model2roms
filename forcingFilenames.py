@@ -77,13 +77,13 @@ def getGLORYSfilename(confM2R, year, month, myvar):
         production = "R20130808"
 
     if confM2R.start_month < 10:
-        filename = confM2R.modelpath + 'dataset-global-reanalysis-phys-001-009-ran-fr-glorys2v3-monthly-' \
+        filename = confM2R.ocean_forcing_path + 'dataset-global-reanalysis-phys-001-009-ran-fr-glorys2v3-monthly-' \
                    + str(myvar.lower()) + '/GLORYS2V3_ORCA025_' + str(confM2R.start_year) + '0' + str(
             confM2R.start_month) \
                    + '15_' + str(production) + '_' + str(myvarPrefix) + '.nc'
 
     if confM2R.start_month >= 10:
-        filename = confM2R.modelpath + 'dataset-global-reanalysis-phys-001-009-ran-fr-glorys2v3-monthly-' \
+        filename = confM2R.ocean_forcing_path + 'dataset-global-reanalysis-phys-001-009-ran-fr-glorys2v3-monthly-' \
                    + str(myvar.lower()) + '/GLORYS2V3_ORCA025_' + str(confM2R.start_year) + str(confM2R.start_month) \
                    + '15_' + str(production) + '_' + str(myvarPrefix) + '.nc'
 
@@ -92,19 +92,19 @@ def getGLORYSfilename(confM2R, year, month, myvar):
 
 def getNORESMfilename(confM2R, year, month, myvar):
     if myvar == 'grid':
-        filename = confM2R.modelpath + 'grid_gx1v6.nc'
+        filename = confM2R.ocean_forcing_path + 'grid_gx1v6.nc'
     else:
         if myvar in ['iage', 'uvel', 'vvel', 'aice', 'hi', 'hs']:
-            filename = confM2R.modelpath + 'ICE/NRCP45AERCN_f19_g16_CLE_01.cice.h.' + str(year) + '.nc'
+            filename = confM2R.ocean_forcing_path + 'ICE/NRCP45AERCN_f19_g16_CLE_01.cice.h.' + str(year) + '.nc'
         
         elif myvar in ['dissic','talk','po4','no3','si','o2']:
-            filename = confM2R.modelpath+"BCG_NRCP85BPRPEX_01.micom.hbgcmlvl.2006-2050.nc"
+            filename = confM2R.ocean_forcing_path + "BCG_NRCP85BPRPEX_01.micom.hbgcmlvl.2006-2050.nc"
         
         elif myvar in ['templvl', 'salnlvl', 'sealv', 'uvellvl', 'vvellvl']:
             if myvar in ['salnlvl','templvl']:
-                filename = confM2R.modelpath+"TS_NRCP85BPRPEX_01.micom.2006-2100.nc"
+                filename = confM2R.ocean_forcing_path + "TS_NRCP85BPRPEX_01.micom.2006-2100.nc"
             else:
-                filename = confM2R.modelpath+"VEL_NRCP85BPRPEX_01.micom.hmlvl.2006-2100.nc"
+                filename = confM2R.ocean_forcing_path + "VEL_NRCP85BPRPEX_01.micom.hmlvl.2006-2100.nc"
     return filename
 
 
@@ -113,7 +113,7 @@ def getNS8KMfilename(confM2R, year, month, myvar):
         mymonth = '0%s' % (confM2R.start_month)
     else:
         mymonth = '%s' % (confM2R.start_month)
-    filename = confM2R.modelpath + str(confM2R.start_year) + str(
+    filename = confM2R.ocean_forcing_path + str(confM2R.start_year) + str(
         mymonth) + '15_mm-IMR-MODEL-ROMS-NWS-20140430-fv02.1.nc'
 
     return filename, mymonth
@@ -133,7 +133,7 @@ def getNS8KMZfilename(confM2R, year, month, myvar):
             mymonth = '0%s' % (confM2R.start_month)
         else:
             mymonth = '%s' % (confM2R.start_month)
-        filename = confM2R.modelpath + str(confM2R.start_year) + str(
+        filename = confM2R.ocean_forcing_path + str(confM2R.start_year) + str(
             mymonth) + '15_mm-IMR-MODEL-ROMS-NWS-20160203-fv02.1.nc'
 
         return filename, readFromOneFile
@@ -141,56 +141,56 @@ def getNS8KMZfilename(confM2R, year, month, myvar):
 
 def getSODAMONTHLYfilename(confM2R, year, month, myvar):
     if confM2R.start_month < 10:
-        return confM2R.modelpath + 'SODA_2.0.2_' + str(year) + '0' + str(month) + '.cdf'
+        return confM2R.ocean_forcing_path + 'SODA_2.0.2_' + str(year) + '0' + str(month) + '.cdf'
     elif confM2R.start_month >= 10:
-        return confM2R.modelpath + 'SODA_2.0.2_' + str(year) + str(month) + '.cdf'
+        return confM2R.ocean_forcing_path + 'SODA_2.0.2_' + str(year) + str(month) + '.cdf'
 
 
 def getSODAfilename(confM2R, year, month, day, myvar):
-    return confM2R.modelpath + "SODA_2.0.2_" + str(year) + "_" + str(month) + ".cdf"
+    return confM2R.ocean_forcing_path + "SODA_2.0.2_" + str(year) + "_" + str(month) + ".cdf"
 
 def getSODA3filename(confM2R, year, month, day, myvar):
     if (myvar in ['cn', 'hi', 'hs']):
-        return confM2R.modelpath + "soda3.3.1_mn_ice_reg_" + str(year) + ".nc"
+        return confM2R.ocean_forcing_path + "soda3.3.1_mn_ice_reg_" + str(year) + ".nc"
     else:
-        return confM2R.modelpath + "soda3.3.1_mn_ocean_reg_" + str(year) + ".nc"
+        return confM2R.ocean_forcing_path + "soda3.3.1_mn_ocean_reg_" + str(year) + ".nc"
 
 def getSODA3_5DAYfilename(confM2R, year, month, day, myvar):
 
-    if len(confM2R.timeobject)==0:
-        mcdf = MFDataset(confM2R.modelpath+"*.nc")
-        confM2R.timeobject = mcdf.variables["time"]
+    if len(confM2R.time_object)==0:
+        mcdf = MFDataset(confM2R.ocean_forcing_path + "*.nc")
+        confM2R.time_object = mcdf.variables["time"]
         
-       # print("Loaded all timesteps: {}".format(confM2R.timeobject[:]))
-    index = date2index(datetime(year,month,day,0,0),confM2R.timeobject,calendar=confM2R.timeobject.calendar,select="nearest")
-    seldate=num2date(confM2R.timeobject[index],units=confM2R.timeobject.units, calendar=confM2R.timeobject.calendar)
+       # print("Loaded all timesteps: {}".format(confM2R.time_object[:]))
+    index = date2index(datetime(year,month,day,0,0), confM2R.time_object, calendar=confM2R.time_object.calendar, select="nearest")
+    seldate=num2date(confM2R.time_object[index], units=confM2R.time_object.units, calendar=confM2R.time_object.calendar)
 
     print("selected index {}".format(seldate))
     if (myvar in ['cn', 'hi', 'hs']):
-        return '{}soda3.3.2_5dy_ocean_ice_{:04}_{:02}_{:02}.nc'.format(confM2R.modelpath,seldate.year,seldate.month,seldate.day)
+        return '{}soda3.3.2_5dy_ocean_ice_{:04}_{:02}_{:02}.nc'.format(confM2R.ocean_forcing_path, seldate.year, seldate.month, seldate.day)
     else:
-        return '{}soda3.3.2_5dy_ocean_reg_{:04}_{:02}_{:02}.nc'.format(confM2R.modelpath,seldate.year,seldate.month,seldate.day)
+        return '{}soda3.3.2_5dy_ocean_reg_{:04}_{:02}_{:02}.nc'.format(confM2R.ocean_forcing_path, seldate.year, seldate.month, seldate.day)
 
 def getERA5_1DAYfilename(confM2R, year, month, day, myvar):
     
-    if len(confM2R.timeobject)==0:
-        mcdf = MFDataset(confM2R.atmosphericpath+"*.nc")
-        confM2R.timeobject = mcdf.variables["time"]
+    if len(confM2R.time_object)==0:
+        mcdf = MFDataset(confM2R.atmospheric_forcing_path + "*.nc")
+        confM2R.time_object = mcdf.variables["time"]
         
-        print("Loaded all ERA5 timesteps: {}".format(confM2R.timeobject[:]))
-    index = date2index(datetime(year,month,day,0,0),confM2R.timeobject,calendar=confM2R.timeobject.calendar,select="nearest")
-    seldate=num2date(confM2R.timeobject[index],units=confM2R.timeobject.units, calendar=confM2R.timeobject.calendar)
+        print("Loaded all ERA5 timesteps: {}".format(confM2R.time_object[:]))
+    index = date2index(datetime(year,month,day,0,0), confM2R.time_object, calendar=confM2R.time_object.calendar, select="nearest")
+    seldate=num2date(confM2R.time_object[index], units=confM2R.time_object.units, calendar=confM2R.time_object.calendar)
 
     print("selected index {}".format(seldate))
  
-    return '{}soda3.3.2_5dy_ocean_reg_{:04}_{:02}_{:02}.nc'.format(confM2R.atmosphericpath,seldate.year,seldate.month,seldate.day)
+    return '{}soda3.3.2_5dy_ocean_reg_{:04}_{:02}_{:02}.nc'.format(confM2R.atmospheric_forcing_path, seldate.year, seldate.month, seldate.day)
 
 
 
 def getWOAMONTHLYfilename(confM2R, year, month, myvar):
     if myvar == "temperature":
-        return confM2R.modelpath + 'temperature_monthly_1deg.nc'
+        return confM2R.ocean_forcing_path + 'temperature_monthly_1deg.nc'
     elif myvar == "salinity":
-        return confM2R.modelpath + 'salinity_monthly_1deg.nc'
+        return confM2R.ocean_forcing_path + 'salinity_monthly_1deg.nc'
     else:
-        print("Could not find any input files in folder: %s" % confM2R.modelpath)
+        print("Could not find any input files in folder: %s" % confM2R.ocean_forcing_path)

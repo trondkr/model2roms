@@ -43,8 +43,8 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
 
         f1 = Dataset(confM2R.clim_name, mode='w', format=confM2R.myformat)
         f1.title = "Climatology forcing file (CLIM) used for forcing the ROMS model"
-        f1.description = "Created for grid file: %s" % (confM2R.romsgridpath)
-        f1.grd_file = "Gridfile: %s" % (confM2R.romsgridpath)
+        f1.description = "Created for grid file: %s" % (confM2R.roms_grid_path)
+        f1.grd_file = "Gridfile: %s" % (confM2R.roms_grid_path)
         f1.history = "Created " + time.ctime(time.time())
         f1.source = "{} ({})".format(confM2R.authorname,confM2R.authoremail)
         f1.type = "File in %s format created using MODEL2ROMS" % (confM2R.myformat)
@@ -278,7 +278,7 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
             v_vbar.field = "v2-D velocity, scalar, series"
             #v_vbar.missing_value = grdROMS.fillval
 
-            if confM2R.writeice:
+            if confM2R.write_ice:
                 ageice = f1.createVariable('ageice', 'f', ('ocean_time', 'eta_rho', 'xi_rho',), zlib=myzlib,
                                            fill_value=grdROMS.fillval)
                 ageice.long_name = "time-averaged age of the ice"
@@ -381,7 +381,7 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
                 sig22.time = "ocean_time"
                 sig22.field = "ice stress 22, scalar, series"
                 #sig22.missing_value = grdROMS.fillval
-            if confM2R.writebcg:
+            if confM2R.write_bcg:
 
                 v_o3_c = f1.createVariable('O3_c', 'f', ('ocean_time', 's_rho', 'eta_rho', 'xi_rho',), zlib=myzlib,
                                        fill_value=grdROMS.fillval)
@@ -459,7 +459,7 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
         f1 = Dataset(confM2R.clim_name, mode='a', format=confM2R.myformat)
 
     if confM2R.isclimatology is False:
-        if myvar == confM2R.globalvarnames[0]:
+        if myvar == confM2R.global_varnames[0]:
 
             if grdROMS.timeunits[0:7] == "seconds":
                 print("time units ", grdROMS.timeunits, grdROMS.timeunits[0:7])
@@ -486,7 +486,7 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
             f1.variables['ubar'][ntime, :, :] = data3
             f1.variables['vbar'][ntime, :, :] = data4
 
-        if confM2R.writeice:
+        if confM2R.write_ice:
             if myvar == "ageice":
                 # print "NOTE! Setting values of ageice to ZERO! (IOWrite.py)"
                 data1 = np.where(abs(data1) > 100, 0, data1)
@@ -522,7 +522,7 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
                 data1 = np.where(abs(data1) > 10, 0, data1)
                 f1.variables['snow_thick'][ntime, :, :] = data1
 
-        if confM2R.writebcg:
+        if confM2R.write_bcg:
             if myvar in ['O3_c','O3_TA','N1_p','N3_n','N5_s','O2_o']:
                 data1 = np.where(abs(data1) < 0, 0, data1)
                 if confM2R.ocean_indata_type== "NORESM":

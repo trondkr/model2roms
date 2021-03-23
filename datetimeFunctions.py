@@ -44,7 +44,7 @@ def createlistofmonths(confM2R, currentyear):
 
 def createlistofdays(confM2R, year, month, first_run):
     days = []
-    if confM2R.timefrequencyofinputdata == 'day':
+    if confM2R.time_frequency_inputdata == 'day':
         daystep = 7
         if daystep > 1:
             print("WARNING!")
@@ -73,10 +73,10 @@ def createlistofdays(confM2R, year, month, first_run):
         if (confM2R.startdate.month == confM2R.enddate.month and confM2R.startdate.year == confM2R.enddate.year):
             days = [i for i in range(confM2R.startdate.day, confM2R.enddate.day, daystep)]
     
-    if confM2R.timefrequencyofinputdata == '5days':
+    if confM2R.time_frequency_inputdata == '5days':
         
-        for dd in confM2R.timeobject[:]:
-            dd_date = num2date(dd,units=confM2R.timeobject.units, calendar=confM2R.timeobject.calendar)
+        for dd in confM2R.time_object[:]:
+            dd_date = num2date(dd, units=confM2R.time_object.units, calendar=confM2R.time_object.calendar)
 
             if dd_date.year==year and dd_date.month==month:
                 days.append(dd_date.day)
@@ -90,7 +90,7 @@ def createlistofdays(confM2R, year, month, first_run):
             days=days_tmp 
         return days
 
-    if confM2R.timefrequencyofinputdata == 'month':
+    if confM2R.time_frequency_inputdata == 'month':
         days = [15]
 
     return days

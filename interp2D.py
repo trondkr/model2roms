@@ -37,14 +37,14 @@ def laplacefilter(field, threshold, toxi, toeta):
 
 
 def dohorinterpolationregulargrid(confM2R, mydata, myvar):
-    if confM2R.showprogress is True:
+    if confM2R.show_progress is True:
         try:
             import progressbar
             widgets=['\rHorizontal interpolation:', progressbar.Percentage(), progressbar.Bar()]
             progress = progressbar.ProgressBar(confM2R.grdMODEL.nlevels, widgets=widgets).start()
         except ImportError:
             print("Could not find module progressbar")
-            confM2R.showprogress=False
+            confM2R.show_progress=False
         pass
 
     indexROMS_Z_ST, toxi, toeta, mymask = setupIndexes(confM2R, myvar)
@@ -56,7 +56,7 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
         depthlevels=1
     
     for k in range(depthlevels):
-        if confM2R.useesmf:
+        if confM2R.use_esmf:
             if depthlevels==1:
                 indata=np.squeeze(mydata[:, :])
             else:
@@ -77,15 +77,18 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
             # Since ESMF uses coordinates (x,y) we need to rotate and flip to get back to (y,x) order.
             field = np.fliplr(np.rot90(field.data, 3))
            
-        if confM2R.usefilter:
+        if confM2R.use_filter:
             field = laplacefilter(field, 1000, toxi, toeta)
             field = field * mymask
             
         array1[k, :, :] = field
 
-        if k in [34,17,2]:
+        if k in [39,34,17,2]:
             import plotData
-            plotData.contourMap(grdROMS, grdROMS.lon_rho, grdROMS.lat_rho, field, str(k)+'_withfilter', myvar)
+            import matplotlib.pyplot as plt
+            plotData.contourMap(confM2R.grdROMS, confM2R.grdROMS.lon_rho, confM2R.grdROMS.lat_rho, field, str(k)+'_withfilter', myvar)
+            plotfilename="test_{}_wfilter.png".format(myvar)
+            plt.savefig(plotfilename, dpi=150)
         # if __debug__:
         #      print "Data range after horisontal interpolation: ", field.min(), field.max()
 
@@ -93,9 +96,9 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
         #     import plotData
         #     plotData.contourMap(grdROMS,grdROMS.lon_rho,grdROMS.lat_rho, field, "surface", myvar)
 
-        if confM2R.showprogress is True:
+        if confM2R.show_progress is True:
             progress.update(k)
-    if confM2R.showprogress is True:
+    if confM2R.show_progress is True:
         progress.finish()
     return array1
 
@@ -119,7 +122,7 @@ def setupIndexes(confM2R, myvar):
 
 
 def setupESMFInterpolationWeights(confM2R):
-    if confM2R.useesmf:
+    if confM2R.use_esmf:
         print("=>Creating the interpolation weights and indexes using ESMF (this may take some time....):")
 
         print("  -> regridSrc2Dst at RHO points")

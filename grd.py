@@ -33,11 +33,11 @@ class Grd:
         => grdTEST = grd.grdClass("grdfilename","ROMS")
         """
         self.type = grdtype
-        self.grdName = confM2R.outgrid
+        self.grdName = confM2R.outgrid_name
         self.realm = confM2R.realm
         self.grdfilename = None
 
-        print('Creating init for grid object {}'.format(confM2R.outgrid))
+        print('Creating init for grid object {}'.format(confM2R.outgrid_name))
         print('---> Initialized GRD object for grid type {}\n'.format(self.type))
 
     def opennetcdf(self, grdfilename):
@@ -65,12 +65,12 @@ class Grd:
         Trond Kristiansen, 18.11.2009, edited 03.01.2017
         """
         if self.type == 'FORCINGDATA':
-            print('---> Assuming %s grid type for %s' % (confM2R.grdtype, self.type))
-            print("---> Using dimension names %s and %s and %s" % (confM2R.lonname, confM2R.latname, confM2R.depthname))
+            print('---> Assuming %s grid type for %s' % (confM2R.grd_type, self.type))
+            print("---> Using dimension names %s and %s and %s" % (confM2R.lon_name, confM2R.lat_name, confM2R.depth_name))
 
-            self.lon = self.cdf.variables[str(confM2R.lonname)][:]
-            self.lat = self.cdf.variables[str(confM2R.latname)][:]
-            self.h = self.cdf.variables[str(confM2R.depthname)][:]
+            self.lon = self.cdf.variables[str(confM2R.lon_name)][:]
+            self.lat = self.cdf.variables[str(confM2R.lat_name)][:]
+            self.h = self.cdf.variables[str(confM2R.depth_name)][:]
             self.nlevels = len(self.h)
             self.fillval = -9.99e+33
 
@@ -78,16 +78,16 @@ class Grd:
                 self.lon, self.lat = np.meshgrid(self.lon, self.lat)
 
             # Create grid for ESMF interpolation
-            if confM2R.useesmf:
+            if confM2R.use_esmf:
                 self.esmfgrid = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
-                                          is_sphere=True, coord_names=[str(confM2R.lonname), str(confM2R.latname)],
+                                          is_sphere=True, coord_names=[str(confM2R.lon_name), str(confM2R.lat_name)],
                                           add_mask=False)
                 self.esmfgrid_u = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
-                                          is_sphere=True, coord_names=[str(confM2R.lonname_u), str(confM2R.latname_u)],
-                                          add_mask=False)
+                                            is_sphere=True, coord_names=[str(confM2R.lon_name_u), str(confM2R.lat_name_u)],
+                                            add_mask=False)
                 self.esmfgrid_v = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
-                                          is_sphere=True, coord_names=[str(confM2R.lonname_v), str(confM2R.latname_v)],
-                                          add_mask=False)
+                                            is_sphere=True, coord_names=[str(confM2R.lon_name_v), str(confM2R.lat_name_v)],
+                                            add_mask=False)
 
             if confM2R.ocean_indata_type == 'WOAMONTHLY':
                 self.fillval = 9.96921e+36
@@ -118,10 +118,10 @@ class Grd:
             IOverticalGrid.get_z_levels(self)
 
         if self.type == 'STATION':
-            self.lon = self.cdf.variables[confM2R.lonname][:]
-            self.lat = self.cdf.variables[confM2R.latname][:]
-            self.h = self.cdf.variables[confM2R.depthname][:]
-            self.time = self.cdf.variables[confM2R.timename][:]
+            self.lon = self.cdf.variables[confM2R.lon_name][:]
+            self.lat = self.cdf.variables[confM2R.lat_name][:]
+            self.h = self.cdf.variables[confM2R.depth_name][:]
+            self.time = self.cdf.variables[confM2R.time_name][:]
 
             self.Lp = 1
             self.Mp = 1
@@ -268,7 +268,7 @@ line = %d and hmin = %d. \n You need to make sure that tcline <= hmin when using
             """Setup the vertical coordinate system"""
             IOverticalGrid.calculateVgrid(self)
 
-            if (confM2R.useesmf):
+            if (confM2R.use_esmf):
                 self.esmfgrid_u = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
                                             coord_names=['lon_u', 'lat_u'], add_mask=False)
                 self.esmfgrid_v = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
