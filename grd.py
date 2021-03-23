@@ -6,7 +6,7 @@ two types of structures as input: SODA or ROMS
 from datetime import datetime
 
 import numpy as np
-from netCDF4 import Dataset
+import xarray as xr
 
 import IOverticalGrid
 
@@ -23,6 +23,7 @@ __modified__ = datetime(2021, 3, 23)
 __version__ = "1.5"
 __status__ = "Development"
 
+
 class Grd:
 
     def __init__(self, grdtype, confM2R):
@@ -35,25 +36,11 @@ class Grd:
         self.type = grdtype
         self.grdName = confM2R.outgrid_name
         self.realm = confM2R.realm
-        self.grdfilename = None
-        self.cdf = None
 
         print('Creating init for grid object {}'.format(confM2R.outgrid_name))
         print('---> Initialized GRD object for grid type {}\n'.format(self.type))
 
-    def open_netcdf(self, grdfilename):
-
-        self.grdfilename = grdfilename
-        """Open the netCDF file and store the contents in arrays associated with variable names"""
-        try:
-            self.cdf = Dataset(self.grdfilename, "r")
-            print('GRD file : open_netcdf opened file {}'.format(self.grdfilename))
-
-        except IOError:
-            print('Could not open file {}'.format(self.grdfilename))
-            print('Exception caught in: open_netcdf(grdfilename)')
-
-    def create_object(self, confM2R):
+    def create_object(self, confM2R, grd_filename):
         """
         This method creates a new object by reading the grd input file. All
         dimensions (eta, xi, lon, lat etc.) are defined here and used througout these scripts.
@@ -66,14 +53,19 @@ class Grd:
         Trond Kristiansen, 18.11.2009, edited 03.01.2017
         """
         if self.type == 'FORCINGDATA':
-            print('---> Assuming %s grid type for %s' % (confM2R.grd_type, self.type))
-            print("---> Using dimension names %s and %s and %s" % (confM2R.lon_name, confM2R.lat_name, confM2R.depth_name))
 
-            self.lon = self.cdf.variables[str(confM2R.lon_name)][:]
-            self.lat = self.cdf.variables[str(confM2R.lat_name)][:]
-            self.h = self.cdf.variables[str(confM2R.depth_name)][:]
+            ds = xr.open_dataset(grd_filename)
+            print('---> Assuming %s grid type for %s' % (confM2R.grd_type, self.type))
+            print("---> Using dimension names %s and %s and %s" % (confM2R.lon_name,
+                                                                   confM2R.lat_name,
+                                                                   confM2R.depth_name))
+
+            self.lon = ds[str(confM2R.lon_name)][:]
+            self.lat = ds[str(confM2R.lat_name)][:]
+            self.h = ds[str(confM2R.depth_name)][:]
             self.nlevels = len(self.h)
             self.fillval = -9.99e+33
+            self.hc = None
 
             if self.lon.ndim == 1:
                 self.lon, self.lat = np.meshgrid(self.lon, self.lat)
@@ -84,45 +76,39 @@ class Grd:
                                           is_sphere=True, coord_names=[str(confM2R.lon_name), str(confM2R.lat_name)],
                                           add_mask=False)
                 self.esmfgrid_u = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
-                                            is_sphere=True, coord_names=[str(confM2R.lon_name_u), str(confM2R.lat_name_u)],
+                                            is_sphere=True,
+                                            coord_names=[str(confM2R.lon_name_u), str(confM2R.lat_name_u)],
                                             add_mask=False)
                 self.esmfgrid_v = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
-                                            is_sphere=True, coord_names=[str(confM2R.lon_name_v), str(confM2R.lat_name_v)],
+                                            is_sphere=True,
+                                            coord_names=[str(confM2R.lon_name_v), str(confM2R.lat_name_v)],
                                             add_mask=False)
 
-            if confM2R.ocean_indata_type == 'WOAMONTHLY':
-                self.fillval = 9.96921e+36
-            if confM2R.ocean_indata_type == 'SODA':
-                self.fillval = -9.99e+33
             if confM2R.ocean_indata_type == 'SODA3':
                 self.fillval = -1.e+20
             if confM2R.ocean_indata_type == 'SODA3_5DAY':
-                    self.fillval = -1.e+20
-            if confM2R.ocean_indata_type == 'SODAMONTHLY':
-                self.fillval = -9.99e+33
+                self.fillval = -1.e+20
             if confM2R.ocean_indata_type == 'GLORYS':
                 self.fillval = 9.96921e+36
-            if confM2R.ocean_indata_type == 'NS8KMZ':
-                self.fillval = 9.96921e+36
-        
+
             if confM2R.ocean_indata_type == 'NORESM':
-                # self.h = self.cdf.variables["depth"][:]
+                # self.h = ds["depth"][:]
                 self.h = np.asarray([0, 5, 10, 15, 20, 25, 30, 40, 50, 62.5, 75, 87.5, 100, 112.5, 125,
-                                    137.5, 150, 175, 200, 225, 250, 275, 300, 350, 400, 450, 500, 550, 600,
-                                    650, 700, 750, 800, 850, 900, 950, 1000, 1050, 1100, 1150, 1200, 1250,
-                                    1300, 1350, 1400, 1450, 1500, 1625, 1750, 1875, 2000, 2250, 2500, 2750,
-                                    3000, 3250, 3500, 3750, 4000, 4250, 4500, 4750, 5000, 5250, 5500, 5750,
-                                    6000, 6250, 6500, 6750])
-                self.fillval=32768
-                self.nlevels=len(self.h)
-            
+                                     137.5, 150, 175, 200, 225, 250, 275, 300, 350, 400, 450, 500, 550, 600,
+                                     650, 700, 750, 800, 850, 900, 950, 1000, 1050, 1100, 1150, 1200, 1250,
+                                     1300, 1350, 1400, 1450, 1500, 1625, 1750, 1875, 2000, 2250, 2500, 2750,
+                                     3000, 3250, 3500, 3750, 4000, 4250, 4500, 4750, 5000, 5250, 5500, 5750,
+                                     6000, 6250, 6500, 6750])
+                self.fillval = 32768
+                self.nlevels = len(self.h)
+
             IOverticalGrid.get_z_levels(self)
 
         if self.type == 'STATION':
-            self.lon = self.cdf.variables[confM2R.lon_name][:]
-            self.lat = self.cdf.variables[confM2R.lat_name][:]
-            self.h = self.cdf.variables[confM2R.depth_name][:]
-            self.time = self.cdf.variables[confM2R.time_name][:]
+            self.lon = ds[confM2R.lon_name][:]
+            self.lat = ds[confM2R.lat_name][:]
+            self.h = ds[confM2R.depth_name][:]
+            self.time = ds[confM2R.time_name][:]
 
             self.Lp = 1
             self.Mp = 1
@@ -150,14 +136,14 @@ class Grd:
             self.time = 0
             self.reftime = 0
             self.grdtype = 'regular'
-            self.mask_rho = self.cdf.variables["mask_rho"][:, :]
-            self.lon_rho = self.cdf.variables["lon_rho"][:, :]
-            self.lat_rho = self.cdf.variables["lat_rho"][:, :]
-            self.h = self.cdf.variables["h"][:, :]
+            self.mask_rho = ds["mask_rho"][:, :]
+            self.lon_rho = ds["lon_rho"][:, :]
+            self.lat_rho = ds["lat_rho"][:, :]
+            self.h = ds["h"][:, :]
             self.hmin = self.h[self.h > 0].min()
-            self.vtransform=confM2R.vtransform
+            self.vtransform = confM2R.vtransform
             self.nlevels = confM2R.nlevels
-            self.vstretching = confM2R.vstretching     
+            self.vstretching = confM2R.vstretching
             self.theta_s = confM2R.theta_s
             self.theta_b = confM2R.theta_b
             self.tcline = confM2R.tcline
@@ -165,10 +151,12 @@ class Grd:
             if self.vtransform == 1:
                 self.hc = min(self.hmin, self.tcline)
                 self.hc = self.tcline
-                if (self.tcline > self.hmin):
-                    print('Vertical transformation parameters are not defined correctly in either gridid.txt or in the history files: \n Tc\
-line = %d and hmin = %d. \n You need to make sure that tcline <= hmin when using transformation 1.' % (
-                    self.tcline, self.hmin))
+                if self.tcline > self.hmin:
+                    print('Vertical transformation parameters are not defined correctly in either gridid.txt '
+                          'or in the history files: \n Tc\
+                           line = %d and hmin = %d. \n You need to make sure that '
+                          'tcline <= hmin when using transformation 1.' % (
+                              self.tcline, self.hmin))
             else:
                 self.hc = self.tcline
 
@@ -178,70 +166,70 @@ line = %d and hmin = %d. \n You need to make sure that tcline <= hmin when using
             else:
                 self.zeta = zeta
 
-            # for findvar in self.cdf.variables:
+            # for findvar in ds:
             #    if findvar=="hraw":
-            #        self.hraw     = self.cdf.variables["hraw"][:,:,:]
+            #        self.hraw     = ds["hraw"][:,:,:]
 
-            self.lon_u = self.cdf.variables["lon_u"][:, :]
-            self.lat_u = self.cdf.variables["lat_u"][:, :]
-            self.mask_u = self.cdf.variables["mask_u"][:, :]
-            for findvar in self.cdf.variables:
+            self.lon_u = ds["lon_u"][:, :]
+            self.lat_u = ds["lat_u"][:, :]
+            self.mask_u = ds["mask_u"][:, :]
+            for findvar in ds:
                 if findvar == "lon_vert":
-                    self.lon_vert = self.cdf.variables["lon_vert"][:, :]
-                    self.lat_vert = self.cdf.variables["lat_vert"][:, :]
+                    self.lon_vert = ds["lon_vert"][:, :]
+                    self.lat_vert = ds["lat_vert"][:, :]
 
-            for findvar in self.cdf.variables:
+            for findvar in ds:
                 if findvar == "x_rho":
-                    self.x_rho = self.cdf.variables["x_rho"][:, :]
-                    self.y_rho = self.cdf.variables["y_rho"][:, :]
+                    self.x_rho = ds["x_rho"][:, :]
+                    self.y_rho = ds["y_rho"][:, :]
 
-            for findvar in self.cdf.variables:
+            for findvar in ds:
                 if findvar == "x_u":
-                    self.x_u = self.cdf.variables["x_u"][:, :]
-                    self.y_u = self.cdf.variables["y_u"][:, :]
+                    self.x_u = ds["x_u"][:, :]
+                    self.y_u = ds["y_u"][:, :]
 
-            for findvar in self.cdf.variables:
+            for findvar in ds:
                 if findvar == "x_v":
-                    self.x_v = self.cdf.variables["x_v"][:, :]
-                    self.y_v = self.cdf.variables["y_v"][:, :]
+                    self.x_v = ds["x_v"][:, :]
+                    self.y_v = ds["y_v"][:, :]
 
-            for findvar in self.cdf.variables:
+            for findvar in ds:
                 if findvar == "x_psi":
-                    self.x_psi = self.cdf.variables["x_psi"][:, :]
-                    self.y_psi = self.cdf.variables["y_psi"][:, :]
+                    self.x_psi = ds["x_psi"][:, :]
+                    self.y_psi = ds["y_psi"][:, :]
 
-            for findvar in self.cdf.variables:
+            for findvar in ds:
                 if findvar == "x_vert":
-                    self.x_vert = self.cdf.variables["x_vert"][:, :]
-                    self.y_vert = self.cdf.variables["y_vert"][:, :]
+                    self.x_vert = ds["x_vert"][:, :]
+                    self.y_vert = ds["y_vert"][:, :]
 
-            for findvar in self.cdf.variables:
+            for findvar in ds:
                 if findvar == "xl":
-                    self.xl = self.cdf.variables["xl"][:]
-                    self.el = self.cdf.variables["el"][:]
+                    self.xl = ds["xl"][:]
+                    self.el = ds["el"][:]
 
-            for findvar in self.cdf.variables:
+            for findvar in ds:
                 if findvar == "dmde":
-                    self.dmde = self.cdf.variables["dmde"][:, :]
-                    self.dndx = self.cdf.variables["dndx"][:, :]
+                    self.dmde = ds["dmde"][:, :]
+                    self.dndx = ds["dndx"][:, :]
 
-            self.lon_v = self.cdf.variables["lon_v"][:, :]
-            self.lat_v = self.cdf.variables["lat_v"][:, :]
-            self.mask_v = self.cdf.variables["mask_v"][:, :]
+            self.lon_v = ds["lon_v"][:, :]
+            self.lat_v = ds["lat_v"][:, :]
+            self.mask_v = ds["mask_v"][:, :]
 
-            self.spherical = self.cdf.variables["spherical"][:]
+            self.spherical = ds["spherical"][:]
 
             self.lon_psi = self.lon_u[:-1, :]
             self.lat_psi = self.lat_v[:, :-1]
             self.mask_psi = self.mask_v[:, :-1]
 
-            self.f = self.cdf.variables["f"][:, :]
-            self.angle = self.cdf.variables["angle"][:, :]
+            self.f = ds["f"][:, :]
+            self.angle = ds["angle"][:, :]
 
-            self.pm = self.cdf.variables["pm"][:, :]
-            self.invpm = 1.0 / np.asarray(self.cdf.variables["pm"][:, :])
-            self.pn = self.cdf.variables["pn"][:, :]
-            self.invpn = 1.0 / np.asarray(self.cdf.variables["pn"][:, :])
+            self.pm = ds["pm"][:, :]
+            self.invpm = 1.0 / np.asarray(ds["pm"][:, :])
+            self.pn = ds["pn"][:, :]
+            self.invpn = 1.0 / np.asarray(ds["pn"][:, :])
 
             self.Lp = len(self.lat_rho[1, :])
             self.Mp = len(self.lat_rho[:, 1])
