@@ -22,9 +22,9 @@ def get_filename(confM2R, year, month, day, defaultvar):
 
 # private functions called from within module
 def get_GLORYS_filename(confM2R, year, month, varname):
-    return "{}CMEMS_{}_monthly_MERCATOR_{}-{}.nc".format(confM2R.ocean_forcing_path,
-                                                         varname.capitalize(),
-                                                         year, str(month).zfill(2))
+    return "{}{}/CMEMS_{}_monthly_MERCATOR_{}-{}.nc".format(confM2R.ocean_forcing_path, varname,
+                                                            varname.capitalize(),
+                                                            year, str(month).zfill(2))
 
 
 def getNORESMfilename(confM2R, year, month, myvar):
