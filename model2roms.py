@@ -1,12 +1,11 @@
 from __future__ import print_function
 
 from datetime import datetime
-
 import barotropic
 import interpolation as interp
 import numpy as np
+import logging
 from netCDF4 import Dataset, date2num, num2date
-
 import IOinitial
 import IOsubset
 import IOwrite
@@ -22,10 +21,11 @@ except ImportError:
 __author__ = 'Trond Kristiansen'
 __email__ = 'trond.kristiansen@niva.no'
 __created__ = datetime(2008, 8, 15)
-__modified__ = datetime(2019, 3, 13)
+__modified__ = datetime(2021, 3, 23)
 __version__ = "1.8"
-__status__ = "Development, modified on 15.08.2008,01.10.2009,07.01.2010, 15.07.2014, 01.12.2014, 07.08.2015, " \
-             "08.02.2018, 04.03.2019, 13.03.2019 "
+__status__ = "Development, modified on 15.08.2008,01.10.2009,07.01.2010, " \
+             "15.07.2014, 01.12.2014, 07.08.2015, " \
+             "08.02.2018, 04.03.2019, 13.03.2019, 23.03.2021"
 
 
 def verticalinterpolation(myvar, array1, array2, grdROMS, grdMODEL):
@@ -36,7 +36,7 @@ def verticalinterpolation(myvar, array1, array2, grdROMS, grdMODEL):
     outINDEX_VBAR = (grdROMS.eta_v, grdROMS.xi_v)
 
     if myvar in ['salinity', 'temperature', 'O3_c', 'O3_TA', 'N1_p', 'N3_n', 'N5_s', 'O2_o']:
-        print('\nStart vertical interpolation for %s (dimensions=%s x %s)' % (myvar, grdROMS.xi_rho, grdROMS.eta_rho))
+        logging.info('\nStart vertical interpolation for {} (dimensions={} x {})'.format(myvar, grdROMS.xi_rho, grdROMS.eta_rho))
         outdata = np.empty((outINDEX_ST), dtype=np.float, order='Fortran')
 
         outdata = interp.interpolation.dovertinter(np.asarray(outdata, order='F'),
@@ -62,7 +62,7 @@ def verticalinterpolation(myvar, array1, array2, grdROMS, grdMODEL):
         return outdata
 
     if myvar == 'vvel':
-        print('\nStart vertical interpolation for uvel (dimensions=%s x %s)' % (grdROMS.xi_u, grdROMS.eta_u))
+        logging.info('\nStart vertical interpolation for uvel (dimensions={} x {})'.format(grdROMS.xi_u, grdROMS.eta_u))
         outdataU = np.zeros((outINDEX_U), dtype=np.float)
         outdataUBAR = np.zeros((outINDEX_UBAR), dtype=np.float)
 
@@ -80,7 +80,7 @@ def verticalinterpolation(myvar, array1, array2, grdROMS, grdMODEL):
 
         outdataU = np.ma.masked_where(abs(outdataU) > 1000, outdataU)
 
-        print('\nStart vertical interpolation for vvel (dimensions=%s x %s)' % (grdROMS.xi_v, grdROMS.eta_v))
+        logging.info('\nStart vertical interpolation for vvel (dimensions={} x {})'.format(grdROMS.xi_v, grdROMS.eta_v))
         outdataV = np.zeros((outINDEX_V), dtype=np.float)
         outdataVBAR = np.zeros((outINDEX_VBAR), dtype=np.float)
 
@@ -180,8 +180,6 @@ def getTime(confM2R, year, month, day, ntime):
     Also create a reference date starting at 1948/01/01.
     Go here to check results:http://lena.gsfc.nasa.gov/lenaDEV/html/doy_conv.html
     """
-    if confM2R.ocean_indata_type == 'SODA':
-        filename = fc.getSODAfilename(confM2R, year, month, day, None)
 
     if confM2R.ocean_indata_type == 'SODA3':
         filename = fc.getSODA3filename(confM2R, year, month, day, None)
@@ -195,31 +193,17 @@ def getTime(confM2R, year, month, day, ntime):
     if confM2R.ocean_indata_type == 'GLORYS':
         filename = fc.get_GLORYS_filename(confM2R, year, month, "So")
 
-    if confM2R.ocean_indata_type == 'WOAMONTHLY':
-        filename = fc.getWOAMONTHLYfilename(confM2R, year, month, "temperature")
-
     if confM2R.ocean_indata_type == 'NORESM':
         filename = fc.getNORESMfilename(confM2R, year, month, "salnlvl")
-
-    if confM2R.ocean_indata_type == 'NS8KM':
-        filename = fc.getNS8KMfilename(confM2R, year, month, "salt")
-
-    if confM2R.ocean_indata_type == 'NS8KMZ':
-        filename, readFromOneFile = fc.getNS8KMZfilename(confM2R, year, month, "salt")
 
     # Now open the input file and get the time
     cdf = Dataset(filename)
 
     if confM2R.ocean_indata_type == 'NORESM':
         jdref = date2num(datetime(1948, 1, 1), units="days since 1948-01-01 00:00:00", calendar="standard")
-    elif confM2R.ocean_indata_type == 'NS8KMZ':
-        jdref = date2num(datetime(1948, 1, 1), units="days since 1948-01-01 00:00:00", calendar="standard")
     elif confM2R.ocean_indata_type == 'GLORYS':
-        jdref = date2num(datetime(1948, 1, 1), cdf.variables["time_counter"].units,
-                         calendar=cdf.variables["time_counter"].calendar)
-    elif confM2R.ocean_indata_type == 'NS8KM':
-        jdref = date2num(datetime(1948, 1, 1), cdf.variables["ocean_time"].units,
-                         calendar=cdf.variables["ocean_time"].calendar)
+        jdref = date2num(datetime(1948, 1, 1), cdf.variables["time"].units,
+                         calendar=cdf.variables["time"].calendar)
     elif confM2R.ocean_indata_type == 'SODA3':
         jdref = date2num(datetime(1948, 1, 1), units="days since 1948-01-01 00:00:00", calendar="standard")
     elif confM2R.ocean_indata_type == 'SODA3_5DAY':
@@ -227,65 +211,40 @@ def getTime(confM2R, year, month, day, ntime):
     else:
         jdref = date2num(datetime(1948, 1, 1), cdf.variables["time"].units, calendar=cdf.variables["time"].calendar)
 
-    if confM2R.ocean_indata_type == 'SODAMONTHLY':
-        # Find the day and month that the SODAMONTHLY file respresents based on the year and ID number.
-        # Each SODA file represents a 1 month average.
-
-        mycalendar = cdf.variables["time"].calendar
-        myunits = cdf.variables["time"].units
-        currentdate = datetime(year, month, day)
-        jd = date2num(currentdate, myunits, calendar=mycalendar)
-
     if confM2R.ocean_indata_type == 'SODA3_5DAY':
         currentdate = datetime(year, month, day)
-        myunits = confM2R.time_object.units
+        units = confM2R.time_object.units
         jd = date2num(currentdate, units=confM2R.time_object.units, calendar=confM2R.time_object.calendar)
 
     if confM2R.ocean_indata_type == 'SODA3':
         # Each SODA file represents 12 month averages.
 
-        myunits = cdf.variables["time"].units
+        units = cdf.variables["time"].units
         currentdate = datetime(year, month, day)
         jd = date2num(currentdate, units="days since 1948-01-01 00:00:00", calendar="standard")
 
     if confM2R.ocean_indata_type == 'GLORYS':
         # Find the day and month that the GLORYS file respresents based on the year and ID number.
         # Each file represents a 1 month average.
-        mycalendar = cdf.variables["time_counter"].calendar
-        myunits = cdf.variables["time_counter"].units
+        calendar = cdf.variables["time"].calendar
+        units = cdf.variables["time"].units
         currentdate = datetime(year, month, day)
-        jd = date2num(currentdate, myunits, calendar=mycalendar)
-
-    if confM2R.ocean_indata_type == 'NS8KM':
-        # Find the day and month that the GLORYS file respresents based on the year and ID number.
-        # Each file represents a 1 month average.
-        mycalendar = cdf.variables["ocean_time"].calendar
-        myunits = cdf.variables["ocean_time"].units
-        currentdate = datetime(year, month, day)
-        jd = date2num(currentdate, myunits, calendar=mycalendar)
-
-    if confM2R.ocean_indata_type == 'NS8KMZ':
-        # Find the day and month that the GLORYS file respresents based on the year and ID number.
-        # Each file represents a 1 month average.
-        currentdate = datetime(year, month, day)
-        myunits = cdf.variables["time"].units
-        jd = date2num(currentdate, myunits, calendar="gregorian")
-        print("Days:", jd, currentdate, year, month, day)
+        jd = date2num(currentdate, units, calendar=calendar)
 
     if confM2R.ocean_indata_type == 'NORESM':
         # Find the day and month that the NORESM file. We need to use the time modules from
         # netcdf4 for python as they handle calendars that are no_leap.
         # http://www.esrl.noaa.gov/psd/people/jeffrey.s.whitaker/python/netcdftime.html#datetime
         mydays = cdf.variables["time"][ntime]
-        mycalendar = cdf.variables["time"].calendar
-        myunits = cdf.variables["time"].units
+        calendar = cdf.variables["time"].calendar
+        units = cdf.variables["time"].units
         # For NORESM we switch from in-units of 1800-01-01 to outunits of 1948-01-01
-        currentdate = num2date(mydays, units=myunits, calendar=mycalendar)
+        currentdate = num2date(mydays, units=units, calendar=calendar)
         jd = date2num(currentdate, 'days since 1948-01-01 00:00:00', calendar='noleap')
 
     confM2R.grdROMS.time = (jd - jdref)
     confM2R.grdROMS.reftime = jdref
-    confM2R.grdROMS.timeunits = myunits
+    confM2R.grdROMS.timeunits = units
     cdf.close()
     print("-------------------------------")
     print('\nCurrent time of %s file : %s' % (confM2R.ocean_indata_type, currentdate))
