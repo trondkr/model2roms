@@ -141,6 +141,7 @@ class Grd:
             self.lon_rho = ds["lon_rho"][:, :]
             self.lat_rho = ds["lat_rho"][:, :]
             self.h = ds["h"][:, :]
+            print(np.where(self.h > 0))
             self.hmin = np.where(self.h > 0).min()
             self.vtransform = confM2R.vtransform
             self.nlevels = confM2R.nlevels
