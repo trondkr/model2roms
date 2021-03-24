@@ -36,7 +36,8 @@ def verticalinterpolation(myvar, array1, array2, grdROMS, grdMODEL):
     outINDEX_VBAR = (grdROMS.eta_v, grdROMS.xi_v)
 
     if myvar in ['salinity', 'temperature', 'O3_c', 'O3_TA', 'N1_p', 'N3_n', 'N5_s', 'O2_o']:
-        logging.info('\nStart vertical interpolation for {} (dimensions={} x {})'.format(myvar, grdROMS.xi_rho, grdROMS.eta_rho))
+        logging.info(
+            '\nStart vertical interpolation for {} (dimensions={} x {})'.format(myvar, grdROMS.xi_rho, grdROMS.eta_rho))
         outdata = np.empty((outINDEX_ST), dtype=np.float, order='Fortran')
 
         outdata = interp.interpolation.dovertinter(np.asarray(outdata, order='F'),
@@ -246,23 +247,22 @@ def getTime(confM2R, year, month, day, ntime):
     confM2R.grdROMS.reftime = jdref
     confM2R.grdROMS.timeunits = units
     cdf.close()
-    print("-------------------------------")
-    print('\nCurrent time of %s file : %s' % (confM2R.ocean_indata_type, currentdate))
-    print("-------------------------------")
+    logging.info("-------------------------------")
+    logging.info('\nCurrent time of %s file : %s'.format(confM2R.ocean_indata_type, currentdate))
+    logging.info("-------------------------------")
 
 
-def get3ddata(confM2R, myvar, year, month, day, timecounter):
-    varN = confM2R.global_varnames.index(myvar)
+def get3ddata(confM2R, varname, year, month, day, timecounter):
+    varN = confM2R.global_varnames.index(varname)
 
     # The variable splitExtract is defined in IOsubset.py and depends on the orientation
     # and ocean_indata_type of grid (-180-180 or 0-360). Assumes regular grid.
     if confM2R.use_esmf:
         filename = fc.get_filename(confM2R, year, month, day, confM2R.inputdata_varnames[varN])
-        print(filename, confM2R.inputdata_varnames[varN])
         try:
             cdf = Dataset(filename)
         except:
-            print("Unable to open input file {}".format(filename))
+            logging.error("[M2R_model2roms] Unable to open input file {}".format(filename))
             return
 
         if confM2R.ocean_indata_type in ["SODA", "SODA3_5DAY"]:
@@ -273,9 +273,6 @@ def get3ddata(confM2R, myvar, year, month, day, timecounter):
 
         if confM2R.ocean_indata_type == "SODAMONTHLY":
             data = cdf.variables[str(confM2R.inputdata_varnames[varN])][:, :, :]
-
-        if confM2R.ocean_indata_type == "WOAMONTHLY":
-            data = cdf.variables[str(confM2R.inputdata_varnames[varN])][month - 1, :, :, :]
 
         if confM2R.ocean_indata_type == "NORESM":
             # For NorESM data - all data is in one big file so we need the timecounter to access correct data
@@ -290,7 +287,7 @@ def get3ddata(confM2R, myvar, year, month, day, timecounter):
 
         cdf.close()
 
-    if myvar == 'temperature' and confM2R.ocean_indata_type in ["NS8KMZ", "GLORYS", "NORESM"]:
+    if varname == 'temperature' and confM2R.ocean_indata_type in ["NS8KMZ", "GLORYS", "NORESM"]:
 
         if myunits == "degree_Kelvin" or myunits == "K":
             if confM2R.ocean_indata_type in ["GLORYS"]:
@@ -301,10 +298,9 @@ def get3ddata(confM2R, myvar, year, month, day, timecounter):
         data = np.where(data <= -32.767, confM2R.grdROMS.fillval, data)
         data = np.ma.masked_where(data <= confM2R.grdROMS.fillval, data)
 
-    if __debug__:
-        print("Data range of {} just after extracting from netcdf file: {:3.3f}-{:3.3f}".format(
-            str(confM2R.inputdata_varnames[varN]),
-            float(data.min()), float(data.max())))
+    logging.debug('Data range of {} just after extracting from netcdf file: {:3.3f}-{:3.3f}'.format(
+        str(confM2R.inputdata_varnames[varN]),
+        float(data.min()), float(data.max())))
     return data
 
 
@@ -313,15 +309,16 @@ def get2ddata(confM2R, myvar, year, month, day, timecounter):
 
     if confM2R.use_esmf:
 
-        if confM2R.set_2d_vars_to_zero and confM2R.inputdata_varnames[varN] in ['ageice', 'uice', 'vice', 'aice', 'hice',
-                                                                           'hs']:
+        if confM2R.set_2d_vars_to_zero and confM2R.inputdata_varnames[varN] in ['ageice', 'uice', 'vice', 'aice',
+                                                                                'hice',
+                                                                                'hs']:
             return np.zeros((np.shape(confM2R.grdMODEL.lon)))
         else:
             filename = fc.get_filename(confM2R, year, month, day, confM2R.inputdata_varnames[varN])
             try:
                 cdf = Dataset(filename)
             except:
-                print("Unable to open input file {}".format(filename))
+                logging.error("[M2R_model2roms] Unable to open input file {}".format(filename))
                 return
 
             if confM2R.ocean_indata_type in ["SODA", "SODA3_5DAY"]:
@@ -339,12 +336,6 @@ def get2ddata(confM2R, myvar, year, month, day, timecounter):
                 else:
                     data = cdf.variables[confM2R.inputdata_varnames[varN]][int(month - 1), :, :]
 
-            if confM2R.ocean_indata_type == "SODAMONTHLY":
-                data = cdf.variables[str(confM2R.inputdata_varnames[varN])][:, :]
-
-            if confM2R.ocean_indata_type == "WOAMONTHLY":
-                data = cdf.variables[str(confM2R.inputdata_varnames[varN])][month - 1, :, :]
-
             if (confM2R.ocean_indata_type == "NORESM" and confM2R.set_2d_vars_to_zero is False):
                 # myunits = cdf.variables[str(grdROMS.varNames[varN])].units
                 # For NORESM data are 12 months of data stored in ice files. Use ID as month indicator to get data.
@@ -358,13 +349,13 @@ def get2ddata(confM2R, myvar, year, month, day, timecounter):
             if not confM2R.set_2d_vars_to_zero: cdf.close()
 
             if __debug__ and not confM2R.set_2d_vars_to_zero:
-                print("Data range of {} just after extracting from netcdf file: {:3.3f}-{:3.3f}".format(
-                    str(confM2R.inputdata_varnames[varN]),
-                    float(data.min()), float(data.max())))
+                logging.info("[M2R_model2roms] Data range of {} just after extracting from netcdf "
+                             "file: {:3.3f}-{:3.3f}".format(str(confM2R.inputdata_varnames[varN]),
+                                                            float(data.min()), float(data.max())))
     return data
 
 
-def convertMODEL2ROMS(confM2R):
+def convert_MODEL2ROMS(confM2R):
     # First opening of input file is just for initialization of grid
     filenamein = fc.get_filename(confM2R, confM2R.start_year, confM2R.start_month, confM2R.start_day, None)
 
@@ -381,9 +372,9 @@ def convertMODEL2ROMS(confM2R):
         IOsubset.findSubsetIndices(confM2R.grdMODEL, min_lat=confM2R.subset[0], max_lat=confM2R.subset[1],
                                    min_lon=confM2R.subset[2], max_lon=confM2R.subset[3])
 
-    print('==> Initializing done')
-    print('\n--------------------------')
-    print('==> Starting loop over time')
+    logging.info("[M2R_model2roms] ==> Initializing done")
+    logging.info("[M2R_model2roms] --------------------------")
+    logging.info("[M2R_model2roms] ==> Starting loop over time")
 
     timecounter = 0
     first_run = True
@@ -402,9 +393,9 @@ def convertMODEL2ROMS(confM2R):
                 # store that time step in a new array:
 
                 if first_run:
-                    print("=> NOTE! Make sure that these two arrays are in sequential order:")
-                    print("==> myvars:     %s" % confM2R.inputdata_varnames)
-                    print("==> varNames    %s" % confM2R.global_varnames)
+                    logging.info("[M2R_model2roms] => NOTE! Make sure that these two arrays are in sequential order:")
+                    logging.info("[M2R_model2roms] ==> myvars:     %s" % confM2R.inputdata_varnames)
+                    logging.info("[M2R_model2roms] ==> varNames    %s" % confM2R.global_varnames)
                     first_run = False
 
                     if confM2R.subset_indata:

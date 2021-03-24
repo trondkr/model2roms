@@ -29,7 +29,7 @@ def run():
     if confM2R.create_atmos_forcing or confM2R.create_ocean_forcing:
 
         if confM2R.create_ocean_forcing:
-            model2roms.convertMODEL2ROMS(confM2R)
+            model2roms.convert_MODEL2ROMS(confM2R)
 
             clim2bry.writebry(confM2R)
 
