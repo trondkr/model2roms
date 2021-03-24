@@ -143,7 +143,7 @@ class Grd:
             self.h = ds["h"][:, :]
 
             masked_h=np.where(self.h > 0, self.h, self.h.max())
-            print("masked_h",masked_h.min())
+
             self.hmin = masked_h.min()
             self.vtransform = confM2R.vtransform
             self.nlevels = confM2R.nlevels
@@ -262,11 +262,11 @@ class Grd:
             IOverticalGrid.calculateVgrid(self)
 
             if (confM2R.use_esmf):
-                self.esmfgrid_u = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
+                self.esmfgrid_u = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
                                             coord_names=['lon_u', 'lat_u'], add_mask=False)
-                self.esmfgrid_v = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
+                self.esmfgrid_v = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
                                             is_sphere=True, coord_names=['lon_v', 'lat_v'], add_mask=False)
-                self.esmfgrid = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
+                self.esmfgrid = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
                                           is_sphere=True, coord_names=[self.lonname, self.latname], add_mask=False)
 
     def getdims(self):
