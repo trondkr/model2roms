@@ -73,14 +73,14 @@ class Grd:
 
             # Create grid for ESMF interpolation
             if confM2R.use_esmf:
-                self.esmfgrid = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
+                self.esmfgrid = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
                                           is_sphere=True, coord_names=[str(confM2R.lon_name), str(confM2R.lat_name)],
                                           add_mask=False)
-                self.esmfgrid_u = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
+                self.esmfgrid_u = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
                                             is_sphere=True,
                                             coord_names=[str(confM2R.lon_name_u), str(confM2R.lat_name_u)],
                                             add_mask=False)
-                self.esmfgrid_v = ESMF.Grid(filename=self.grdfilename, filetype=ESMF.FileFormat.GRIDSPEC,
+                self.esmfgrid_v = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
                                             is_sphere=True,
                                             coord_names=[str(confM2R.lon_name_v), str(confM2R.lat_name_v)],
                                             add_mask=False)
