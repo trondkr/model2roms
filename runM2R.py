@@ -1,6 +1,6 @@
 import time
 from datetime import datetime
-
+import logging
 import IOstation
 import clim2bry
 import configM2R
@@ -10,8 +10,8 @@ import model2roms
 __author__ = 'Trond Kristiansen'
 __email__ = 'trond.kristiansen@niva.no'
 __created__ = datetime(2009, 1, 30)
-__modified__ = datetime(2019, 2, 8)
-__version__ = "1.5"
+__modified__ = datetime(2021, 3, 23)
+__version__ = "1.6"
 __status__ = "Development"
 
 """
@@ -20,7 +20,10 @@ __status__ = "Development"
 """
 
 def run():
-    print("Started model2roms")
+    logging.basicConfig(level=logging.INFO)
+    logging.info("[M2R_run] Initialized logging")
+
+    logging.info("[M2R_run] Started model2roms")
     confM2R = configM2R.Model2romsConfig()
 
     if confM2R.create_atmos_forcing or confM2R.create_ocean_forcing:

@@ -2,16 +2,15 @@ import calendar
 import os
 import time
 from datetime import datetime
-
+import logging
 import numpy as np
-
 import grd
 
 __author__ = 'Trond Kristiansen'
 __email__ = 'trond.kristiansen@niva.no'
 __created__ = datetime(2009, 1, 30)
-__modified__ = datetime(2018, 4, 5)
-__version__ = "1.5"
+__modified__ = datetime(2021, 3, 23)
+__version__ = "1.6"
 __status__ = "Development"
 
 
@@ -32,31 +31,26 @@ class Model2romsConfig(object):
 
     def showinfo(self):
         if self.isclimatology:
-            print('\n=> Conversions run for climatological months')
+            logging.info('[M2R_configM2R]\n=> Conversions run for climatological months')
         else:
-            print('\n=> Conversions run from year/month: %s/%s to %s/%s' % (
+            logging.info('[M2R_configM2R]\n=> Conversions run from year/month: %s/%s to %s/%s' % (
                 self.start_year, self.start_month, self.end_year, self.end_month))
-        print('==> The following variables will be interpolated: {}'.format(self.global_varnames))
+        logging.info('[M2R_configM2R]==> The following variables will be interpolated: {}'.format(self.global_varnames))
 
         if self.use_esmf:
-            print("=>All horisontal interpolations will be done using ESMF")
-        print("=>Output files are written in format: %s" % self.output_format)
-        print('\n=>Output grid file is: %s' % self.roms_grid_path)
+            logging.info('[M2R_configM2R]=>All horisontal interpolations will be done using ESMF')
+        logging.info('[M2R_configM2R]=>Output files are written in format: {}'.format(self.output_format))
+        logging.info('[M2R_configM2R]\n=>Output grid file is: %s'.format(self.roms_grid_path))
 
-    def format_dates_for_outputnames(self):
-        # Format the date for use in output filenames
-        startmonth = ("0%s" % self.start_month if self.start_month < 10 else "%s" % self.start_month)
-        startday = ("0%s" % self.start_day if self.start_day < 10 else "%s" % self.start_day)
-        endmonth = ("0%s" % self.end_month if self.end_month < 10 else "%s" % self.end_month)
-        endday = ("0%s" % self.end_day if self.end_day < 10 else "%s" % self.end_day)
+    def format_dates_for_outputnames(self) -> str:
+        return "{}{}{}_to_{}{}{}".format(str(self.start_year),
+                                         str(self.start_month).zfill(2),
+                                         str(self.start_day).zfill(2),
+                                         str(self.end_year).zfill(2),
+                                         str(self.end_month).zfill(2),
+                                         str(self.end_day).zfill(2))
 
-        modelperiod = str(self.start_year) + str(startmonth) + str(startday) + '_to_' + str(self.end_year) + str(
-            endmonth) + str(
-            endday)
-
-        return modelperiod
-
-    def define_output_filenames(self):
+    def define_output_filenames(self) -> (str, str, str):
         # Get string representation of start and end dates
         modelperiod = self.format_dates_for_outputnames()
 
@@ -87,12 +81,10 @@ class Model2romsConfig(object):
     # exactly with the list given in the function define_global_varnames:
 
     def define_input_data_varnames(self):
-        return {'SODA': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel'],
-                'SODA3': ['temp', 'salt', 'ssh', 'u', 'v'],
+        return {'SODA3': ['temp', 'salt', 'ssh', 'u', 'v'],
                 'SODA3_5DAY': ['temp', 'salt', 'ssh', 'u', 'v'],
                 'GLORYS': ['thetao', 'so', 'zos', 'uo', 'vo', 'uoi', 'voi',
                            'siconc', 'sithick'],
-                'WOAMONTHLY': ['temperature', 'salinity'],
                 'NORESM': ['templvl', 'salnlvl', 'sealv', 'uvellvl', 'vvellvl', 'iage', 'uvel', 'vvel', 'aice', 'hi',
                            'hs', 'dissic', 'talk', 'po4', 'no3', 'si', 'o2']}[self.ocean_indata_type]
 
@@ -118,8 +110,7 @@ class Model2romsConfig(object):
             return {'SODA3': "/Volumes/DATASETS/SODA3.3.1/OCEAN/",
                     'SODA3_5DAY': "/Volumes/DATASETS/SODA2002/",  # "/cluster/projects/nn9297k/SODA3.3.2/",
                     'NORESM': "/cluster/projects/nn9412k/A20/FORCING/RCP85_ocean/",
-                    'GLORYS': "../oceanography/copernicus-marine-data/Global/",
-                    'WOAMONTHLY': "/Users/trondkr/Projects/is4dvar/createSSS/"}[self.ocean_indata_type]
+                    'GLORYS': "../oceanography/copernicus-marine-data/Global/"}[self.ocean_indata_type]
         except KeyError:
             return KeyError
 
@@ -131,7 +122,7 @@ class Model2romsConfig(object):
         return {'ERA5': ['swrad', 'lwrad', 'precip', 'u10', 'v10']}[self.atmos_indata_type]
 
     def __init__(self):
-        print('\n--------------------------\n')
+        logging.info('\n--------------------------\n')
         print('Started ' + time.ctime(time.time()))
         os.environ['WRAP_STDERR'] = 'true'
 
@@ -307,7 +298,7 @@ class Model2romsConfig(object):
                     import ESMF
                 except ImportError:
                     raise ImportError("Unable to import ESMF")
-                print("Starting logfile for ESMF")
+                logging.info('[M2R_configRunM2R] Starting logfile for ESMF')
                 ESMF.Manager(debug=True)
 
             # Create the grid object for the output grid

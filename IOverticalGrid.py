@@ -20,7 +20,7 @@ vgrid.py function copied from https://github.com/kshedstrom/pyroms (Frederic Cas
 '''
 
 def calculateVgrid(self):
-    print(("--->Setting up vertical coordinates using self.vtransform: %s self.vstretching: %s"%(self.vtransform,self.vstretching)))
+    print(("---> Setting up vertical coordinates using self.vtransform: %s self.vstretching: %s"%(self.vtransform,self.vstretching)))
     if self.vtransform == 1:
         vgrid = s_coordinate(self.h, self.theta_b, self.theta_s, self.tcline, self.nlevels, self.vtransform, self.vstretching, zeta=None)
     elif self.vtransform == 2 and self.vstretching == 2:

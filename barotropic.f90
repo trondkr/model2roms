@@ -43,7 +43,7 @@ Module velocity
 !f2py intent(in,out,overwrite) outdat
 !f2py intent(hide) ic,jc,kc
 
-            print*,'--->Started ubar calculations'
+            print*,'---> Started ubar calculations'
             ! average z_w to Arakawa-C u,v-points (z_wu, z_wv)
             do jc=1,JJ
               do ic=2,II+1
@@ -110,7 +110,7 @@ Module velocity
 !f2py intent(in,out,overwrite) outdat
 !f2py intent(hide) ic,jc,kc
 
-            print*,'--->Started vbar calculations'
+            print*,'---> Started vbar calculations'
             do jc=2,JJ+1
               do ic=1,II
                   do kc=1,Nroms+1
