@@ -248,7 +248,7 @@ class Model2romsConfig(object):
         self.roms_grid_path = self.define_roms_grid_path()
 
         # Climatology is only monthly and model2roms needs to know this
-        self.isclimatology = True
+        self.isclimatology = False
 
         # DATE AND TIME DETAILS ---------------------------------------------------------
         # Define the period to create forcing for

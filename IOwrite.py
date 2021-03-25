@@ -544,19 +544,5 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
                         data1=data1*1.0e3
                 f1.variables[myvar][ntime,:,:,:] = data1
 
-    if confM2R.isclimatology:
-        # Climatological time starts at the 15th of each month
-        d = datetime(2012, int(ntime) + 1, 1)
-        tt = d.timetuple()
-        if myvar == grdROMS.vars[0]:
-            f1.variables['clim_time'][ntime] = tt.tm_yday + 15
-
-        grdROMS.message = tt.tm_yday + 15
-
-        if myvar == 'temperature':
-            f1.variables['temp'][ntime,:,:,:] = data1
-        if myvar == 'salinity':
-            f1.variables['salt'][ntime,:,:,:] = data1
-            f1.variables['SSS'][ntime,:,:,:] = data1
 
     f1.close()

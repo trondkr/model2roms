@@ -85,7 +85,7 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
             
         array1[k, :, :] = field
 
-        if k in [39,34,17,2]:
+        if k in [34,17,10,2,0]:
             import plotData
             import matplotlib.pyplot as plt
             plotData.contourMap(confM2R.grdROMS, confM2R.grdROMS.lon_rho, confM2R.grdROMS.lat_rho, field, str(k)+'_withfilter', myvar)
