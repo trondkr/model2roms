@@ -80,6 +80,7 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
             field = np.fliplr(np.rot90(field.data, 3))
            
         if confM2R.use_filter:
+            print(np.shape(field))
             field = laplacefilter(field, 1000, toxi, toeta)
             field = field * mymask
             

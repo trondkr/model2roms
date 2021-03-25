@@ -309,9 +309,11 @@ def get2ddata(confM2R, myvar, year, month, day, timecounter):
 
     if confM2R.use_esmf:
 
-        if confM2R.set_2d_vars_to_zero and confM2R.input_varnames[varN] in ['ageice', 'uice', 'vice', 'aice',
-                                                                                'hice',
-                                                                                'hs']:
+        if confM2R.set_2d_vars_to_zero and confM2R.input_varnames[varN] in ['ageice', 'uice',
+                                                                            'vice',
+                                                                            'aice',
+                                                                            'hice',
+                                                                            'hs']:
             return np.zeros((np.shape(confM2R.grdMODEL.lon)))
         else:
             filename = fc.get_filename(confM2R, year, month, day, confM2R.input_varnames[varN])
@@ -346,7 +348,8 @@ def get2ddata(confM2R, myvar, year, month, day, timecounter):
                 data = np.squeeze(cdf.variables[str(confM2R.input_varnames[varN])][0, :, :])
                 data = np.where(data.mask, confM2R.grdROMS.fillval, data)
 
-            if not confM2R.set_2d_vars_to_zero: cdf.close()
+            if not confM2R.set_2d_vars_to_zero:
+                cdf.close()
 
             if __debug__ and not confM2R.set_2d_vars_to_zero:
                 logging.info("[M2R_model2roms] Data range of {} just after extracting from netcdf "
@@ -412,7 +415,7 @@ def convert_MODEL2ROMS(confM2R):
                     if myvar in ['ssh', 'ageice', 'uice', 'vice', 'aice', 'hice', 'snow_thick']:
                         data = get2ddata(confM2R, myvar, year, month, day, timecounter)
 
-                    print("Running myvar: {} data {}".format(myvar,data))
+                    print("Running myvar: {} data {}".format(myvar,np.shape(data)))
 
                     # Take the input data and horizontally interpolate to your grid
                     array1 = interp2D.dohorinterpolationregulargrid(confM2R, data, myvar)
