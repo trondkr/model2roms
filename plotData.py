@@ -18,24 +18,25 @@ def contourMap(grdROMS, tlon, tlat, mydata, depthlevel, var):
     steps = abs(np.max(mydata) - np.min(mydata)) / 20.
     levels = np.arange(np.min(mydata), np.max(mydata) + steps, steps)
 
+
     if var == 'temperature':
-        levels = np.arange(-2.0, 36.0, 1)
+        levels = np.arange(-2.0, 20.0, 1)
     if var == 'salinity':
-        levels = np.arange(25.0, 40.0, 0.3)
+        levels = np.arange(0.0, 40.0, 0.3)
     if var == 'runoff':
         levels = np.arange(1e-4, 1e-8, 1e-10)
     if var == 'ssh':
-        levels = np.arange(-1.5, 1.5, 0.1)
+        levels = np.arange(-1.5, 2.5, 0.25)
     if var in ['uvel', 'vvel', 'urot', 'vrot', 'ubar', 'vbar']:
-        levels = np.arange(-1.0, 1.0, 0.1)
+        levels = np.arange(-2.0, 2.0, 0.1)
     if var == 'sodamask':
         levels = np.arange(0, 1, 1)
     if var == 'hice':
-        levels = np.arange(0, 100, 0.1)
+        levels = np.arange(0, 5, 0.1)
     if var == 'aice':
         levels = np.arange(0, 100, 5)
     if var == 'uice' or var == "vice":
-        levels = np.arange(-100, 100, 5)
+        levels = np.arange(-1, 1, 0.1)
     if var == 'ageice':
         levels = np.arange(0, 12, 1)
     if var == 'snow_thick':

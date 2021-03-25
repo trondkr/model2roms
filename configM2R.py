@@ -83,7 +83,7 @@ class Model2romsConfig(object):
     def define_input_data_varnames(self):
         return {'SODA3': ['temp', 'salt', 'ssh', 'u', 'v'],
                 'SODA3_5DAY': ['temp', 'salt', 'ssh', 'u', 'v'],
-                'GLORYS': ['thetao', 'so', 'zos', 'uo', 'vo', 'uoi', 'voi',
+                'GLORYS': ['thetao', 'so', 'zos', 'uo', 'vo', 'usi', 'vsi',
                            'siconc', 'sithick'],
                 'NORESM': ['templvl', 'salnlvl', 'sealv', 'uvellvl', 'vvellvl', 'iage', 'uvel', 'vvel', 'aice', 'hi',
                            'hs', 'dissic', 'talk', 'po4', 'no3', 'si', 'o2']}[self.ocean_indata_type]
@@ -255,7 +255,7 @@ class Model2romsConfig(object):
         self.start_year = 1993
         self.end_year = 1993
         self.start_month = 1
-        self.end_month = 3
+        self.end_month = 5
         self.start_day = 15
         self.end_day = 31
 
