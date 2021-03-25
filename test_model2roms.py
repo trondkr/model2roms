@@ -1,16 +1,13 @@
 import unittest
 from datetime import datetime
 
-import numpy as np
-import xarray as xr
-
-import model2roms
-import grd
+import compile
 import configM2R
 
 class TestModel2roms(unittest.TestCase):
 
     def setUp(self):
+        compile.compilefortran("gfortran")
         self.configM2R = configM2R.Model2romsConfig()
         self.assertIsNotNone(self.configM2R)
 

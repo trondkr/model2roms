@@ -2,7 +2,7 @@
 This class creates an object based on the input file structure. Currently the class takes
 two types of structures as input: SODA or ROMS
 """
-
+import logging
 from datetime import datetime
 
 import numpy as np
@@ -37,16 +37,16 @@ class Grd:
         self.grdName = confM2R.outgrid_name
         self.realm = confM2R.realm
 
-        print('Creating init for grid object {}'.format(confM2R.outgrid_name))
-        print('---> Initialized GRD object for grid type {}\n'.format(self.type))
+        logging.info("[M2R_grd] Creating init for grid object {}".format(confM2R.outgrid_name))
+        logging.info("[M2R_grd]---> Initialized GRD object for grid type {}\n".format(self.type))
 
     def create_object(self, confM2R, grd_filename):
         """
         This method creates a new object by reading the grd input file. All
-        dimensions (eta, xi, lon, lat etc.) are defined here and used througout these scripts.
+        dimensions (eta, xi, lon, lat etc.) are defined here and used throughout these scripts.
         Also, the depth matrix is calculated in this function by calling IOverticalGrid.py (ROMS grid only). For
         input model depths, the depth array is a one dimensional. If input data has 2 or 3 dimensions, this
-        has to be accounted for througout the soda2roms package as one dimension is currently only supported.
+        has to be accounted for throuhgout the soda2roms package as one dimension is currently only supported.
 
         Object types currently supported: STATION, GLORYS, SODA3
 
@@ -56,10 +56,10 @@ class Grd:
 
         if self.type == 'FORCINGDATA':
 
-            print('---> Assuming %s grid type for %s' % (confM2R.grd_type, self.type))
-            print("---> Using dimension names %s and %s and %s" % (confM2R.lon_name,
-                                                                   confM2R.lat_name,
-                                                                   confM2R.depth_name))
+            logging.info("[M2R_grd] ---> Assuming %s grid type for %s".format(confM2R.grd_type, self.type))
+            logging.info("[M2R_grd] ---> Using dimension names %s and %s and %s".format(confM2R.lon_name,
+                                                                                        confM2R.lat_name,
+                                                                                        confM2R.depth_name))
 
             self.lon = ds[str(confM2R.lon_name)][:]
             self.lat = ds[str(confM2R.lat_name)][:]
@@ -125,8 +125,10 @@ class Grd:
             self.lonname = 'lon_rho'
             self.latname = 'lat_rho'
 
-            """Set initTime to 1 if you dont want the first timestep to be
-            the initial field (no ubar and vbar if time=0)"""
+            """
+            Set initTime to 1 if you dont want the first time-step to be
+            the initial field (no ubar and vbar if time=0)
+            """
 
             self.inittime = 0
             self.ocean_time = 0
@@ -142,7 +144,7 @@ class Grd:
             self.lat_rho = ds["lat_rho"][:, :]
             self.h = ds["h"][:, :]
 
-            masked_h=np.where(self.h > 0, self.h, self.h.max())
+            masked_h = np.where(self.h > 0, self.h, self.h.max())
 
             self.hmin = masked_h.min()
             self.vtransform = confM2R.vtransform
@@ -249,7 +251,7 @@ class Grd:
             self.xi_v = self.Lp
             self.xi_psi = self.Lp - 1
 
-            """Boolean to check if we need to initialize the CLIM file before writing"""
+            # Boolean to check if we need to initialize the CLIM file before writing
             self.ioClimInitialized = False
             self.ioInitInitialized = False
 
@@ -258,7 +260,7 @@ class Grd:
                 self.lon_u, self.lat_u = np.meshgrid(self.lon_u, self.lat_u)
                 self.lon_v, self.lat_v = np.meshgrid(self.lon_v, self.lat_v)
 
-            """Setup the vertical coordinate system"""
+            # Setup the vertical coordinate system
             IOverticalGrid.calculateVgrid(self)
 
             if (confM2R.use_esmf):

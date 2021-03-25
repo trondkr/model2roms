@@ -1,3 +1,4 @@
+import logging
 import subprocess
 from datetime import datetime
 import os
@@ -29,98 +30,76 @@ def help():
     """
 
 
-def compileallifort():
-    logfile = "compile.log"
-    if os.path.exists(logfile): os.remove(logfile)
-    log = open(logfile, 'a')
-    """Start the processes"""
-    print("\n")
+def compileallifort(log):
 
-    print("Compiling barotropic.f90 to create ==> barotropic.so")
+    logging.info("[M2R_compile] Compiling barotropic.f90 to create ==> barotropic.so")
     proc = subprocess.Popen(
         'f2py --verbose --fcompiler=intelem -c -m barotropic barotropic.f90 --f90flags="-no-heap-arrays"',
-        shell=True, stdout=subprocess.PIPE, )
+        shell=True, stdout=log, )
     stdout_value = proc.communicate()
     log.writelines(repr(stdout_value))
 
-    # obsolete: use fill.90 instead
-    # print "Compiling cleanArray.f90 to create ==> clean.so"
-    # proc = subprocess.Popen('f2py --verbose --fcompiler=intelem -c -m clean cleanArray.f90 --f90flags="-no-heap-arrays"',
-    #                       shell=True, stdout=subprocess.PIPE,)
-    # stdout_value = proc.communicate()[0]
-    # log.writelines(repr(stdout_value))
-
-    print("Compiling interpolation.f90 to create ==> interpolation.so")
+    logging.info("[M2R_compile] Compiling interpolation.f90 to create ==> interpolation.so")
     proc = subprocess.Popen(
         'f2py --verbose --fcompiler=intelem -c -m interpolation interpolation.f90 --f90flags="-no-heap-arrays"',
-        shell=True, stdout=subprocess.PIPE, )
+        shell=True, stdout=log, )
     stdout_value = proc.communicate()[0]
     log.writelines(repr(stdout_value))
 
-    print("Compiling fill.f90 to create ==> extrapolate.so")
+    logging.info("[M2R_compile] Compiling fill.f90 to create ==> extrapolate.so")
     proc = subprocess.Popen(
         'f2py --verbose --fcompiler=intelem -c -m extrapolate fill.f90 --f90flags="-no-heap-arrays"',
-        shell=True, stdout=subprocess.PIPE, )
+        shell=True, stdout=log, )
     stdout_value = proc.communicate()[0]
     log.writelines(repr(stdout_value))
 
     log.close()
 
-    print("Compilation finished and results written to file => %s" % (logfile))
-    print("\n===================================================================")
 
+def compileallgfortran(log):
 
-def compileallgfortran():
-    logfile = "compile.log"
-    if os.path.exists(logfile): os.remove(logfile)
-    log = open(logfile, 'a')
-    """Start the processes"""
-    print("\n")
-
-    #proc = subprocess.Popen('module swap PrgEnv-pgi PrgEnv-gnu', shell=True, stdout=subprocess.PIPE, )
-    #stdout_value = proc.communicate()
-    #log.writelines(repr(stdout_value))
-
-    #proc = subprocess.Popen('module unload notur', shell=True, stdout=subprocess.PIPE, )
-    #stdout_value = proc.communicate()
-    #log.writelines(repr(stdout_value))
-
-    print("Compiling barotropic.f90 to create ==> barotropic.so")
+    logging.info("[M2R_compile] Compiling barotropic.f90 to create ==> barotropic.so")
     proc = subprocess.Popen('f2py -c -m barotropic barotropic.f90',
-                            shell=True, stdout=subprocess.PIPE, )
+                            shell=True, stdout=log,)
     stdout_value = proc.communicate()
-    log.writelines(repr(stdout_value))
+  #  log.writelines(repr(stdout_value))
 
-    print("Compiling interpolation.f90 to create ==> interpolation.so")
+    logging.info("[M2R_compile] Compiling interpolation.f90 to create ==> interpolation.so")
     proc = subprocess.Popen('f2py -c -m interpolation interpolation.f90',
-                            shell=True, stdout=subprocess.PIPE, )
+                            shell=True, stdout=log,)
     stdout_value = proc.communicate()[0]
-    log.writelines(repr(stdout_value))
+   # log.writelines(repr(stdout_value))
 
-    print("Compiling fill.f90 to create ==> extrapolate.so")
+    logging.info("[M2R_compile] Compiling fill.f90 to create ==> extrapolate.so")
     proc = subprocess.Popen('f2py -c -m extrapolate fill.f90',
-                            shell=True, stdout=subprocess.PIPE, )
+                            shell=True, stdout=log,)
     stdout_value = proc.communicate()[0]
-    log.writelines(repr(stdout_value))
-
+   # log.writelines(repr(stdout_value))
     log.close()
-
-    print("Compilation finished and results written to file => %s" % logfile)
-    print("\n===================================================================")
 
 
 def compilefortran(compiler):
+
+    logfile = "compile.log"
+    if os.path.exists(logfile):
+        os.remove(logfile)
+    log = open(logfile, 'a')
+
+    logging.info("[M2R_compile] Adding LDFALGS required for Python 3")
+    proc = subprocess.Popen('export LDFLAGS="-undefined dynamic_lookup -bundle"',
+                            shell=True, stdout=log, )
     if compiler == "gfortran":
-        compileallgfortran()
+        compileallgfortran(log)
 
-    if compiler == "ifort":
-        compileallifort()
+    elif compiler == "ifort":
+        compileallifort(log)
+    else:
+        raise Exception("No compiler selected - aborting the compilation")
 
+    logging.info("[M2R_compile] Compilation finished and results written to file => %s" % logfile)
+    logging.info("[M2R_compile] ===================================================================")
 
 if __name__ == "__main__":
 
-    print("Adding LDFALGS required for Python 3")
-    proc = subprocess.Popen('export LDFLAGS="-undefined dynamic_lookup -bundle"',
-                            shell=True, stdout=subprocess.PIPE, )
-
     compilefortran("gfortran")
+

@@ -278,21 +278,22 @@ class Model2romsConfig(object):
         self.input_varnames = self.define_input_data_varnames()
         assert (len(self.global_varnames) == len(self.input_varnames)), "Number and order of global variable " \
                                                                         "names must equal input variable names"
+
+        self.abbreviation = self.define_abbreviation()
+
+        self.clim_name, self.init_name, self.bry_name = self.define_output_filenames()
+
+        if self.isclimatology is True:
+            self.clim_name = self.abbreviation + '_' + str(self.ocean_indata_type) + '_climatology.nc'
+        self.showinfo()
+
+    def create_grd_objects(self):
         # NO EDIT BELOW ==============================================================================================
         if self.compile_all is True:
-            import compile;
+            import compile
             compile.compileallgfortran()
 
         if self.create_atmos_forcing or self.create_ocean_forcing:
-            self.abbreviation = self.define_abbreviation()
-
-            self.clim_name, self.init_name, self.bry_name = self.define_output_filenames()
-
-            if self.isclimatology is True:
-                self.clim_name = self.abbreviation + '_' + str(self.ocean_indata_type) + '_climatology.nc'
-
-            self.showinfo()
-
             if self.use_esmf:
                 try:
                     import ESMF

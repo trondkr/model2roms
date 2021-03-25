@@ -25,6 +25,7 @@ def run():
 
     logging.info("[M2R_run] Started model2roms")
     confM2R = configM2R.Model2romsConfig()
+    confM2R.create_grd_objects()
 
     if confM2R.create_atmos_forcing or confM2R.create_ocean_forcing:
 
