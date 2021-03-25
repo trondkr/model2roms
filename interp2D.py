@@ -42,55 +42,59 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
     if confM2R.show_progress is True:
         try:
             import progressbar
-            widgets=['\rHorizontal interpolation:', progressbar.Percentage(), progressbar.Bar()]
+            widgets = ['\rHorizontal interpolation:', progressbar.Percentage(), progressbar.Bar()]
             progress = progressbar.ProgressBar(confM2R.grdMODEL.nlevels, widgets=widgets).start()
         except ImportError:
             logging.error("[M2R_interp2D] Could not find module progressbar")
-            confM2R.show_progress=False
+            confM2R.show_progress = False
         pass
 
     indexROMS_Z_ST, toxi, toeta, mymask = setupIndexes(confM2R, myvar)
     array1 = np.zeros((indexROMS_Z_ST), dtype=np.float)
 
     # 2D or 3D interpolation
-    depthlevels=confM2R.grdMODEL.nlevels
-    if myvar in ['ssh', 'ageice', 'uice', 'vice', 'aice', 'hice', 'snow_thick','hs']:
-        depthlevels=1
-    
+    depthlevels = confM2R.grdMODEL.nlevels
+    print("Defined shape array1", np.shape(array1), myvar, depthlevels)
+
+    if myvar in ['ssh', 'ageice', 'uice', 'vice', 'aice', 'hice', 'snow_thick', 'hs']:
+        depthlevels = 1
+
     for k in range(depthlevels):
         if confM2R.use_esmf:
-            if depthlevels==1:
-                indata=np.squeeze(mydata[:, :])
+            if depthlevels == 1:
+                indata = np.squeeze(mydata[:, :])
             else:
-                indata=np.squeeze(mydata[k, :, :])
+                indata = np.squeeze(mydata[k, :, :])
 
             # We interpolate to RHO fields for all variables and then we later interpolate RHO points to U and V points
             # But input data are read on U and V and RHO grids if they differ (as NorESM and GLORYS does).
-            if myvar in ['uice','uvel']:
+            if myvar in ['uice', 'uvel']:
+                print("Inside uice interpolation")
                 confM2R.grdMODEL.fieldSrc_u.data[:, :] = np.flipud(np.rot90(indata))
                 field = confM2R.grdMODEL.regridSrc2Dst_u(confM2R.grdMODEL.fieldSrc_u, confM2R.grdMODEL.fieldDst_rho)
-            elif myvar in ['vice','vvel']:
+            elif myvar in ['vice', 'vvel']:
                 confM2R.grdMODEL.fieldSrc_v.data[:, :] = np.flipud(np.rot90(indata))
                 field = confM2R.grdMODEL.regridSrc2Dst_v(confM2R.grdMODEL.fieldSrc_v, confM2R.grdMODEL.fieldDst_rho)
             else:
                 confM2R.grdMODEL.fieldSrc_rho.data[:, :] = np.flipud(np.rot90(indata))
                 field = confM2R.grdMODEL.regridSrc2Dst_rho(confM2R.grdMODEL.fieldSrc_rho, confM2R.grdMODEL.fieldDst_rho)
-            
+
             # Since ESMF uses coordinates (x,y) we need to rotate and flip to get back to (y,x) order.
             field = np.fliplr(np.rot90(field.data, 3))
-           
+
         if confM2R.use_filter:
             print(np.shape(field))
             field = laplacefilter(field, 1000, toxi, toeta)
             field = field * mymask
-            
+
         array1[k, :, :] = field
 
-        if k in [34,17,10,2,0] and False is True:
+        if k in [34, 17, 10, 2, 0] and False is True:
             import plotData
             import matplotlib.pyplot as plt
-            plotData.contourMap(confM2R.grdROMS, confM2R.grdROMS.lon_rho, confM2R.grdROMS.lat_rho, field, str(k)+'_withfilter', myvar)
-            plotfilename="test_{}_wfilter.png".format(myvar)
+            plotData.contourMap(confM2R.grdROMS, confM2R.grdROMS.lon_rho, confM2R.grdROMS.lat_rho, field,
+                                str(k) + '_withfilter', myvar)
+            plotfilename = "test_{}_wfilter.png".format(myvar)
             plt.savefig(plotfilename, dpi=150)
         # if __debug__:
         #      print "Data range after horisontal interpolation: ", field.min(), field.max()
@@ -104,6 +108,7 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
     if confM2R.show_progress is True:
         progress.finish()
     return array1
+
 
 def setupIndexes(confM2R, myvar):
     if myvar in ["uice"]:
@@ -126,31 +131,32 @@ def setupIndexes(confM2R, myvar):
 
 def setupESMFInterpolationWeights(confM2R):
     if confM2R.use_esmf:
-        logging.info("[M2R_interp2D] => Creating the interpolation weights and indexes using ESMF (this may take some time....):")
+        logging.info(
+            "[M2R_interp2D] => Creating the interpolation weights and indexes using ESMF (this may take some time....):")
 
         logging.info("[M2R_interp2D]   -> regridSrc2Dst at RHO points")
-        confM2R.grdMODEL.fieldSrc_rho = ESMF.Field(confM2R.grdMODEL.esmfgrid, "fieldSrc", 
-                                                    staggerloc=ESMF.StaggerLoc.CENTER)
+        confM2R.grdMODEL.fieldSrc_rho = ESMF.Field(confM2R.grdMODEL.esmfgrid, "fieldSrc",
+                                                   staggerloc=ESMF.StaggerLoc.CENTER)
         confM2R.grdMODEL.fieldDst_rho = ESMF.Field(confM2R.grdROMS.esmfgrid, "fieldDst",
                                                    staggerloc=ESMF.StaggerLoc.CENTER)
 
-        confM2R.grdMODEL.regridSrc2Dst_rho = ESMF.Regrid(confM2R.grdMODEL.fieldSrc_rho, 
+        confM2R.grdMODEL.regridSrc2Dst_rho = ESMF.Regrid(confM2R.grdMODEL.fieldSrc_rho,
                                                          confM2R.grdMODEL.fieldDst_rho,
                                                          regrid_method=ESMF.RegridMethod.BILINEAR,
                                                          unmapped_action=ESMF.UnmappedAction.IGNORE)
 
         logging.info("[M2R_interp2D]   -> regridSrc2Dst at U points to RHO")
-        confM2R.grdMODEL.fieldSrc_u = ESMF.Field(confM2R.grdMODEL.esmfgrid_u, "fieldSrc", 
-                                                       staggerloc=ESMF.StaggerLoc.CENTER)
-        confM2R.grdMODEL.regridSrc2Dst_u = ESMF.Regrid(confM2R.grdMODEL.fieldSrc_u, 
+        confM2R.grdMODEL.fieldSrc_u = ESMF.Field(confM2R.grdMODEL.esmfgrid_u, "fieldSrc",
+                                                 staggerloc=ESMF.StaggerLoc.CENTER)
+        confM2R.grdMODEL.regridSrc2Dst_u = ESMF.Regrid(confM2R.grdMODEL.fieldSrc_u,
                                                        confM2R.grdMODEL.fieldDst_rho,
                                                        regrid_method=ESMF.RegridMethod.BILINEAR,
                                                        unmapped_action=ESMF.UnmappedAction.IGNORE)
 
         logging.info("[M2R_interp2D]   -> regridSrc2Dst at V points to RHO")
-        confM2R.grdMODEL.fieldSrc_v = ESMF.Field(confM2R.grdMODEL.esmfgrid_v, "fieldSrc", 
-                                                       staggerloc=ESMF.StaggerLoc.CENTER)
-        confM2R.grdMODEL.regridSrc2Dst_v = ESMF.Regrid(confM2R.grdMODEL.fieldSrc_v, 
+        confM2R.grdMODEL.fieldSrc_v = ESMF.Field(confM2R.grdMODEL.esmfgrid_v, "fieldSrc",
+                                                 staggerloc=ESMF.StaggerLoc.CENTER)
+        confM2R.grdMODEL.regridSrc2Dst_v = ESMF.Regrid(confM2R.grdMODEL.fieldSrc_v,
                                                        confM2R.grdMODEL.fieldDst_rho,
                                                        regrid_method=ESMF.RegridMethod.BILINEAR,
                                                        unmapped_action=ESMF.UnmappedAction.IGNORE)
