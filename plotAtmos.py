@@ -1,11 +1,12 @@
 import os
-from mpl_toolkits.basemap import Basemap
 from pylab import *
 
 def contourMap(grdROMS, tlon, tlat, mydata1, mydata2, mydata3, var, mytype, currentdate):
 
     plt.figure(figsize=(10,10), frameon=False)
-    
+
+    # TODO Convert to cartopy
+    """
     map = Basemap(lon_0=25,boundinglat=50,
                       resolution='l',area_thresh=100.,projection='npstere')
     
@@ -36,3 +37,4 @@ def contourMap(grdROMS, tlon, tlat, mydata1, mydata2, mydata3, var, mytype, curr
     plt.savefig(plotfile)
     print("Saved figure: %s"%(plotfile))
    # plt.show()
+    """
