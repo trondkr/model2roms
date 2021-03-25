@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import datetime
+import logging
 
 import extrapolate as ex
 import numpy as np
@@ -8,14 +9,14 @@ import numpy as np
 try:
     import ESMF
 except ImportError:
-    print("Could not find module ESMF")
+    logging.error("[M2R_interp2D] Could not find module ESMF")
     pass
 
 __author__ = 'Trond Kristiansen'
 __email__ = 'me@trondkristiansen.com'
 __created__ = datetime.datetime(2008, 12, 4)
-__modified__ = datetime.datetime(2019, 3, 12)
-__version__ = "1.5"
+__modified__ = datetime.datetime(2021, 3, 23)
+__version__ = "1.6"
 __status__ = "Development"
 
 
@@ -31,7 +32,7 @@ def laplacefilter(field, threshold, toxi, toeta):
     field = ex.extrapolate.fill(int(1), int(toxi),
                                 int(1), int(toeta),
                                 float(tx), float(critx), float(cor), float(mxs),
-                                np.asarray(field, order='Fortran'),
+                                np.asarray(field, order='F'),
                                 int(toxi),
                                 int(toeta))
     return field
@@ -44,7 +45,7 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
             widgets=['\rHorizontal interpolation:', progressbar.Percentage(), progressbar.Bar()]
             progress = progressbar.ProgressBar(confM2R.grdMODEL.nlevels, widgets=widgets).start()
         except ImportError:
-            print("Could not find module progressbar")
+            logging.error("[M2R_interp2D] Could not find module progressbar")
             confM2R.show_progress=False
         pass
 
@@ -124,9 +125,9 @@ def setupIndexes(confM2R, myvar):
 
 def setupESMFInterpolationWeights(confM2R):
     if confM2R.use_esmf:
-        print("=>Creating the interpolation weights and indexes using ESMF (this may take some time....):")
+        logging.info("[M2R_interp2D] => Creating the interpolation weights and indexes using ESMF (this may take some time....):")
 
-        print("  -> regridSrc2Dst at RHO points")
+        logging.info("[M2R_interp2D]   -> regridSrc2Dst at RHO points")
         confM2R.grdMODEL.fieldSrc_rho = ESMF.Field(confM2R.grdMODEL.esmfgrid, "fieldSrc", 
                                                     staggerloc=ESMF.StaggerLoc.CENTER)
         confM2R.grdMODEL.fieldDst_rho = ESMF.Field(confM2R.grdROMS.esmfgrid, "fieldDst",
@@ -137,7 +138,7 @@ def setupESMFInterpolationWeights(confM2R):
                                                          regrid_method=ESMF.RegridMethod.BILINEAR,
                                                          unmapped_action=ESMF.UnmappedAction.IGNORE)
 
-        print("  -> regridSrc2Dst at U points to RHO")
+        logging.info("[M2R_interp2D]   -> regridSrc2Dst at U points to RHO")
         confM2R.grdMODEL.fieldSrc_u = ESMF.Field(confM2R.grdMODEL.esmfgrid_u, "fieldSrc", 
                                                        staggerloc=ESMF.StaggerLoc.CENTER)
         confM2R.grdMODEL.regridSrc2Dst_u = ESMF.Regrid(confM2R.grdMODEL.fieldSrc_u, 
@@ -145,7 +146,7 @@ def setupESMFInterpolationWeights(confM2R):
                                                        regrid_method=ESMF.RegridMethod.BILINEAR,
                                                        unmapped_action=ESMF.UnmappedAction.IGNORE)
 
-        print("  -> regridSrc2Dst at V points to RHO")
+        logging.info("[M2R_interp2D]   -> regridSrc2Dst at V points to RHO")
         confM2R.grdMODEL.fieldSrc_v = ESMF.Field(confM2R.grdMODEL.esmfgrid_v, "fieldSrc", 
                                                        staggerloc=ESMF.StaggerLoc.CENTER)
         confM2R.grdMODEL.regridSrc2Dst_v = ESMF.Regrid(confM2R.grdMODEL.fieldSrc_v, 

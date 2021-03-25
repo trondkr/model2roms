@@ -39,8 +39,8 @@ class Model2romsConfig(object):
 
         if self.use_esmf:
             logging.info('[M2R_configM2R]=>All horisontal interpolations will be done using ESMF')
-        logging.info('[M2R_configM2R]=>Output files are written in format: {}'.format(self.output_format))
-        logging.info('[M2R_configM2R]\n=>Output grid file is: %s'.format(self.roms_grid_path))
+        logging.info('[M2R_configM2R] => Output files are written in format: {}'.format(self.output_format))
+        logging.info('[M2R_configM2R] => Output grid file is: %s'.format(self.roms_grid_path))
 
     def format_dates_for_outputnames(self) -> str:
         return "{}{}{}_to_{}{}{}".format(str(self.start_year),
