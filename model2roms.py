@@ -412,6 +412,8 @@ def convert_MODEL2ROMS(confM2R):
                     if myvar in ['ssh', 'ageice', 'uice', 'vice', 'aice', 'hice', 'snow_thick']:
                         data = get2ddata(confM2R, myvar, year, month, day, timecounter)
 
+                    print("Running myvar: {} data {}".format(myvar,data))
+
                     # Take the input data and horizontally interpolate to your grid
                     array1 = interp2D.dohorinterpolationregulargrid(confM2R, data, myvar)
 
