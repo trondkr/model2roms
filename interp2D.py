@@ -49,7 +49,7 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
             confM2R.show_progress = False
         pass
 
-    indexROMS_Z_ST, toxi, toeta, mymask = setupIndexes(confM2R, myvar)
+    indexROMS_Z_ST, toxi, toeta, mymask = setup_indexes(confM2R, myvar)
     array1 = np.zeros((indexROMS_Z_ST), dtype=np.float)
     print("indexROMS_Z_ST", np.shape(indexROMS_Z_ST), toxi, toeta, np.shape(mymask))
 
@@ -114,7 +114,7 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
     return array1
 
 
-def setupIndexes(confM2R, myvar):
+def setup_indexes(confM2R, myvar):
     if myvar in ["uice","uvel"]:
         print("UICE SETUPINDEX")
         indexROMS_Z_ST = (confM2R.grdMODEL.nlevels, confM2R.grdROMS.eta_u, confM2R.grdROMS.xi_u)
