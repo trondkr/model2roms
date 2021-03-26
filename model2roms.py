@@ -140,6 +140,7 @@ def rotate(grdROMS, grdMODEL, data, u, v):
     urot = np.zeros((int(grdMODEL.nlevels), int(grdROMS.eta_rho), int(grdROMS.xi_rho)), np.float)
     vrot = np.zeros((int(grdMODEL.nlevels), int(grdROMS.eta_rho), int(grdROMS.xi_rho)), np.float)
 
+    print("rotate", np.shape(urot),np.shape(vrot), np.shape(u), np.shape(v))
     urot, vrot = interp.interpolation.rotate(np.asarray(urot, order='F'),
                                              np.asarray(vrot, order='F'),
                                              np.asarray(u, order='F'),

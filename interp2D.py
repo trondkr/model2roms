@@ -115,13 +115,13 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
 
 
 def setup_indexes(confM2R, myvar):
-    if myvar in ["uice","uvel"]:
+    if myvar in ["uice"]:
         print("UICE SETUPINDEX")
         indexROMS_Z_ST = (confM2R.grdMODEL.nlevels, confM2R.grdROMS.eta_u, confM2R.grdROMS.xi_u)
         toxi = confM2R.grdROMS.xi_u
         toeta = confM2R.grdROMS.eta_u
         mymask = confM2R.grdROMS.mask_u
-    elif myvar in ["vice","vvel"]:
+    elif myvar in ["vice"]:
         indexROMS_Z_ST = (confM2R.grdMODEL.nlevels, confM2R.grdROMS.eta_v, confM2R.grdROMS.xi_v)
         toxi = confM2R.grdROMS.xi_v
         toeta = confM2R.grdROMS.eta_v
