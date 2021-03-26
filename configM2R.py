@@ -175,7 +175,7 @@ class Model2romsConfig(object):
         # Path to where results files should be stored
         self.outdir = "../oceanography/model2roms_results/"
         if not os.path.exists(self.outdir):
-            os.makedirs(self.outdir, recursive=True)
+            os.makedirs(self.outdir, exist_ok=True)
 
         # IN GRIDTYPES ------------------------------------------------------------------------------
         # Define what grid type you want to interpolate from (input MODEL data)
