@@ -172,6 +172,11 @@ class Model2romsConfig(object):
         # Frequency of the input data: usually monthly
         self.time_frequency_inputdata = "month"  # Possible options: "month", "hour", "5days"
 
+        # Path to where results files should be stored
+        self.outdir = "../oceanography/model2roms_results/"
+        if not os.path.exists(self.outdir):
+            os.makedirs(self.outdir, recursive=True)
+
         # IN GRIDTYPES ------------------------------------------------------------------------------
         # Define what grid type you want to interpolate from (input MODEL data)
         # Currently supported options:
@@ -180,8 +185,8 @@ class Model2romsConfig(object):
         self.atmos_indata_type = 'ERA5'
 
         # Define contact info for final NetCDF files
-        self.authorname = "Trond Kristiansen"
-        self.authoremail = "trond.kristiansen (at) niva.no"
+        self.author_name = "Trond Kristiansen"
+        self.author_email = "trond.kristiansen (at) niva.no"
 
         # Define what grid type you wnat to interpolate from: Can be Z for SIGMA for ROMS
         # vertical coordinate system or ZLEVEL. also define the name of the dimensions in the input files.

@@ -136,8 +136,8 @@ self.time_frequency_inputdata = "month"  # , "month", "hour"
 self.ocean_indata_type = 'SODA3'
 
 # Define contact info for final NetCDF files
-self.authorname = "Trond Kristiansen"
-self.authoremail = "trond.kristiansen (at) niva.no"
+self.author_name = "Trond Kristiansen"
+self.author_email = "trond.kristiansen (at) niva.no"
 
 # Define what grid type you wnat to interpolate from: Can be Z for SIGMA for ROMS
 # vertical coordinate system or ZLEVEL. also define the name of the dimensions in the input files.

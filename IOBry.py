@@ -46,7 +46,7 @@ def createBryFile(confM2R):
     f1.description = "Created for the {} grid file".format(confM2R.roms_grid_path)
     f1.grdFile = "{}".format(confM2R.roms_grid_path)
     f1.history = 'Created ' + time.ctime(time.time())
-    f1.source = "{} ({})".format(confM2R.authorname, confM2R.authoremail)
+    f1.source = "{} ({})".format(confM2R.author_name, confM2R.author_email)
     f1.type = "File in {} format created using MODEL2ROMS".format(confM2R.output_format)
     f1.link = "https://github.com/trondkr/model2roms"
     f1.Conventions = "CF-1.0"

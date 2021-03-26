@@ -47,7 +47,7 @@ def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, dat
         f1.description = "Created for grid file: %s" % (confM2R.roms_grid_path)
         f1.grd_file = "Gridfile: %s" % (confM2R.roms_grid_path)
         f1.history = "Created " + time.ctime(time.time())
-        f1.source = "{} ({})".format(confM2R.authorname, confM2R.authoremail)
+        f1.source = "{} ({})".format(confM2R.author_name, confM2R.author_email)
         f1.type = "File in %s format created using MODEL2ROMS" % (confM2R.output_format)
         f1.link = "https://github.com/trondkr/model2roms"
         f1.Conventions = "CF-1.0"
