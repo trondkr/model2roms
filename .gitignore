@@ -34,3 +34,5 @@ Pods/*
 coverage.xml*
 Results/*
 **/*.mod
+compile.log
+PET0.ESMF_LogFile*

@@ -71,10 +71,10 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
             # But input data are read on U and V and RHO grids if they differ (as NorESM and GLORYS does).
             if myvar in ['uice', 'uvel']:
                 print("Inside uice interpolation")
-                confM2R.grdMODEL.fieldSrc_u.data[:, :] = np.flipud(np.rot90(indata))
+                confM2R.grdMODEL.fieldSrc_rho.data[:, :] = np.flipud(np.rot90(indata))
                 field = confM2R.grdMODEL.regridSrc2Dst_u(confM2R.grdMODEL.fieldSrc_rho, confM2R.grdMODEL.fieldDst_u)
             elif myvar in ['vice', 'vvel']:
-                confM2R.grdMODEL.fieldSrc_v.data[:, :] = np.flipud(np.rot90(indata))
+                confM2R.grdMODEL.fieldSrc_rho.data[:, :] = np.flipud(np.rot90(indata))
                 field = confM2R.grdMODEL.regridSrc2Dst_v(confM2R.grdMODEL.fieldSrc_rho, confM2R.grdMODEL.fieldDst_v)
             else:
                 confM2R.grdMODEL.fieldSrc_rho.data[:, :] = np.flipud(np.rot90(indata))
