@@ -148,7 +148,7 @@ def setupESMFInterpolationWeights(confM2R):
                                                          unmapped_action=ESMF.UnmappedAction.IGNORE)
 
         logging.info("[M2R_interp2D]   -> regridSrc2Dst at U points to RHO")
-        confM2R.grdMODEL.fieldSrc_u = ESMF.Field(confM2R.grdMODEL.esmfgrid_u, "fieldSrc",
+        confM2R.grdMODEL.fieldDst_u = ESMF.Field(confM2R.grdMODEL.esmfgrid_u, "fieldSrc",
                                                  staggerloc=ESMF.StaggerLoc.CENTER)
         confM2R.grdMODEL.regridSrc2Dst_u = ESMF.Regrid(confM2R.grdMODEL.fieldSrc_rho,
                                                        confM2R.grdMODEL.fieldDst_u,
@@ -156,7 +156,7 @@ def setupESMFInterpolationWeights(confM2R):
                                                        unmapped_action=ESMF.UnmappedAction.IGNORE)
 
         logging.info("[M2R_interp2D]   -> regridSrc2Dst at V points to RHO")
-        confM2R.grdMODEL.fieldSrc_v = ESMF.Field(confM2R.grdMODEL.esmfgrid_v, "fieldSrc",
+        confM2R.grdMODEL.fieldDst_v = ESMF.Field(confM2R.grdMODEL.esmfgrid_v, "fieldSrc",
                                                  staggerloc=ESMF.StaggerLoc.CENTER)
         confM2R.grdMODEL.regridSrc2Dst_v = ESMF.Regrid(confM2R.grdMODEL.fieldSrc_rho,
                                                        confM2R.grdMODEL.fieldDst_v,
