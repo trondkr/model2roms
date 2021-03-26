@@ -51,7 +51,8 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
 
     indexROMS_Z_ST, toxi, toeta, mymask = setupIndexes(confM2R, myvar)
     array1 = np.zeros((indexROMS_Z_ST), dtype=np.float)
-    print(np.shape(indexROMS_Z_ST), toxi, toeta, np.shape(mymask))
+    print("indexROMS_Z_ST", np.shape(indexROMS_Z_ST), toxi, toeta, np.shape(mymask))
+
     # 2D or 3D interpolation
     depthlevels = confM2R.grdMODEL.nlevels
     print("Defined shape array1", np.shape(array1), myvar, depthlevels)
@@ -74,9 +75,11 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
                 confM2R.grdMODEL.fieldSrc_rho.data[:, :] = np.flipud(np.rot90(indata))
                 field = confM2R.grdROMS.regridSrc2Dst_u(confM2R.grdMODEL.fieldSrc_rho, confM2R.grdROMS.fieldDst_u)
             elif myvar in ['vice', 'vvel']:
+                print("Inside vice interpolat")
                 confM2R.grdMODEL.fieldSrc_rho.data[:, :] = np.flipud(np.rot90(indata))
                 field = confM2R.grdROMS.regridSrc2Dst_v(confM2R.grdMODEL.fieldSrc_rho, confM2R.grdROMS.fieldDst_v)
             else:
+                print("Inside all else interpolate")
                 confM2R.grdMODEL.fieldSrc_rho.data[:, :] = np.flipud(np.rot90(indata))
                 field = confM2R.grdROMS.regridSrc2Dst_rho(confM2R.grdMODEL.fieldSrc_rho, confM2R.grdROMS.fieldDst_rho)
 
@@ -113,6 +116,7 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
 
 def setupIndexes(confM2R, myvar):
     if myvar in ["uice"]:
+        print("UICE SETUPINDEX")
         indexROMS_Z_ST = (confM2R.grdMODEL.nlevels, confM2R.grdROMS.eta_u, confM2R.grdROMS.xi_u)
         toxi = confM2R.grdROMS.xi_u
         toeta = confM2R.grdROMS.eta_u
