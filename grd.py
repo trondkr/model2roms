@@ -265,11 +265,17 @@ class Grd:
 
             if (confM2R.use_esmf):
                 self.esmfgrid_u = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
-                                            coord_names=['lon_u', 'lat_u'], add_mask=False)
+                                            coord_names=['lon_u', 'lat_u'],
+                                            is_sphere=True,
+                                            add_mask=False)
                 self.esmfgrid_v = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
-                                            is_sphere=True, coord_names=['lon_v', 'lat_v'], add_mask=False)
+                                            is_sphere=True,
+                                            coord_names=['lon_v', 'lat_v'],
+                                            add_mask=False)
                 self.esmfgrid = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
-                                          is_sphere=True, coord_names=[self.lonname, self.latname], add_mask=False)
+                                          is_sphere=True,
+                                          coord_names=[self.lonname, self.latname],
+                                          add_mask=False)
 
     def getdims(self):
         if self.type in ["ROMS"]:
