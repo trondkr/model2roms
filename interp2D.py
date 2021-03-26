@@ -51,7 +51,7 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
 
     indexROMS_Z_ST, toxi, toeta, mymask = setupIndexes(confM2R, myvar)
     array1 = np.zeros((indexROMS_Z_ST), dtype=np.float)
-
+    print(np.shape(indexROMS_Z_ST), toxi, toeta, np.shape(mymask))
     # 2D or 3D interpolation
     depthlevels = confM2R.grdMODEL.nlevels
     print("Defined shape array1", np.shape(array1), myvar, depthlevels)
@@ -112,12 +112,12 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
 
 
 def setupIndexes(confM2R, myvar):
-    if myvar in ["uice-test"]:
+    if myvar in ["uice"]:
         indexROMS_Z_ST = (confM2R.grdMODEL.nlevels, confM2R.grdROMS.eta_u, confM2R.grdROMS.xi_u)
         toxi = confM2R.grdROMS.xi_u
         toeta = confM2R.grdROMS.eta_u
         mymask = confM2R.grdROMS.mask_u
-    elif myvar in ["vice-test"]:
+    elif myvar in ["vice"]:
         indexROMS_Z_ST = (confM2R.grdMODEL.nlevels, confM2R.grdROMS.eta_v, confM2R.grdROMS.xi_v)
         toxi = confM2R.grdROMS.xi_v
         toeta = confM2R.grdROMS.eta_v
