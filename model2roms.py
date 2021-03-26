@@ -452,10 +452,13 @@ def convert_MODEL2ROMS(confM2R):
                     # of ice based on the transport, which is divided by snow and ice thickenss
                     # and then multiplied by grid size in dx or dy direction (opposite of transport).
                     if myvar in ['uice', 'vice']:
+                        print("INSIDE HERE array1",np.shape(array1))
                         SSHdata = array1[0, :, :]
 
-                        if myvar == "uice": mymask = confM2R.grdROMS.mask_u
-                        if myvar == "vice": mymask = confM2R.grdROMS.mask_v
+                        if myvar == "uice":
+                            mymask = confM2R.grdROMS.mask_u
+                        if myvar == "vice":
+                            mymask = confM2R.grdROMS.mask_v
 
                         SSHdata = np.where(mymask == 0, confM2R.grdROMS.fillval, SSHdata)
                         SSHdata = np.where(abs(SSHdata) > 100, confM2R.grdROMS.fillval, SSHdata)
