@@ -38,7 +38,7 @@ def laplacefilter(field, threshold, toxi, toeta):
     return field
 
 
-def dohorinterpolationregulargrid(confM2R, mydata, myvar):
+def do_hor_interpolation_regular_grid(confM2R, mydata, myvar):
     if confM2R.show_progress is True:
         try:
             import progressbar
@@ -51,11 +51,9 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
 
     indexROMS_Z_ST, toxi, toeta, mymask = setup_indexes(confM2R, myvar)
     array1 = np.zeros((indexROMS_Z_ST), dtype=np.float)
-    print("indexROMS_Z_ST", np.shape(indexROMS_Z_ST), toxi, toeta, np.shape(mymask))
 
     # 2D or 3D interpolation
     depthlevels = confM2R.grdMODEL.nlevels
-    print("Defined shape array1", np.shape(array1), myvar, depthlevels)
 
     if myvar in ['ssh', 'ageice', 'uice', 'vice', 'aice', 'hice', 'snow_thick', 'hs']:
         depthlevels = 1
@@ -66,20 +64,16 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
                 indata = np.squeeze(mydata[:, :])
             else:
                 indata = np.squeeze(mydata[k, :, :])
-            print("indata shape is {}".format(np.shape(indata)))
 
             # We interpolate to RHO fields for all variables and then we later interpolate RHO points to U and V points
             # But input data are read on U and V and RHO grids if they differ (as NorESM and GLORYS does).
             if myvar in ['uice']:
-                print("Inside uice interpolation")
                 confM2R.grdMODEL.fieldSrc_rho.data[:, :] = np.flipud(np.rot90(indata))
                 field = confM2R.grdROMS.regridSrc2Dst_u(confM2R.grdMODEL.fieldSrc_rho, confM2R.grdROMS.fieldDst_u)
             elif myvar in ['vice']:
-                print("Inside vice interpolat")
                 confM2R.grdMODEL.fieldSrc_rho.data[:, :] = np.flipud(np.rot90(indata))
                 field = confM2R.grdROMS.regridSrc2Dst_v(confM2R.grdMODEL.fieldSrc_rho, confM2R.grdROMS.fieldDst_v)
             else:
-                print("Inside all else interpolate")
                 confM2R.grdMODEL.fieldSrc_rho.data[:, :] = np.flipud(np.rot90(indata))
                 field = confM2R.grdROMS.regridSrc2Dst_rho(confM2R.grdMODEL.fieldSrc_rho, confM2R.grdROMS.fieldDst_rho)
 
@@ -87,7 +81,6 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
             field = np.fliplr(np.rot90(field.data, 3))
 
         if confM2R.use_filter:
-            print(np.shape(field))
             field = laplacefilter(field, 1000, toxi, toeta)
             field = field * mymask
 
@@ -116,7 +109,6 @@ def dohorinterpolationregulargrid(confM2R, mydata, myvar):
 
 def setup_indexes(confM2R, myvar):
     if myvar in ["uice"]:
-        print("UICE SETUPINDEX")
         indexROMS_Z_ST = (confM2R.grdMODEL.nlevels, confM2R.grdROMS.eta_u, confM2R.grdROMS.xi_u)
         toxi = confM2R.grdROMS.xi_u
         toeta = confM2R.grdROMS.eta_u

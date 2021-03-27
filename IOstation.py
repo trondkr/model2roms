@@ -91,7 +91,9 @@ def getStationTime(grdMODEL,year,ID):
     jdsoda=soda_date.ToJDNumber()
     yyyymmdd = '%s/%s/%s'%(soda_date.year,soda_date.month,soda_date.day)
     
-    message='Current time of SODA file : %s/%s/%s'%(soda_date.year,soda_date.month,soda_date.day)
+    message='Current time of SODA file : {}/{}/{}'.format(soda_date.year,
+                                                          soda_date.month,
+                                                          soda_date.day)
     
     return jdsoda-jdref, yyyymmdd, message
 

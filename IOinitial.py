@@ -471,8 +471,14 @@ def createinitfile(confM2R, ntime, var, data1=None, data2=None, data3=None, data
             f1.variables[var.lower()][ntime, :, :] = data1 / 100.
 
         if var.lower() == 'aice':
+            fraction_to_percent=100.0
+
             data1 = np.where(abs(data1) > 120, 0, data1)
-            f1.variables['aice'][ntime, :, :] = data1 / 100.
+            if not (0 <= np.min(data1) <= 1.1):
+                raise Exception("[M2R_IOInitial] Units of ice ceontration does not seem to be "
+                                "fractions (range: {} to {})".format(np.min(data1), np.max(data1)))
+
+            f1.variables['aice'][ntime, :, :] = data1 * fraction_to_percent
             f1.variables['sfwat'][ntime, :, :] = 0.
             f1.variables['tisrf'][ntime, :, :] = 0.
             f1.variables['ti'][ntime, :, :] = 0.

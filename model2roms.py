@@ -249,7 +249,8 @@ def getTime(confM2R, year, month, day, ntime):
     confM2R.grdROMS.timeunits = units
     cdf.close()
     logging.info("-------------------------------")
-    logging.info('\nCurrent time of %s file : %s'.format(confM2R.ocean_indata_type, currentdate))
+    logging.info('\nCurrent time of {} file : {}'.format(confM2R.ocean_indata_type,
+                                                         currentdate))
     logging.info("-------------------------------")
 
 
@@ -419,7 +420,7 @@ def convert_MODEL2ROMS(confM2R):
                     print("Running myvar: {} data {}".format(myvar,np.shape(data)))
 
                     # Take the input data and horizontally interpolate to your grid
-                    array1 = interp2D.dohorinterpolationregulargrid(confM2R, data, myvar)
+                    array1 = interp2D.do_hor_interpolation_regular_grid(confM2R, data, myvar)
 
                     if myvar in ['temperature', 'salinity', 'O3_c', 'O3_TA', 'N1_p', 'N3_n', 'N5_s', 'O2_o']:
                         STdata = verticalinterpolation(myvar, array1, array1, confM2R.grdROMS, confM2R.grdMODEL)
