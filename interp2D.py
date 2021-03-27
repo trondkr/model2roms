@@ -80,7 +80,7 @@ def do_hor_interpolation_regular_grid(confM2R, mydata, myvar):
             # Since ESMF uses coordinates (x,y) we need to rotate and flip to get back to (y,x) order.
             field = np.fliplr(np.rot90(field.data, 3))
 
-        if confM2R.use_filter:
+        if confM2R.use_filter and myvar not in ['aice','hice','ageice']:
             field = laplacefilter(field, 1000, toxi, toeta)
             field = field * mymask
 
