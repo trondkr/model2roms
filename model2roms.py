@@ -37,7 +37,7 @@ def vertical_interpolation(myvar, array1, array2, grdROMS, grdMODEL):
 
     if myvar in ['salinity', 'temperature', 'O3_c', 'O3_TA', 'N1_p', 'N3_n', 'N5_s', 'O2_o']:
         logging.info(
-            '\nStart vertical interpolation for {} (dimensions={} x {})'.format(myvar, grdROMS.xi_rho, grdROMS.eta_rho))
+            'Start vertical interpolation for {} (dimensions={} x {})'.format(myvar, grdROMS.xi_rho, grdROMS.eta_rho))
         outdata = np.empty((outINDEX_ST), dtype=np.float, order='F')
 
         outdata = interp.interpolation.dovertinter(np.asarray(outdata, order='F'),
@@ -63,7 +63,7 @@ def vertical_interpolation(myvar, array1, array2, grdROMS, grdMODEL):
         return outdata
 
     if myvar == 'vvel':
-        logging.info('\nStart vertical interpolation for uvel (dimensions={} x {})'.format(grdROMS.xi_u, grdROMS.eta_u))
+        logging.info('Start vertical interpolation for uvel (dimensions={} x {})'.format(grdROMS.xi_u, grdROMS.eta_u))
         outdataU = np.zeros((outINDEX_U), dtype=np.float)
         outdataUBAR = np.zeros((outINDEX_UBAR), dtype=np.float)
 
@@ -81,7 +81,7 @@ def vertical_interpolation(myvar, array1, array2, grdROMS, grdMODEL):
 
         outdataU = np.ma.masked_where(abs(outdataU) > 1000, outdataU)
 
-        logging.info('\nStart vertical interpolation for vvel (dimensions={} x {})'.format(grdROMS.xi_v, grdROMS.eta_v))
+        logging.info('Start vertical interpolation for vvel (dimensions={} x {})'.format(grdROMS.xi_v, grdROMS.eta_v))
         outdataV = np.zeros((outINDEX_V), dtype=np.float)
         outdataVBAR = np.zeros((outINDEX_VBAR), dtype=np.float)
 
@@ -140,7 +140,6 @@ def rotate(grdROMS, grdMODEL, data, u, v):
     urot = np.zeros((int(grdMODEL.nlevels), int(grdROMS.eta_rho), int(grdROMS.xi_rho)), np.float)
     vrot = np.zeros((int(grdMODEL.nlevels), int(grdROMS.eta_rho), int(grdROMS.xi_rho)), np.float)
 
-    print("rotate", np.shape(urot),np.shape(vrot), np.shape(u), np.shape(v))
     urot, vrot = interp.interpolation.rotate(np.asarray(urot, order='F'),
                                              np.asarray(vrot, order='F'),
                                              np.asarray(u, order='F'),
@@ -410,8 +409,6 @@ def convert_MODEL2ROMS(confM2R):
 
                     if myvar in ['ssh', 'ageice', 'uice', 'vice', 'aice', 'hice', 'snow_thick']:
                         data = get_2d_data(confM2R, myvar, year, month, day, time_counter)
-
-                    print("Running myvar: {} data {}".format(myvar,np.shape(data)))
 
                     # Take the input data and horizontally interpolate to your grid
                     array1 = interp2D.do_hor_interpolation_regular_grid(confM2R, data, myvar)

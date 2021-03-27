@@ -56,8 +56,8 @@ class Grd:
 
         if self.type == 'FORCINGDATA':
 
-            logging.info("[M2R_grd] ---> Assuming %s grid type for %s".format(confM2R.grd_type, self.type))
-            logging.info("[M2R_grd] ---> Using dimension names %s and %s and %s".format(confM2R.lon_name,
+            logging.info("[M2R_grd] ---> Assuming {} grid type for {}".format(confM2R.grd_type, self.type))
+            logging.info("[M2R_grd] ---> Using dimension names {} and {} and {}".format(confM2R.lon_name,
                                                                                         confM2R.lat_name,
                                                                                         confM2R.depth_name))
 

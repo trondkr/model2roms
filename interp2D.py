@@ -15,7 +15,7 @@ except ImportError:
 __author__ = 'Trond Kristiansen'
 __email__ = 'me@trondkristiansen.com'
 __created__ = datetime.datetime(2008, 12, 4)
-__modified__ = datetime.datetime(2021, 3, 23)
+__modified__ = datetime.datetime(2021, 3, 26)
 __version__ = "1.6"
 __status__ = "Development"
 
@@ -49,18 +49,18 @@ def do_hor_interpolation_regular_grid(confM2R, mydata, myvar):
             confM2R.show_progress = False
         pass
 
-    indexROMS_Z_ST, toxi, toeta, mymask = setup_indexes(confM2R, myvar)
-    array1 = np.zeros((indexROMS_Z_ST), dtype=np.float)
+    index_roms, toxi, toeta, mymask = setup_indexes(confM2R, myvar)
+    array1 = np.zeros(index_roms, dtype=np.float)
 
     # 2D or 3D interpolation
-    depthlevels = confM2R.grdMODEL.nlevels
+    depth_levels = confM2R.grdMODEL.nlevels
 
     if myvar in ['ssh', 'ageice', 'uice', 'vice', 'aice', 'hice', 'snow_thick', 'hs']:
-        depthlevels = 1
+        depth_levels = 1
 
-    for k in range(depthlevels):
+    for k in range(depth_levels):
         if confM2R.use_esmf:
-            if depthlevels == 1:
+            if depth_levels == 1:
                 indata = np.squeeze(mydata[:, :])
             else:
                 indata = np.squeeze(mydata[k, :, :])
@@ -93,12 +93,6 @@ def do_hor_interpolation_regular_grid(confM2R, mydata, myvar):
                                 str(k) + '_withfilter', myvar)
             plotfilename = "test_{}_wfilter.png".format(myvar)
             plt.savefig(plotfilename, dpi=150)
-        # if __debug__:
-        #      print "Data range after horisontal interpolation: ", field.min(), field.max()
-
-        # if varname in ["hice","aice"]:
-        #     import plotData
-        #     plotData.contourMap(grdROMS,grdROMS.lon_rho,grdROMS.lat_rho, field, "surface", varname)
 
         if confM2R.show_progress is True:
             progress.update(k)
@@ -113,16 +107,19 @@ def setup_indexes(confM2R, myvar):
         toxi = confM2R.grdROMS.xi_u
         toeta = confM2R.grdROMS.eta_u
         mymask = confM2R.grdROMS.mask_u
+
     elif myvar in ["vice"]:
         indexROMS_Z_ST = (confM2R.grdMODEL.nlevels, confM2R.grdROMS.eta_v, confM2R.grdROMS.xi_v)
         toxi = confM2R.grdROMS.xi_v
         toeta = confM2R.grdROMS.eta_v
         mymask = confM2R.grdROMS.mask_v
+
     else:
         indexROMS_Z_ST = (confM2R.grdMODEL.nlevels, confM2R.grdROMS.eta_rho, confM2R.grdROMS.xi_rho)
         toxi = confM2R.grdROMS.xi_rho
         toeta = confM2R.grdROMS.eta_rho
         mymask = confM2R.grdROMS.mask_rho
+
     return indexROMS_Z_ST, toxi, toeta, mymask
 
 
