@@ -14,7 +14,7 @@ __status__ = "Development, modified on 19.04.2018 by A.Barthel, " \
 
 # Methods for returning list of months and days for the given time-step.
 
-def createlistofmonths(confM2R, currentyear):
+def create_list_of_months(confM2R, currentyear):
 
     if currentyear == confM2R.startdate.year:
         IDS = [confM2R.startdate.month + m for m in range(13 - confM2R.startdate.month)]
@@ -42,7 +42,7 @@ def createlistofmonths(confM2R, currentyear):
     return IDS
 
 
-def createlistofdays(confM2R, year, month, first_run):
+def create_list_of_days(confM2R, year, month, first_run):
     days = []
     if confM2R.time_frequency_inputdata == 'day':
         daystep = 7

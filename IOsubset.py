@@ -9,7 +9,7 @@ __version__ = "0.1"
 __status__ = "Development, modified on 07.01.2010, 01.07.2013, 11.03.2014"
 
 
-def findSubsetIndices(grdMODEL, min_lat, max_lat, min_lon, max_lon):
+def find_subset_indices(grdMODEL, min_lat, max_lat, min_lon, max_lon):
     """
     Get the indices that covers the new grid, and enables us to only store a subset of
     the large input grid. This routine checks wether you cross the 0 longitude line, so
@@ -128,7 +128,7 @@ def checkDomain(grdMODEL, grdROMS):
     print("\n--------------------------")
 
 
-def organizeSplit(grdMODEL, grdROMS):
+def organize_split(grdMODEL, grdROMS):
     if grdMODEL.splitExtract is True:
         print("\nThe subset crosses the 0 degrees longitude line.")
         print("Need to split the extraction of data into Western and")

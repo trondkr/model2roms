@@ -126,7 +126,7 @@ def setup_indexes(confM2R, myvar):
     return indexROMS_Z_ST, toxi, toeta, mymask
 
 
-def setupESMFInterpolationWeights(confM2R):
+def setup_ESMF_interpolation_weights(confM2R):
     if confM2R.use_esmf:
         logging.info(
             "[M2R_interp2D] => Creating the interpolation weights and indexes using ESMF (this may take some time....):")

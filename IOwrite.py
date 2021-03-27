@@ -29,7 +29,7 @@ def help():
     """
 
 
-def writeclimfile(confM2R, ntime, myvar, data1=None, data2=None, data3=None, data4=None):
+def write_clim_file(confM2R, ntime, myvar, data1=None, data2=None, data3=None, data4=None):
     if confM2R.output_format == 'NETCDF4':
         myzlib = True
     else:
