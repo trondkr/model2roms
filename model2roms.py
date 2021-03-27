@@ -225,7 +225,7 @@ def get_time(confM2R, year, month, day, ntime):
         jd = date2num(currentdate, units="days since 1948-01-01 00:00:00", calendar="standard")
 
     if confM2R.ocean_indata_type == 'GLORYS':
-        # Find the day and month that the GLORYS file respresents based on the year and ID number.
+        # Find the day and month that the GLORYS file represents based on the year and ID number.
         # Each file represents a 1 month average.
         calendar = cdf.variables["time"].calendar
         units = cdf.variables["time"].units
