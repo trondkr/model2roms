@@ -1,7 +1,7 @@
 <h1>Model2roms</h1>
 
 ![Build status][image-1]
-![codebeat badge](https://codebeat.co/badges/cf0f4bfc-a186-4dfc-9e6a-291b7e985492)
+[![codebeat badge](https://codebeat.co/badges/cf0f4bfc-a186-4dfc-9e6a-291b7e985492)][image-2]
 ![License][image-3]
 ![License][image-4]
 
