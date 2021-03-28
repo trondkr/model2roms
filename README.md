@@ -6,7 +6,7 @@
 ![License][image-4]
 
 
-[image-1]:	https://badge.buildkite.com/8b25e9518aca90534a2a0755dd0623dc91533ba7ca5bd42dde.svg
+[image-1]:	https://buildkite.com/rask-dev-llc/model2roms
 [image-2]:	https://codebeat.co/projects/github-com-trondkr-model2roms-master
 [image-3]:	https://badge.buildkite.com/8b25e9518aca90534a2a0755dd0623dc91533ba7ca5bd42dde.svg
 [image-4]:	https://img.shields.io/github/last-commit/trondkr/model2roms.svg
