@@ -36,3 +36,6 @@ Results/*
 **/*.mod
 compile.log
 PET0.ESMF_LogFile*
+Examples/**/*nc
+!Examples/Figures/*.png
+compile.log
