@@ -46,7 +46,7 @@ class Grd:
         dimensions (eta, xi, lon, lat etc.) are defined here and used throughout these scripts.
         Also, the depth matrix is calculated in this function by calling IOverticalGrid.py (ROMS grid only). For
         input model depths, the depth array is a one dimensional. If input data has 2 or 3 dimensions, this
-        has to be accounted for throuhgout the soda2roms package as one dimension is currently only supported.
+        has to be accounted for throughout the model2roms package as one dimension is currently only supported.
 
         Object types currently supported: STATION, GLORYS, SODA3
 
@@ -147,13 +147,36 @@ class Grd:
             masked_h = np.where(self.h > 0, self.h, self.h.max())
 
             self.hmin = masked_h.min()
-            self.vtransform = confM2R.vtransform
-            self.nlevels = confM2R.nlevels
-            self.vstretching = confM2R.vstretching
-            self.theta_s = confM2R.theta_s
-            self.theta_b = confM2R.theta_b
-            self.tcline = confM2R.tcline
-            self.hc = confM2R.hc
+            if "Vtransform" in ds.variables:
+                self.vtransform = ds["Vtransform"].values
+            else:
+                self.vtransform = confM2R.vtransform
+
+            if "s_rho" in ds.variables:
+                self.s_rho = ds["s_rho"].values
+                self.nlevels = len(self.s_rho)
+            else:
+                self.nlevels = confM2R.nlevels
+
+            if "Vstretching" in ds.variables:
+                self.vstretching = ds["Vstretching"].values
+            if "theta_s" in ds.variables:
+                self.theta_s = ds["theta_s"].values
+            else:
+                self.theta_s = confM2R.theta_s
+            if "theta_b" in ds.variables:
+                self.theta_b = ds["theta_b"].values
+            else:
+                self.theta_b = confM2R.theta_b
+            if "Tcline" in ds.variables:
+                self.tcline = ds["Tcline"].values
+            else:
+                self.tcline = confM2R.tcline
+            if "hc" in ds.variables:
+                self.hc = ds["hc"].values
+            else:
+                self.hc = confM2R.hc
+
             if self.vtransform == 1:
                 self.hc = min(self.hmin, self.tcline)
                 self.hc = self.tcline
@@ -223,13 +246,13 @@ class Grd:
             self.lat_v = ds["lat_v"][:, :]
             self.mask_v = ds["mask_v"][:, :]
 
-            self.spherical = ds["spherical"][:]
+            #   self.spherical = ds["spherical"][:]
 
             self.lon_psi = self.lon_u[:-1, :]
             self.lat_psi = self.lat_v[:, :-1]
             self.mask_psi = self.mask_v[:, :-1]
 
-            self.f = ds["f"][:, :]
+            # self.f = ds["f"][:, :]
             self.angle = ds["angle"][:, :]
 
             self.pm = ds["pm"][:, :]

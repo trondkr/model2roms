@@ -1,9 +1,11 @@
 import calendar
+import logging
 import os
 import time
 from datetime import datetime
-import logging
+
 import numpy as np
+
 import grd
 
 __author__ = 'Trond Kristiansen'
@@ -192,11 +194,11 @@ class Model2romsConfig(object):
         # vertical coordinate system or ZLEVEL. also define the name of the dimensions in the input files.
         # Options:
         # 1. SIGMA (not properly implemented yet), 2. ZLEVEL
-        self.ingrid_type = "ZLEVEL"
+        self.ingrid_type = "SIGMA"  # "ZLEVEL"
 
-        # Define the names of the geographical variables in the input files. These may 
+        # Define the names of the geographical variables in the input files. These may
         # differ depending how the variable is located in a grid (e.g. Arakawa C grid - ROMS). In
-        # SODA 3.3.1 the u and v location is defined by xu_ocean,  yu_ocean while temperature is 
+        # SODA 3.3.1 the u and v location is defined by xu_ocean,  yu_ocean while temperature is
         # located in xt_ocean, yt_ocean.
         self.grd_type = 'regular'
         self.lon_name = "longitude"
