@@ -223,7 +223,7 @@ class Model2romsConfig(object):
 
         self.time_name = "time"
         self.realm = "ocean"
-        self.fillvaluein = -1.e20
+        self.fillvaluein = -32767
 
         # OUT GRIDTYPES ------------------------------------------------------------------------------
         # Define what grid type you want to interpolate to

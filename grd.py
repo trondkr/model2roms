@@ -232,11 +232,10 @@ class Grd:
                     self.x_vert = ds["x_vert"][:, :]
                     self.y_vert = ds["y_vert"][:, :]
 
-            #  for findvar in ds:
-
-            #  if findvar == "xl":
-            #      self.xl = ds["xl"][:]
-            #      self.el = ds["el"][:]
+            for findvar in ds:
+                if findvar == "xl":
+                    self.xl = ds["xl"]
+                    self.el = ds["el"]
 
             for findvar in ds:
                 if findvar == "dmde":

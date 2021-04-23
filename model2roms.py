@@ -270,18 +270,18 @@ def get_3d_data(confM2R, varname, year, month, day, timecounter):
 
         if confM2R.ocean_indata_type == "SODA3":
             data = cdf.variables[confM2R.input_varnames[varN]][month - 1, :, :, :]
-            data = np.where(data.mask, confM2R.fillval, data)
+            data = np.where(data.mask, confM2R.fillvaluein, data)
 
         if confM2R.ocean_indata_type == "NORESM":
             # For NorESM data - all data is in one big file so we need the timecounter to access correct data
             myunits = cdf.variables[str(confM2R.input_varnames[varN])].units
             data = np.squeeze(cdf.variables[str(confM2R.input_varnames[varN])][timecounter, :, :, :])
-            data = np.where(data.mask, confM2R.fillval, data)
+            data = np.where(data.mask, confM2R.fillvaluein, data)
 
         if confM2R.ocean_indata_type == "GLORYS":
             myunits = cdf.variables[str(confM2R.input_varnames[varN])].units
             data = np.squeeze(cdf.variables[str(confM2R.input_varnames[varN])][0, :, :, :])
-            data = np.where(data.mask, confM2R.fillval, data)
+            data = np.where(data.mask, confM2R.fillvaluein, data)
 
         cdf.close()
 
@@ -293,8 +293,8 @@ def get_3d_data(confM2R, varname, year, month, day, timecounter):
             data = data - 273.15
 
     if confM2R.ocean_indata_type == "GLORYS":
-        data = np.where(data <= -32767, confM2R.grdROMS.fillvaluein, data)
-        data = np.ma.masked_where(data <= confM2R.grdROMS.fillvaluein, data)
+        data = np.where(data <= -32767, confM2R.grdROMS.fillval, data)
+        data = np.ma.masked_where(data <= confM2R.grdROMS.fillval, data)
 
     logging.debug('Data range of {} just after extracting from netcdf file: {:3.3f}-{:3.3f}'.format(
         str(confM2R.input_varnames[varN]),
