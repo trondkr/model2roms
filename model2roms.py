@@ -289,12 +289,12 @@ def get_3d_data(confM2R, varname, year, month, day, timecounter):
 
         if myunits == "degree_Kelvin" or myunits == "K":
             if confM2R.ocean_indata_type in ["GLORYS"]:
-                data = np.where(data <= -32.767, confM2R.grdROMS.fillval, data)
+                data = np.where(data <= -32767, confM2R.grdROMS.fillval, data)
             data = data - 273.15
 
     if confM2R.ocean_indata_type == "GLORYS":
-        data = np.where(data <= -32.767, confM2R.grdROMS.fillval, data)
-        data = np.ma.masked_where(data <= confM2R.grdROMS.fillval, data)
+        data = np.where(data <= -32767, confM2R.grdROMS.fillvaluein, data)
+        data = np.ma.masked_where(data <= confM2R.grdROMS.fillvaluein, data)
 
     logging.debug('Data range of {} just after extracting from netcdf file: {:3.3f}-{:3.3f}'.format(
         str(confM2R.input_varnames[varN]),
