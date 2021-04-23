@@ -94,7 +94,8 @@ class Model2romsConfig(object):
     def define_roms_grid_path(self):
         try:
             return {'Antarctic': '../oceanography/model2roms_grids/ANT_01.nc',
-                    'A20': '/Users/trondkr/Dropbox/NIVA/A20/Grid/A20niva_grd_v1.nc',
+                    'Josè': '/Users/trondkr/Dropbox/NIVA/model2roms/Examples/Grids/roms12_9km.nc',
+                    'A20': '/Users/trondkr/Dropbox/NIVA/A20/Grid/roms12_9km.nc',
                     # '/cluster/projects/nn9412k/A20/Grid/A20niva_grd_v1.nc',
                     #     'ROHO800': '/cluster/projects/nn9490k/ROHO800/Grid/ROHO800_grid_fix3.nc'}[self.outgrid_name]
                     'ROHO800': '/Users/trondkr/Dropbox/NIVA/ROHO800/Grid/ROHO800_grid_fix3.nc'}[self.outgrid_name]
@@ -105,6 +106,7 @@ class Model2romsConfig(object):
     def define_abbreviation(self):
         return {"A20": "a20",
                 "Antarctic": "Antarctic",
+                "Josè": "Josè",
                 "ROHO800": "roho800"}[self.outgrid_name]
 
     def define_ocean_forcing_data_path(self):
@@ -194,7 +196,7 @@ class Model2romsConfig(object):
         # vertical coordinate system or ZLEVEL. also define the name of the dimensions in the input files.
         # Options:
         # 1. SIGMA (not properly implemented yet), 2. ZLEVEL
-        self.ingrid_type = "SIGMA"  # "ZLEVEL"
+        self.ingrid_type = "ZLEVEL"  # "ZLEVEL"
 
         # Define the names of the geographical variables in the input files. These may
         # differ depending how the variable is located in a grid (e.g. Arakawa C grid - ROMS). In
@@ -226,7 +228,7 @@ class Model2romsConfig(object):
         # OUT GRIDTYPES ------------------------------------------------------------------------------
         # Define what grid type you want to interpolate to
         # Options: This is just the name of your grid used to identify your selection later
-        self.outgrid_name = 'Antarctic'  # "ROHO800", "A20"
+        self.outgrid_name = 'Josè'  # "ROHO800", "A20"
         self.outgrid_type = "ROMS"
 
         # Subset input data. If you have global data you may want to seubset these to speed up reading. Make

@@ -233,9 +233,10 @@ class Grd:
                     self.y_vert = ds["y_vert"][:, :]
 
             for findvar in ds:
-                if findvar == "xl":
-                    self.xl = ds["xl"][:]
-                    self.el = ds["el"][:]
+                print(ds)
+            #  if findvar == "xl":
+            #      self.xl = ds["xl"][:]
+            #      self.el = ds["el"][:]
 
             for findvar in ds:
                 if findvar == "dmde":
