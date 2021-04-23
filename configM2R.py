@@ -94,7 +94,7 @@ class Model2romsConfig(object):
     def define_roms_grid_path(self):
         try:
             return {'Antarctic': '../oceanography/model2roms_grids/ANT_01.nc',
-                    'Josè': '/Users/trondkr/Dropbox/NIVA/model2roms/Examples/Grids/roms12_9km.nc',
+                    'Josè': '../oceanography/model2roms_grids/roms12_9km.nc',
                     'A20': '/Users/trondkr/Dropbox/NIVA/A20/Grid/roms12_9km.nc',
                     # '/cluster/projects/nn9412k/A20/Grid/A20niva_grd_v1.nc',
                     #     'ROHO800': '/cluster/projects/nn9490k/ROHO800/Grid/ROHO800_grid_fix3.nc'}[self.outgrid_name]
