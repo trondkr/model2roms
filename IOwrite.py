@@ -122,11 +122,11 @@ def write_clim_file(confM2R, ntime, myvar, data1=None, data2=None, data3=None, d
         vnc.field = "bath, scalar"
         vnc[:, :] = grdROMS.h
 
-        vnc = f1.createVariable('f', 'd', ('eta_rho', 'xi_rho',), zlib=myzlib, fill_value=grdROMS.fillval)
-        vnc.long_name = 'Coriolis parameter at RHO-points'
-        vnc.units = 'second-1'
-        vnc.field = "Coriolis, scalar"
-        vnc[:, :] = grdROMS.f
+        #     vnc = f1.createVariable('f', 'd', ('eta_rho', 'xi_rho',), zlib=myzlib, fill_value=grdROMS.fillval)
+        #     vnc.long_name = 'Coriolis parameter at RHO-points'
+        #     vnc.units = 'second-1'
+        #     vnc.field = "Coriolis, scalar"
+        #     vnc[:, :] = grdROMS.f
 
         vnc = f1.createVariable('pm', 'd', ('eta_rho', 'xi_rho',), zlib=myzlib, fill_value=grdROMS.fillval)
         vnc.long_name = 'curvilinear coordinate metric in XI'
