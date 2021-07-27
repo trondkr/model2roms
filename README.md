@@ -4,7 +4,7 @@
 [![codebeat badge](https://codebeat.co/badges/cf0f4bfc-a186-4dfc-9e6a-291b7e985492)][image-2]
 [![License](https://badge.buildkite.com/8b25e9518aca90534a2a0755dd0623dc91533ba7ca5bd42dde.svg)][image-3]
 ![License][image-4]
-
+[![DOI](https://zenodo.org/badge/11505338.svg)](https://zenodo.org/badge/latestdoi/11505338)
 
 [image-1]:	https://buildkite.com/rask-dev-llc/model2roms
 [image-2]:	https://codebeat.co/projects/github-com-trondkr-model2roms-master
