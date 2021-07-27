@@ -6,7 +6,7 @@ from datetime import datetime
 import barotropic
 import interpolation as interp
 import numpy as np
-from netCDF4 import Dataset, date2num, num2date
+from netCDF4 import Dataset, date2num
 
 import IOinitial
 import IOsubset
@@ -201,32 +201,16 @@ def get_time(confM2R, year, month, day, ntime):
 
     # Now open the input file and get the time
     cdf = Dataset(filename)
-
-    if confM2R.ocean_indata_type == 'NORESM':
-        jdref = date2num(datetime(1948, 1, 1), units="days since 1948-01-01 00:00:00", calendar="standard")
-    elif confM2R.ocean_indata_type == 'GLORYS':
-        jdref = date2num(datetime(1948, 1, 1), cdf.variables["time"].units,
-                         calendar=cdf.variables["time"].calendar)
-    elif confM2R.ocean_indata_type == 'SODA3':
-        jdref = date2num(datetime(1948, 1, 1), units="days since 1948-01-01 00:00:00", calendar="standard")
-    elif confM2R.ocean_indata_type == 'SODA3_5DAY':
-        jdref = date2num(datetime(1948, 1, 1), units=confM2R.time_object.units, calendar=confM2R.time_object.calendar)
-    else:
-        jdref = date2num(datetime(1948, 1, 1), cdf.variables["time"].units, calendar=cdf.variables["time"].calendar)
+    jdref = date2num(datetime(1948, 1, 1),
+                     cdf.variables["time"].units,
+                     calendar=cdf.variables["time"].calendar)
 
     if confM2R.ocean_indata_type == 'SODA3_5DAY':
         currentdate = datetime(year, month, day)
         units = confM2R.time_object.units
         jd = date2num(currentdate, units=confM2R.time_object.units, calendar=confM2R.time_object.calendar)
 
-    if confM2R.ocean_indata_type == 'SODA3':
-        # Each SODA file represents 12 month averages.
-
-        units = cdf.variables["time"].units
-        currentdate = datetime(year, month, day)
-        jd = date2num(currentdate, units="days since 1948-01-01 00:00:00", calendar="standard")
-
-    if confM2R.ocean_indata_type == 'GLORYS':
+    else:
         # Find the day and month that the GLORYS file represents based on the year and ID number.
         # Each file represents a 1 month average.
         calendar = cdf.variables["time"].calendar
@@ -234,19 +218,9 @@ def get_time(confM2R, year, month, day, ntime):
         currentdate = datetime(year, month, day)
         jd = date2num(currentdate, units, calendar=calendar)
 
-    if confM2R.ocean_indata_type == 'NORESM':
-        # Find the day and month that the NORESM file. We need to use the time modules from
-        # netcdf4 for python as they handle calendars that are no_leap.
-        # http://www.esrl.noaa.gov/psd/people/jeffrey.s.whitaker/python/netcdftime.html#datetime
-        mydays = cdf.variables["time"][ntime]
-        calendar = cdf.variables["time"].calendar
-        units = cdf.variables["time"].units
-        # For NORESM we switch from in-units of 1800-01-01 to outunits of 1948-01-01
-        currentdate = num2date(mydays, units=units, calendar=calendar)
-        jd = date2num(currentdate, 'days since 1948-01-01 00:00:00', calendar='noleap')
-
     confM2R.grdROMS.time = (jd - jdref)
     confM2R.grdROMS.reftime = jdref
+    print("UNITS", units, currentdate)
     confM2R.grdROMS.timeunits = units
     cdf.close()
     logging.info("-------------------------------")
@@ -448,7 +422,6 @@ def convert_MODEL2ROMS(confM2R):
                     # of ice based on the transport, which is divided by snow and ice thickenss
                     # and then multiplied by grid size in dx or dy direction (opposite of transport).
                     if myvar in ['uice', 'vice']:
-                        print("INSIDE HERE array1",np.shape(array1))
                         SSHdata = array1[0, :, :]
 
                         if myvar == "uice":

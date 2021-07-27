@@ -1,6 +1,7 @@
+import logging
 import time
 from datetime import datetime
-import logging
+
 import IOstation
 import clim2bry
 import configM2R
@@ -10,7 +11,7 @@ import model2roms
 __author__ = 'Trond Kristiansen'
 __email__ = 'trond.kristiansen@niva.no'
 __created__ = datetime(2009, 1, 30)
-__modified__ = datetime(2021, 3, 23)
+__modified__ = datetime(2021, 7, 27)
 __version__ = "1.6"
 __status__ = "Development"
 
