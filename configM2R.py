@@ -11,10 +11,12 @@ import grd
 __author__ = 'Trond Kristiansen'
 __email__ = 'trond.kristiansen@niva.no'
 __created__ = datetime(2009, 1, 30)
-__modified__ = datetime(2021, 3, 23)
+__modified__ = datetime(2021, 7, 27)
 __version__ = "1.6"
 __status__ = "Development"
 
+# Changelog:
+# 27.07.2021 - Added option for running Hardangerfjord 160 m model
 
 class Model2romsConfig(object):
 
@@ -93,11 +95,8 @@ class Model2romsConfig(object):
     # Define the path to where the  ROMS grid can be found
     def define_roms_grid_path(self):
         try:
-            return {'Antarctic': '../oceanography/model2roms_grids/ANT_01.nc',
-                    'Josè': '../oceanography/model2roms_grids/roms12_9km.nc',
-                    'A20': '/Users/trondkr/Dropbox/NIVA/A20/Grid/roms12_9km.nc',
-                    # '/cluster/projects/nn9412k/A20/Grid/A20niva_grd_v1.nc',
-                    #     'ROHO800': '/cluster/projects/nn9490k/ROHO800/Grid/ROHO800_grid_fix3.nc'}[self.outgrid_name]
+            return {'A20': '/Users/trondkr/Dropbox/NIVA/A20/Grid/roms12_9km.nc',
+                    'ROHO160': '../oceanography/NAUTILOS/Grid/norfjords_160m_grid.nc_A04.nc',
                     'ROHO800': '/Users/trondkr/Dropbox/NIVA/ROHO800/Grid/ROHO800_grid_fix3.nc'}[self.outgrid_name]
         except KeyError:
             return KeyError
@@ -106,8 +105,7 @@ class Model2romsConfig(object):
     def define_abbreviation(self):
         return {"A20": "a20",
                 "Antarctic": "Antarctic",
-                "Josè": "Josè",
-                "ROHO800": "roho800"}[self.outgrid_name]
+                "ROHO160": "roho160"}[self.outgrid_name]
 
     def define_ocean_forcing_data_path(self):
         try:
@@ -117,14 +115,10 @@ class Model2romsConfig(object):
                     'GLORYS': "../oceanography/copernicus-marine-data/Global/"}[self.ocean_indata_type]
         except KeyError:
             return KeyError
-
+    
     def define_atmospheric_forcing_path(self):
         return {'ERA5': "/Volumes/DATASETS/ERA5/"}[self.atmos_indata_type]
-
-    def define_atmos_inputdata_varnames(self):
-
-        return {'ERA5': ['swrad', 'lwrad', 'precip', 'u10', 'v10']}[self.atmos_indata_type]
-
+    
     def __init__(self):
         logging.info('\n--------------------------\n')
         print('Started ' + time.ctime(time.time()))
@@ -155,12 +149,12 @@ class Model2romsConfig(object):
         # Create the bry, init, and clim files for a given grid and input data
         self.create_ocean_forcing = True
         # Create atmospheric forcing for the given grid
-        self.create_atmos_forcing = False  # currently in beta stages
+        self.create_atmos_forcing = False  # currently in beta stages 
         # Create a smaller resolution grid based on your original. Decimates every second for
         # each time run
         self.decimate_gridfile = False
         # Write ice values to file (for Arctic regions)
-        self.write_ice = True
+        self.write_ice = False
         # Write biogeochemistry values to file
         self.write_bcg = False
         # ROMS sometimes requires input of ice and ssh, but if you dont have these write files containing zeros to file
@@ -177,7 +171,7 @@ class Model2romsConfig(object):
         self.time_frequency_inputdata = "month"  # Possible options: "month", "hour", "5days"
 
         # Path to where results files should be stored
-        self.outdir = "../oceanography/model2roms_results/"
+        self.outdir = "../oceanography/NAUTILOS/"
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir, exist_ok=True)
 
@@ -228,7 +222,7 @@ class Model2romsConfig(object):
         # OUT GRIDTYPES ------------------------------------------------------------------------------
         # Define what grid type you want to interpolate to
         # Options: This is just the name of your grid used to identify your selection later
-        self.outgrid_name = 'Josè'  # "ROHO800", "A20"
+        self.outgrid_name = 'ROHO160'  # "ROHO800", "A20"
         self.outgrid_type = "ROMS"
 
         # Subset input data. If you have global data you may want to seubset these to speed up reading. Make
@@ -261,10 +255,10 @@ class Model2romsConfig(object):
 
         # DATE AND TIME DETAILS ---------------------------------------------------------
         # Define the period to create forcing for
-        self.start_year = 1993
-        self.end_year = 1993
+        self.start_year = 2017
+        self.end_year = 2020
         self.start_month = 1
-        self.end_month = 5
+        self.end_month = 12
         self.start_day = 15
         self.end_day = 31
 
