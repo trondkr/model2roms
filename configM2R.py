@@ -138,6 +138,7 @@ class Model2romsConfig(object):
         self.compile_all = False
         # Extract time-series of data for given longitude/latitude
         self.extract_stations = False
+
         # Define a set of longitude/latitude positions with names to extract into
         # station files (using extractStations)
         if self.extract_stations:
