@@ -42,8 +42,7 @@ class Model2romsConfig(object):
                 self.start_year, self.start_month, self.end_year, self.end_month))
         logging.info('[M2R_configM2R]==> The following variables will be interpolated: {}'.format(self.global_varnames))
 
-        if self.use_esmf:
-            logging.info('[M2R_configM2R]=>All horisontal interpolations will be done using ESMF')
+        logging.info('[M2R_configM2R]=>All horisontal interpolations will be done using ESMF')
         logging.info('[M2R_configM2R] => Output files are written in format: {}'.format(self.output_format))
         logging.info('[M2R_configM2R] => Output grid file is: {}'.format(self.roms_grid_path))
 
@@ -125,17 +124,19 @@ class Model2romsConfig(object):
 
     def __init__(self):
         logging.info('\n--------------------------\n')
-        print('Started ' + time.ctime(time.time()))
+        logging.info('Started ' + time.ctime(time.time()))
         os.environ['WRAP_STDERR'] = 'true'
 
         # EDIT ===================================================================
         # Set show_progress to "False" if you do not want to see the progress
         # indicator for horizontal interpolation.
         self.show_progress = True
+
         # Set compileAll to True if you want automatic re-compilation of all the
         # fortran files necessary to run model2roms. Options are "gfortran" or "ifort". Edit
         # compile.py to add other Fortran compilers.
         self.compile_all = False
+
         # Extract time-series of data for given longitude/latitude
         self.extract_stations = False
 
@@ -153,25 +154,31 @@ class Model2romsConfig(object):
 
         # Create the bry, init, and clim files for a given grid and input data
         self.create_ocean_forcing = True
+
         # Create atmospheric forcing for the given grid
         self.create_atmos_forcing = False  # currently in beta stages
+
         # Create a smaller resolution grid based on your original. Decimates every second for
         # each time run
         self.decimate_gridfile = False
+
         # Write ice values to file (for Arctic regions)
         self.write_ice = False
+
         # Write biogeochemistry values to file
         self.write_bcg = False
+
         # ROMS sometimes requires input of ice and ssh, but if you dont have these write files containing zeros to file
         self.set_2d_vars_to_zero = False
-        # Use ESMF for the interpolation. This requires that you have ESMF and ESMPy installed (import ESMF)
-        self.use_esmf = True
+
         # Apply filter to smooth the 2D fields after interpolation (time consuming but enhances results)
         self.use_filter = True
+
         # Format to write the ouput to: 'NETCDF4', 'NETCDF4_CLASSIC', 'NETCDF3_64BIT', or 'NETCDF3_CLASSIC'
         # Using NETCDF4 automatically turns on compression of files (ZLIB)
         self.output_format = 'NETCDF4'
         self.use_zlib = True
+
         # Frequency of the input data: usually monthly
         self.time_frequency_inputdata = "month"  # Possible options: "month", "hour", "5days"
 
@@ -302,13 +309,13 @@ class Model2romsConfig(object):
             compile.compileallgfortran()
 
         if self.create_atmos_forcing or self.create_ocean_forcing:
-            if self.use_esmf:
-                try:
-                    import ESMF
-                except ImportError:
-                    raise ImportError("Unable to import ESMF")
-                logging.info('[M2R_configRunM2R] Starting logfile for ESMF')
-                ESMF.Manager(debug=True)
+
+            try:
+                import ESMF
+            except ImportError:
+                raise ImportError("Unable to import ESMF")
+            logging.info('[M2R_configRunM2R] Starting logfile for ESMF')
+            ESMF.Manager(debug=True)
 
             # Create the grid object for the output grid
             self.grdROMS = grd.Grd("ROMS", self)

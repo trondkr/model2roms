@@ -202,8 +202,8 @@ def get_time(confM2R, year, month, day, ntime):
     # Now open the input file and get the time
     cdf = Dataset(filename)
     jdref = date2num(datetime(1948, 1, 1),
-                     cdf.variables["time"].units,
-                     calendar=cdf.variables["time"].calendar)
+                     units="days since 1948-01-01 00:00:00",
+                     calendar="standard")
 
     if confM2R.ocean_indata_type == 'SODA3_5DAY':
         currentdate = datetime(year, month, day)
@@ -213,14 +213,13 @@ def get_time(confM2R, year, month, day, ntime):
     else:
         # Find the day and month that the GLORYS file represents based on the year and ID number.
         # Each file represents a 1 month average.
-        calendar = cdf.variables["time"].calendar
+        # calendar = cdf.variables["time"].calendar
         units = cdf.variables["time"].units
         currentdate = datetime(year, month, day)
-        jd = date2num(currentdate, units, calendar=calendar)
+        jd = date2num(currentdate, units="days since 1948-01-01 00:00:00", calendar="standard")
 
     confM2R.grdROMS.time = (jd - jdref)
     confM2R.grdROMS.reftime = jdref
-    print("UNITS", units, currentdate)
     confM2R.grdROMS.timeunits = units
     cdf.close()
     logging.info("-------------------------------")
@@ -234,30 +233,30 @@ def get_3d_data(confM2R, varname, year, month, day, timecounter):
 
     # The variable splitExtract is defined in IOsubset.py and depends on the orientation
     # and ocean_indata_type of grid (-180-180 or 0-360). Assumes regular grid.
-    if confM2R.use_esmf:
-        filename = fc.get_filename(confM2R, year, month, day, confM2R.input_varnames[varN])
-        try:
-            cdf = Dataset(filename)
-        except:
-            logging.error("[M2R_model2roms] Unable to open input file {}".format(filename))
-            return
 
-        if confM2R.ocean_indata_type == "SODA3":
-            data = cdf.variables[confM2R.input_varnames[varN]][month - 1, :, :, :]
-            data = np.where(data.mask, confM2R.fillvaluein, data)
+    filename = fc.get_filename(confM2R, year, month, day, confM2R.input_varnames[varN])
+    try:
+        cdf = Dataset(filename)
+    except:
+        logging.error("[M2R_model2roms] Unable to open input file {}".format(filename))
+        return
 
-        if confM2R.ocean_indata_type == "NORESM":
-            # For NorESM data - all data is in one big file so we need the timecounter to access correct data
-            myunits = cdf.variables[str(confM2R.input_varnames[varN])].units
-            data = np.squeeze(cdf.variables[str(confM2R.input_varnames[varN])][timecounter, :, :, :])
-            data = np.where(data.mask, confM2R.fillvaluein, data)
+    if confM2R.ocean_indata_type == "SODA3":
+        data = cdf.variables[confM2R.input_varnames[varN]][month - 1, :, :, :]
+        data = np.where(data.mask, confM2R.fillvaluein, data)
 
-        if confM2R.ocean_indata_type == "GLORYS":
-            myunits = cdf.variables[str(confM2R.input_varnames[varN])].units
-            data = np.squeeze(cdf.variables[str(confM2R.input_varnames[varN])][0, :, :, :])
-            data = np.where(data.mask, confM2R.fillvaluein, data)
+    if confM2R.ocean_indata_type == "NORESM":
+        # For NorESM data - all data is in one big file so we need the timecounter to access correct data
+        myunits = cdf.variables[str(confM2R.input_varnames[varN])].units
+        data = np.squeeze(cdf.variables[str(confM2R.input_varnames[varN])][timecounter, :, :, :])
+        data = np.where(data.mask, confM2R.fillvaluein, data)
 
-        cdf.close()
+    if confM2R.ocean_indata_type == "GLORYS":
+        myunits = cdf.variables[str(confM2R.input_varnames[varN])].units
+        data = np.squeeze(cdf.variables[str(confM2R.input_varnames[varN])][0, :, :, :])
+        data = np.where(data.mask, confM2R.fillvaluein, data)
+
+    cdf.close()
 
     if varname == 'temperature' and confM2R.ocean_indata_type in ["GLORYS", "NORESM"]:
 
@@ -279,54 +278,52 @@ def get_3d_data(confM2R, varname, year, month, day, timecounter):
 def get_2d_data(confM2R, myvar, year, month, day, timecounter):
     varN = confM2R.global_varnames.index(myvar)
 
-    if confM2R.use_esmf:
+    if confM2R.set_2d_vars_to_zero and confM2R.input_varnames[varN] in ['ageice', 'uice',
+                                                                        'vice',
+                                                                        'aice',
+                                                                        'hice',
+                                                                        'hs']:
+        return np.zeros((np.shape(confM2R.grdMODEL.lon)))
+    else:
+        filename = fc.get_filename(confM2R, year, month, day, confM2R.input_varnames[varN])
+        try:
+            cdf = Dataset(filename)
+        except:
+            logging.error("[M2R_model2roms] Unable to open input file {}".format(filename))
+            return
 
-        if confM2R.set_2d_vars_to_zero and confM2R.input_varnames[varN] in ['ageice', 'uice',
-                                                                            'vice',
-                                                                            'aice',
-                                                                            'hice',
-                                                                            'hs']:
-            return np.zeros((np.shape(confM2R.grdMODEL.lon)))
-        else:
-            filename = fc.get_filename(confM2R, year, month, day, confM2R.input_varnames[varN])
-            try:
-                cdf = Dataset(filename)
-            except:
-                logging.error("[M2R_model2roms] Unable to open input file {}".format(filename))
-                return
+        if confM2R.ocean_indata_type in ["SODA", "SODA3_5DAY"]:
+            data = cdf.variables[confM2R.input_varnames[varN]][0, :, :]
 
-            if confM2R.ocean_indata_type in ["SODA", "SODA3_5DAY"]:
-                data = cdf.variables[confM2R.input_varnames[varN]][0, :, :]
+        if confM2R.ocean_indata_type == "SODA3":
+            if myvar == 'aice':
+                # We only extract the first thickness concentration. Need to fix this so all 5 classes can be extracted.
+                # http://www.atmos.umd.edu/~ocean/index_files/soda3_readme.htm
+                # hi: sea ice thickness [m ice]
+                # mi: sea ice mass [kg/m^2]
+                # hs: snow thickness [m snow]
+                # {cn1,cn2,cn3,cn4,cn5}: sea ice concentration [0:1] in five ice thickness classes
+                data = cdf.variables[confM2R.input_varnames[varN]][int(month - 1), 0, :, :]
+            else:
+                data = cdf.variables[confM2R.input_varnames[varN]][int(month - 1), :, :]
 
-            if confM2R.ocean_indata_type == "SODA3":
-                if myvar == 'aice':
-                    # We only extract the first thickness concentration. Need to fix this so all 5 classes can be extracted.
-                    # http://www.atmos.umd.edu/~ocean/index_files/soda3_readme.htm
-                    # hi: sea ice thickness [m ice]
-                    # mi: sea ice mass [kg/m^2]
-                    # hs: snow thickness [m snow]
-                    # {cn1,cn2,cn3,cn4,cn5}: sea ice concentration [0:1] in five ice thickness classes
-                    data = cdf.variables[confM2R.input_varnames[varN]][int(month - 1), 0, :, :]
-                else:
-                    data = cdf.variables[confM2R.input_varnames[varN]][int(month - 1), :, :]
+        if confM2R.ocean_indata_type == "NORESM" and confM2R.set_2d_vars_to_zero is False:
+            # myunits = cdf.variables[str(grdROMS.varNames[varN])].units
+            # For NORESM data are 12 months of data stored in ice files. Use ID as month indicator to get data.
+            data = np.squeeze(cdf.variables[str(confM2R.input_varnames[varN])][timecounter, :, :])
+            data = np.where(data.mask, confM2R.grdROMS.fillval, data)
 
-            if confM2R.ocean_indata_type == "NORESM" and confM2R.set_2d_vars_to_zero is False:
-                # myunits = cdf.variables[str(grdROMS.varNames[varN])].units
-                # For NORESM data are 12 months of data stored in ice files. Use ID as month indicator to get data.
-                data = np.squeeze(cdf.variables[str(confM2R.input_varnames[varN])][timecounter, :, :])
-                data = np.where(data.mask, confM2R.grdROMS.fillval, data)
+        if confM2R.ocean_indata_type == "GLORYS":
+            data = np.squeeze(cdf.variables[str(confM2R.input_varnames[varN])][0, :, :])
+            data = np.where(data.mask, confM2R.grdROMS.fillval, data)
 
-            if confM2R.ocean_indata_type == "GLORYS":
-                data = np.squeeze(cdf.variables[str(confM2R.input_varnames[varN])][0, :, :])
-                data = np.where(data.mask, confM2R.grdROMS.fillval, data)
+        if not confM2R.set_2d_vars_to_zero:
+            cdf.close()
 
-            if not confM2R.set_2d_vars_to_zero:
-                cdf.close()
-
-            if __debug__ and not confM2R.set_2d_vars_to_zero:
-                logging.info("[M2R_model2roms] Data range of {} just after extracting from netcdf "
-                             "file: {:3.3f}-{:3.3f}".format(str(confM2R.input_varnames[varN]),
-                                                            float(data.min()), float(data.max())))
+        if __debug__ and not confM2R.set_2d_vars_to_zero:
+            logging.info("[M2R_model2roms] Data range of {} just after extracting from netcdf "
+                         "file: {:3.3f}-{:3.3f}".format(str(confM2R.input_varnames[varN]),
+                                                        float(data.min()), float(data.max())))
     return data
 
 

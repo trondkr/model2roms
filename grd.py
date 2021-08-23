@@ -72,18 +72,18 @@ class Grd:
                 self.lon, self.lat = np.meshgrid(self.lon, self.lat)
 
             # Create grid for ESMF interpolation
-            if confM2R.use_esmf:
-                self.esmfgrid = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
-                                          is_sphere=True, coord_names=[str(confM2R.lon_name), str(confM2R.lat_name)],
-                                          add_mask=False)
-                self.esmfgrid_u = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
-                                            is_sphere=True,
-                                            coord_names=[str(confM2R.lon_name_u), str(confM2R.lat_name_u)],
-                                            add_mask=False)
-                self.esmfgrid_v = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
-                                            is_sphere=True,
-                                            coord_names=[str(confM2R.lon_name_v), str(confM2R.lat_name_v)],
-                                            add_mask=False)
+
+            self.esmfgrid = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
+                                      is_sphere=True, coord_names=[str(confM2R.lon_name), str(confM2R.lat_name)],
+                                      add_mask=False)
+            self.esmfgrid_u = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
+                                        is_sphere=True,
+                                        coord_names=[str(confM2R.lon_name_u), str(confM2R.lat_name_u)],
+                                        add_mask=False)
+            self.esmfgrid_v = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
+                                        is_sphere=True,
+                                        coord_names=[str(confM2R.lon_name_v), str(confM2R.lat_name_v)],
+                                        add_mask=False)
 
             if confM2R.ocean_indata_type == 'SODA3':
                 self.fillval = -1.e+20
@@ -286,19 +286,18 @@ class Grd:
             # Setup the vertical coordinate system
             IOverticalGrid.calculateVgrid(self)
 
-            if (confM2R.use_esmf):
-                self.esmfgrid_u = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
-                                            coord_names=['lon_u', 'lat_u'],
-                                            is_sphere=True,
-                                            add_mask=False)
-                self.esmfgrid_v = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
-                                            is_sphere=True,
-                                            coord_names=['lon_v', 'lat_v'],
-                                            add_mask=False)
-                self.esmfgrid = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
-                                          is_sphere=True,
-                                          coord_names=[self.lonname, self.latname],
-                                          add_mask=False)
+            self.esmfgrid_u = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
+                                        coord_names=['lon_u', 'lat_u'],
+                                        is_sphere=True,
+                                        add_mask=False)
+            self.esmfgrid_v = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
+                                        is_sphere=True,
+                                        coord_names=['lon_v', 'lat_v'],
+                                        add_mask=False)
+            self.esmfgrid = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
+                                      is_sphere=True,
+                                      coord_names=[self.lonname, self.latname],
+                                      add_mask=False)
 
     def getdims(self):
         if self.type in ["ROMS"]:
