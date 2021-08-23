@@ -81,7 +81,6 @@ Before you run model2roms you have to edit the configuration file `configM2R.py`
 gridfile, the type of forcing you want and the variables to use.
 
 Once everything is correctly setup you can run model2roms with the command:
-
 ```python
 python
 runM2R.py
