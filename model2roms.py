@@ -358,7 +358,7 @@ def convert_MODEL2ROMS(confM2R):
             days = datetimeFunctions.create_list_of_days(confM2R, year, month, first_run)
 
             for day in days:
-                # Get the current date for given timestep 
+                # Get the current date for given time-step
                 get_time(confM2R, year, month, day, time_counter)
 
                 # Each MODEL file consist only of one time step. Get the subset data selected, and
@@ -404,10 +404,9 @@ def convert_MODEL2ROMS(confM2R):
                         SSHdata = array1[0, :, :]
 
                         SSHdata = np.where(confM2R.grdROMS.mask_rho == 0, confM2R.grdROMS.fillval, SSHdata)
-                        SSHdata = np.where(abs(SSHdata) > 100, confM2R.grdROMS.fillval, SSHdata)
-                        SSHdata = np.where(abs(SSHdata) == 0, confM2R.grdROMS.fillval, SSHdata)
+                        SSHdata = np.where((abs(SSHdata) > 100) | (SSHdata == 0), confM2R.grdROMS.fillval, SSHdata)
 
-                        # Specific for ROMs. We set 0 where we should have fillvalue for ice otherwise ROMS blows up.
+                        # Specific for ROMS - we set 0 where we should have fillvalue for ice otherwise ROMS blows up.
                         SSHdata = np.where(abs(SSHdata) == confM2R.grdROMS.fillval, 0, SSHdata)
 
                         IOwrite.write_clim_file(confM2R, time_counter, myvar, SSHdata)
@@ -427,16 +426,13 @@ def convert_MODEL2ROMS(confM2R):
                             mymask = confM2R.grdROMS.mask_v
 
                         SSHdata = np.where(mymask == 0, confM2R.grdROMS.fillval, SSHdata)
-                        SSHdata = np.where(abs(SSHdata) > 100, confM2R.grdROMS.fillval, SSHdata)
-                        SSHdata = np.where(abs(SSHdata) == 0, confM2R.grdROMS.fillval, SSHdata)
+                        SSHdata = np.where((abs(SSHdata) > 100) | (SSHdata == 0), confM2R.grdROMS.fillval, SSHdata)
                         SSHdata = np.where(abs(SSHdata) == confM2R.grdROMS.fillval, 0, SSHdata)
 
                         IOwrite.write_clim_file(confM2R, time_counter, myvar, SSHdata)
 
                         if time_counter == confM2R.grdROMS.inittime:
-                            if myvar == 'uice':
-                                IOinitial.create_init_file(confM2R, time_counter, myvar, SSHdata)
-                            if myvar == 'vice':
+                            if myvar in ['uice', 'vice']:
                                 IOinitial.create_init_file(confM2R, time_counter, myvar, SSHdata)
 
                     if myvar == 'uvel':
