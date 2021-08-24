@@ -461,8 +461,7 @@ def write_clim_file(confM2R, ntime, myvar, data1=None, data2=None, data3=None, d
 
     if confM2R.isclimatology is False:
         if myvar == confM2R.global_varnames[0]:
-            unit = grdROMS.timeunits.split(" ")[0]
-            print("time units ", grdROMS.timeunits, unit)
+            print("time units ", grdROMS.timeunits)
 
             # Convert the units from the datasource into seconds
             secs_per_unit = {"seconds": 1, "hours": 3600, "days": 86400}[unit]
@@ -471,6 +470,7 @@ def write_clim_file(confM2R, ntime, myvar, data1=None, data2=None, data3=None, d
             d = num2date(grdROMS.time * secs_per_unit, units=grdROMS.timeunits,
                          calendar=f1.variables['ocean_time'].calendar)
             grdROMS.message = d
+            print("Identified secs_per_unit: {} date: {} time: {}".format(secs_per_unit, d, grdROMS.time))
 
         if myvar == 'temperature':
             f1.variables['temp'][ntime, :, :, :] = data1
