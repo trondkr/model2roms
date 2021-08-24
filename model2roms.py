@@ -220,7 +220,7 @@ def get_time(confM2R, year, month, day, ntime):
 
     confM2R.grdROMS.time = (jd - jdref)
     confM2R.grdROMS.reftime = jdref
-    confM2R.grdROMS.timeunits = units
+    confM2R.grdROMS.timeunits = "days since 1948-01-01 00:00:00"
     cdf.close()
     logging.info("-------------------------------")
     logging.info('Current time of {} file : {}'.format(confM2R.ocean_indata_type,
