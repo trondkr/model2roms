@@ -11,13 +11,14 @@ import grd
 __author__ = 'Trond Kristiansen'
 __email__ = 'trond.kristiansen@niva.no'
 __created__ = datetime(2009, 1, 30)
-__modified__ = datetime(2021, 7, 27)
+__modified__ = datetime(2021, 11, 13)
 __version__ = "1.6"
 __status__ = "Development"
 
 
 # Changelog:
 # 27.07.2021 - Added option for running Hardangerfjord 160 m model
+# 13.11.2021 - Added option for using SODA 3.4.2 as input
 
 class Model2romsConfig(object):
 
@@ -86,7 +87,6 @@ class Model2romsConfig(object):
 
     # Define the corresponding name of the variables in the input dataset files. This list needs to correspond
     # exactly with the list given in the function define_global_varnames:
-
     def define_input_data_varnames(self):
         return {'SODA3': ['temp', 'salt', 'ssh', 'u', 'v'],
                 'SODA3_5DAY': ['temp', 'salt', 'ssh', 'u', 'v'],
@@ -98,9 +98,9 @@ class Model2romsConfig(object):
     # Define the path to where the  ROMS grid can be found
     def define_roms_grid_path(self):
         try:
-            return {'A20': '/Users/trondkr/Dropbox/NIVA/A20/Grid/roms12_9km.nc',
+            return {'A20': '../oceanography/A20/Grid/A20niva_grd_v1.nc',
                     'ROHO160': '../oceanography/NAUTILOS/Grid/norfjords_160m_grid.nc_A04.nc',
-                    'ROHO800': '/Users/trondkr/Dropbox/NIVA/ROHO800/Grid/ROHO800_grid_fix3.nc'}[self.outgrid_name]
+                    'ROHO800': '../oceanography/ROHO800/Grid/ROHO800_grid_fix3.nc'}[self.outgrid_name]
         except KeyError:
             return KeyError
 
@@ -108,11 +108,12 @@ class Model2romsConfig(object):
     def define_abbreviation(self):
         return {"A20": "a20",
                 "Antarctic": "Antarctic",
-                "ROHO160": "roho160"}[self.outgrid_name]
+                "ROHO160": "roho160",
+                "ROHO800": "roho800"}[self.outgrid_name]
 
     def define_ocean_forcing_data_path(self):
         try:
-            return {'SODA3': "/Volumes/DATASETS/SODA3.3.1/OCEAN/",
+            return {'SODA3': "../oceanography/copernicus-marine-data/SODA3.4.2/",
                     'SODA3_5DAY': "/Volumes/DATASETS/SODA2002/",  # "/cluster/projects/nn9297k/SODA3.3.2/",
                     'NORESM': "/cluster/projects/nn9412k/A20/FORCING/RCP85_ocean/",
                     'GLORYS': "../oceanography/copernicus-marine-data/Global/"}[self.ocean_indata_type]
@@ -182,18 +183,16 @@ class Model2romsConfig(object):
         # Frequency of the input data: usually monthly
         self.time_frequency_inputdata = "month"  # Possible options: "month", "hour", "5days"
 
-        # Path to where results files should be stored
-        self.outdir = "../oceanography/NAUTILOS/"
-        if not os.path.exists(self.outdir):
-            os.makedirs(self.outdir, exist_ok=True)
-
         # IN GRIDTYPES ------------------------------------------------------------------------------
         # Define what grid type you want to interpolate from (input MODEL data)
         # Currently supported options:
         # 1. NORESM, 2. GLORYS, 3. SODA3, 4. SODA3_5DAY
-        self.ocean_indata_type = 'GLORYS'
+        self.ocean_indata_type = 'SODA3'
         self.atmos_indata_type = 'ERA5'
-
+        
+        if self.ocean_indata_type == "SODA3":
+            self.soda_version="3.4.2"
+            
         # Define contact info for final NetCDF files
         self.author_name = "Trond Kristiansen"
         self.author_email = "trond.kristiansen (at) niva.no"
@@ -217,7 +216,7 @@ class Model2romsConfig(object):
         self.lon_name_v = "longitude"
         self.lat_name_v = "latitude"
 
-        if self.ocean_indata_type == 'SODA3_5DAY':
+        if self.ocean_indata_type in ['SODA3_5DAY','SODA3']:
             self.lon_name = "xt_ocean"
             self.lat_name = "yt_ocean"
             self.depth_name = "st_ocean"
@@ -229,21 +228,26 @@ class Model2romsConfig(object):
 
         self.time_name = "time"
         self.realm = "ocean"
-        self.fillvaluein = -32767
+        self.fillvaluein = -1.e20
 
         # OUT GRIDTYPES ------------------------------------------------------------------------------
         # Define what grid type you want to interpolate to
         # Options: This is just the name of your grid used to identify your selection later
-        self.outgrid_name = 'ROHO160'  # "ROHO800", "A20"
+        self.outgrid_name = 'A20'  # "ROHO800", "A20", "ROHO160"
         self.outgrid_type = "ROMS"
-
+        
+        # Path to where results files should be stored defined by grid name
+        self.outdir = "../oceanography/{}/".format(self.outgrid_name)
+        if not os.path.exists(self.outdir):
+            os.makedirs(self.outdir, exist_ok=True)
+            
         # Subset input data. If you have global data you may want to seubset these to speed up reading. Make
         # sure that your input data are cartesian (0-360 or -180:180, -90:90)
         self.subset_indata = False
         if self.subset_indata:
             self.subset = self.define_subset_for_indata()
 
-        # Define nmber of output depth levels
+        # Define number of output depth levels
         self.nlevels = 40
         # Define the grid stretching properties (leave default if uncertain what to pick)
         self.vstretching = 4
@@ -267,10 +271,10 @@ class Model2romsConfig(object):
 
         # DATE AND TIME DETAILS ---------------------------------------------------------
         # Define the period to create forcing for
-        self.start_year = 2017
-        self.end_year = 2019
+        self.start_year = 1980
+        self.end_year = 2020
         self.start_month = 1
-        self.end_month = 11
+        self.end_month = 12
         self.start_day = 15
         self.end_day = 31
 
