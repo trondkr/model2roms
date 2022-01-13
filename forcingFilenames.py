@@ -47,10 +47,10 @@ def getNORESMfilename(confM2R, year, month, myvar):
 
 def getSODA3filename(confM2R, year, month, day, myvar):
     if (myvar in ['cn', 'hi', 'hs']):
-        return confM2R.ocean_forcing_path + "soda3.3.1_mn_ice_reg_" + str(year) + ".nc"
+        return "{}soda{}_mn_ice_reg_{}.nc".format(confM2R.ocean_forcing_path, confM2R.soda_version, str(year))
     else:
-        return confM2R.ocean_forcing_path + "soda3.3.1_mn_ocean_reg_" + str(year) + ".nc"
-
+        return "{}soda{}_mn_ocean_reg_{}.nc".format(confM2R.ocean_forcing_path, confM2R.soda_version, str(year))
+       
 
 def getSODA3_5DAYfilename(confM2R, year, month, day, myvar):
     if len(confM2R.time_object) == 0:
@@ -64,8 +64,10 @@ def getSODA3_5DAYfilename(confM2R, year, month, day, myvar):
                        calendar=confM2R.time_object.calendar)
 
     if (myvar in ['cn', 'hi', 'hs']):
-        return '{}soda3.3.2_5dy_ocean_ice_{:04}_{:02}_{:02}.nc'.format(confM2R.ocean_forcing_path, seldate.year,
-                                                                       seldate.month, seldate.day)
+        return "{}soda{}_5dy_ocean_ice_{:04}_{:02}_{:02}.nc".format(confM2R.ocean_forcing_path, confM2R.soda_version, 
+                                                                    seldate.year,
+                                                                    seldate.month, seldate.day)
     else:
-        return '{}soda3.3.2_5dy_ocean_reg_{:04}_{:02}_{:02}.nc'.format(confM2R.ocean_forcing_path, seldate.year,
-                                                                       seldate.month, seldate.day)
+        return "{}soda{}_5dy_ocean_reg_{:04}_{:02}_{:02}.nc".format(confM2R.ocean_forcing_path, confM2R.soda_version, 
+                                                                    seldate.year,
+                                                                    seldate.month, seldate.day)
