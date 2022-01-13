@@ -13,6 +13,8 @@ Data/**
 Literature/**
 results/**
 Figures/**
+.mypy/**
+*json*
 __pycache__/*
 __pycache__
 .ipynb_checkpoints
