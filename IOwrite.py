@@ -1,6 +1,7 @@
 import os
 import time
 from datetime import datetime
+import logging
 
 import numpy as np
 from netCDF4 import Dataset
@@ -36,7 +37,7 @@ def write_clim_file(confM2R, ntime, myvar, data1=None, data2=None, data3=None, d
         myzlib = False
 
     grdROMS = confM2R.grdROMS
-
+   
     if confM2R.grdROMS.ioClimInitialized is False:
         confM2R.grdROMS.ioClimInitialized = True
         if os.path.exists(confM2R.clim_name):
@@ -461,17 +462,16 @@ def write_clim_file(confM2R, ntime, myvar, data1=None, data2=None, data3=None, d
 
     if confM2R.isclimatology is False:
         if myvar == confM2R.global_varnames[0]:
-            print("time units ", grdROMS.timeunits, grdROMS.time)
-
-            unit = grdROMS.timeunits.split(" ")[0]
+           
+            unit = confM2R.grdMODEL.timeunits.split(" ")[0]
             # Convert the units from the datasource into seconds
             secs_per_unit = {"seconds": 1, "hours": 3600, "days": 86400}[unit]
-            f1.variables['ocean_time'][ntime] = grdROMS.time * secs_per_unit
+            f1.variables['ocean_time'][ntime] = confM2R.grdROMS.time * secs_per_unit
 
             d = num2date(grdROMS.time, units=grdROMS.timeunits,
                          calendar=f1.variables['ocean_time'].calendar)
             grdROMS.message = d
-            print("Identified secs_per_unit: {} date: {} time: {}".format(secs_per_unit, d, grdROMS.time))
+            logging.info(f"[M2R_IOWrite] ==> Identified secs_per_unit: {secs_per_unit} date: {d} time: {grdROMS.time}")
 
         if myvar == 'temperature':
             f1.variables['temp'][ntime, :, :, :] = data1

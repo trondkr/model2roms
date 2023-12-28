@@ -1,0 +1,18 @@
+INFO:root:[M2R_run] Initialized logging
+INFO:root:[M2R_run] Started model2roms
+INFO:root:[M2R_run] --------------------------
+
+INFO:root:[M2R_run]==> Started Thu Dec 28 17:41:25 2023
+INFO:root:[M2R_configM2R]
+=> Conversions run from year/month: 1997/1 to 2020/12
+INFO:root:[M2R_configM2R]==> The following variables will be interpolated: ['temperature', 'salinity', 'ssh', 'uvel', 'vvel']
+INFO:root:[M2R_configM2R] => All horisontal interpolations will be done using ESMF
+INFO:root:[M2R_configM2R] => Output files are written in format: NETCDF4
+INFO:root:[M2R_configM2R] => Output grid file is: Grids/ROHO800_grid_fix5.nc
+INFO:root:[M2R_configRunM2R]==> Starting logfile for ESMF
+INFO:root:[M2R_grd] => Creating init for grid object ROHO800
+INFO:root:[M2R_grd] => Initialized GRD object for grid type ROMS
+
+INFO:root:[M2R_grd] => Creating init for grid object ROHO800
+INFO:root:[M2R_grd] => Initialized GRD object for grid type FORCINGDATA
+

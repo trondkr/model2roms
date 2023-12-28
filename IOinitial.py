@@ -412,8 +412,12 @@ def create_init_file(confM2R, ntime, var, data1=None, data2=None, data3=None, da
     ntime = 0
     if grdROMS.timeunits[0:7] == "seconds":
         f1.variables['ocean_time'][ntime] = grdROMS.time
-    else:
+    elif grdROMS.timeunits[0:4] == "hours":
+        f1.variables['ocean_time'][ntime] = grdROMS.time * 3600.0
+    elif grdROMS.timeunits[0:4] == "days":
         f1.variables['ocean_time'][ntime] = grdROMS.time * 86400.0
+    else:
+        Exception("Unknown time units in grdROMS.timeunits")
 
     if var.lower() == 'temperature':
         f1.variables['temp'][ntime, :, :, :] = data1

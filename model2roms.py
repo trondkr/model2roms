@@ -7,7 +7,7 @@ import barotropic
 import interpolation as interp
 import numpy as np
 from netCDF4 import Dataset, date2num
-
+import pandas as pd
 import IOinitial
 import IOsubset
 import IOwrite
@@ -182,6 +182,9 @@ def get_time(confM2R, year, month, day, ntime):
     Create a date object to keep track of Julian dates etc.
     Also create a reference date starting at 1948/01/01.
     Go here to check results:http://lena.gsfc.nasa.gov/lenaDEV/html/doy_conv.html
+    
+    Note: the time_object is used mostly by the SODA_5DAY files and can be hard coded for 
+    other files. The time_object is used to get the correct file for the given date.
     """
 
     if confM2R.ocean_indata_type == 'SODA3':
@@ -200,7 +203,23 @@ def get_time(confM2R, year, month, day, ntime):
         filename = fc.getNORESMfilename(confM2R, year, month, "salnlvl")
 
     # Now open the input file and get the time
-    cdf = Dataset(filename)
+    if confM2R.use_zarr:
+        if "so" in confM2R.all_ds:
+            cdf = confM2R.all_ds["so"]
+            cdf = cdf.sel(time=f"{year}-{month}-{day}", method="nearest")
+            logging.error("[M2R_model2roms] Opened existing zarr dataset for so")
+        else:
+            try:
+                cdf_full = confM2R.open_zarr("so")
+                cdf_full = cdf_full.sel(longitude=slice(confM2R.subset[2], confM2R.subset[3]),
+                            latitude=slice(confM2R.subset[0], confM2R.subset[1]))
+                
+                confM2R.all_ds["so"] = cdf_full
+                cdf = cdf_full.sel(time=f"{year}-{month}-{day}", method="nearest")
+            except:
+                logging.error("[M2R_model2roms] Unable to open input file {}".format(filename))
+    else:
+        cdf = Dataset(filename)
     jdref = date2num(datetime(1948, 1, 1),
                      units="days since 1948-01-01 00:00:00",
                      calendar="standard")
@@ -210,6 +229,11 @@ def get_time(confM2R, year, month, day, ntime):
         units = confM2R.time_object.units
         jd = date2num(currentdate, units=confM2R.time_object.units, calendar=confM2R.time_object.calendar)
 
+    elif confM2R.ocean_indata_type == 'GLORYS':
+        currentdate = pd.to_datetime(str(cdf["time"].values))
+        units = "days since 1948-01-01 00:00:00"
+        jd = date2num(currentdate, units=units, calendar="standard")
+        confM2R.grdMODEL.timeunits = units
     else:
         # Find the day and month that the GLORYS file represents based on the year and ID number.
         # Each file represents a 1 month average.
@@ -221,10 +245,10 @@ def get_time(confM2R, year, month, day, ntime):
     confM2R.grdROMS.time = (jd - jdref)
     confM2R.grdROMS.reftime = jdref
     confM2R.grdROMS.timeunits = "days since 1948-01-01 00:00:00"
+    print("confM2R.grdROMS.timeunits ",confM2R.grdROMS.timeunits )
     cdf.close()
     logging.info("-------------------------------")
-    logging.info('Current time of {} file : {}'.format(confM2R.ocean_indata_type,
-                                                         currentdate))
+    logging.info(f'Current time of {confM2R.ocean_indata_type} file : {currentdate}')
     logging.info("-------------------------------")
 
 
@@ -233,14 +257,31 @@ def get_3d_data(confM2R, varname, year, month, day, timecounter):
 
     # The variable splitExtract is defined in IOsubset.py and depends on the orientation
     # and ocean_indata_type of grid (-180-180 or 0-360). Assumes regular grid.
-
+    
     filename = fc.get_filename(confM2R, year, month, day, confM2R.input_varnames[varN])
-    try:
-        cdf = Dataset(filename)
-    except:
-        logging.error("[M2R_model2roms] Unable to open input file {}".format(filename))
-        return
-
+    
+    if confM2R.use_zarr:
+        
+        if confM2R.input_varnames[varN] in confM2R.all_ds:
+            cdf = confM2R.all_ds[confM2R.input_varnames[varN]]
+            cdf = cdf.sel(time=f"{year}-{month}-{day}", method="nearest")
+            logging.info(f"[M2R_model2roms] Opened existing zarr dataset for {confM2R.input_varnames[varN]}")
+        else:
+            try:
+                cdf_full = confM2R.open_zarr(confM2R.input_varnames[varN])
+                cdf_full = cdf_full.sel(longitude=slice(confM2R.subset[2], confM2R.subset[3]),
+                            latitude=slice(confM2R.subset[0], confM2R.subset[1]))
+                
+                confM2R.all_ds[confM2R.input_varnames[varN]] = cdf_full
+                cdf = cdf_full.sel(time=f"{year}-{month}-{day}", method="nearest")
+            except:
+                logging.error("[M2R_model2roms] Unable to open input file {}".format(filename))
+    else:
+        try:
+            cdf = Dataset(filename)
+        except:
+            logging.error("[M2R_model2roms] Unable to open input file {}".format(filename))
+    
     if confM2R.ocean_indata_type == "SODA3":
         data = cdf.variables[confM2R.input_varnames[varN]][month - 1, :, :, :]
         data = np.where(data.mask, confM2R.fillvaluein, data)
@@ -252,11 +293,16 @@ def get_3d_data(confM2R, varname, year, month, day, timecounter):
         data = np.where(data.mask, confM2R.fillvaluein, data)
 
     if confM2R.ocean_indata_type == "GLORYS":
-        myunits = cdf.variables[str(confM2R.input_varnames[varN])].units
-        data = np.squeeze(cdf.variables[str(confM2R.input_varnames[varN])][0, :, :, :])
-        data = np.where(data.mask, confM2R.fillvaluein, data)
+        if confM2R.use_zarr:
+            myunits = cdf[str(confM2R.input_varnames[varN])].units
+            data = np.squeeze(cdf[str(confM2R.input_varnames[varN])].to_numpy())
+            data = np.where(np.isnan(data), confM2R.fillvaluein, data)
+        else:
+            myunits = cdf.variables[str(confM2R.input_varnames[varN])].units
+            data = np.squeeze(cdf.variables[str(confM2R.input_varnames[varN])][0, :, :, :])
+            data = np.where(data.mask, confM2R.fillvaluein, data)
 
-    cdf.close()
+    #cdf.close()
 
     if varname == 'temperature' and confM2R.ocean_indata_type in ["GLORYS", "NORESM"]:
 
@@ -285,12 +331,24 @@ def get_2d_data(confM2R, myvar, year, month, day, timecounter):
                                                                         'hs']:
         return np.zeros((np.shape(confM2R.grdMODEL.lon)))
     else:
-        filename = fc.get_filename(confM2R, year, month, day, confM2R.input_varnames[varN])
-        try:
+        if confM2R.use_zarr:
+            if confM2R.input_varnames[varN] in confM2R.all_ds:
+                cdf = confM2R.all_ds[confM2R.input_varnames[varN]]
+                cdf = cdf.sel(time=f"{year}-{month}-{day}", method="nearest")
+                logging.info(f"[M2R_model2roms] Opened existing zarr dataset for {confM2R.input_varnames[varN]}")
+            else:
+                try:
+                    cdf_full = confM2R.open_zarr(confM2R.input_varnames[varN])
+                    cdf_full = cdf_full.sel(longitude=slice(confM2R.subset[2], confM2R.subset[3]),
+                                latitude=slice(confM2R.subset[0], confM2R.subset[1]))
+                    
+                    confM2R.all_ds[confM2R.input_varnames[varN]] = cdf_full
+                    cdf = cdf_full.sel(time=f"{year}-{month}-{day}", method="nearest")
+                except:
+                    logging.error("[M2R_model2roms] Unable to open input file {}".format(filename))
+        else:
+            filename = fc.get_filename(confM2R, year, month, day, confM2R.input_varnames[varN])
             cdf = Dataset(filename)
-        except:
-            logging.error("[M2R_model2roms] Unable to open input file {}".format(filename))
-            return
 
         if confM2R.ocean_indata_type in ["SODA", "SODA3_5DAY"]:
             data = cdf.variables[confM2R.input_varnames[varN]][0, :, :]
@@ -314,16 +372,25 @@ def get_2d_data(confM2R, myvar, year, month, day, timecounter):
             data = np.where(data.mask, confM2R.grdROMS.fillval, data)
 
         if confM2R.ocean_indata_type == "GLORYS":
-            data = np.squeeze(cdf.variables[str(confM2R.input_varnames[varN])][0, :, :])
-            data = np.where(data.mask, confM2R.grdROMS.fillval, data)
+            if confM2R.use_zarr:
+                myunits = cdf[str(confM2R.input_varnames[varN])].units
+                data = np.squeeze(cdf[str(confM2R.input_varnames[varN])].to_numpy())
+                data = np.where(np.isnan(data), confM2R.fillvaluein, data)
+
+            else:
+                data = np.squeeze(cdf.variables[str(confM2R.input_varnames[varN])][0, :, :])
+                data = np.where(data.mask, confM2R.fillvaluein, data)
+
+            
+            data = np.where(data <= -32767, confM2R.grdROMS.fillval, data)
 
         if not confM2R.set_2d_vars_to_zero:
             cdf.close()
 
-        if __debug__ and not confM2R.set_2d_vars_to_zero:
-            logging.info("[M2R_model2roms] Data range of {} just after extracting from netcdf "
-                         "file: {:3.3f}-{:3.3f}".format(str(confM2R.input_varnames[varN]),
-                                                        float(data.min()), float(data.max())))
+      #  if __debug__ and not confM2R.set_2d_vars_to_zero:
+      #      logging.info("[M2R_model2roms] Data range of {} just after extracting from netcdf "
+      #                   "file: {:3.3f}-{:3.3f}".format(str(confM2R.input_varnames[varN]),
+      #                                                  float(data.min()), float(data.max())))
     return data
 
 
@@ -343,7 +410,9 @@ def convert_MODEL2ROMS(confM2R):
     if confM2R.subset_indata:
         IOsubset.find_subset_indices(confM2R.grdMODEL, min_lat=confM2R.subset[0], max_lat=confM2R.subset[1],
                                      min_lon=confM2R.subset[2], max_lon=confM2R.subset[3])
-
+    else:
+        confM2R.grdMODEL.splitExtract = False
+     
     logging.info("[M2R_model2roms] ==> Initializing done")
     logging.info("[M2R_model2roms] --------------------------")
     logging.info("[M2R_model2roms] ==> Starting loop over time")
@@ -383,7 +452,7 @@ def convert_MODEL2ROMS(confM2R):
 
                     if myvar in ['ssh', 'ageice', 'uice', 'vice', 'aice', 'hice', 'snow_thick']:
                         data = get_2d_data(confM2R, myvar, year, month, day, time_counter)
-
+                    
                     # Take the input data and horizontally interpolate to your grid
                     array1 = interp2D.do_hor_interpolation_regular_grid(confM2R, data, myvar)
 

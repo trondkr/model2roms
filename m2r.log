@@ -1,0 +1,37 @@
+INFO:root:[M2R_run] Initialized logging
+INFO:root:[M2R_run] Started model2roms
+INFO:root:[M2R_run] --------------------------
+
+INFO:root:[M2R_run]==> Started Fri Dec 22 22:02:26 2023
+INFO:root:[M2R_configM2R]
+=> Conversions run from year/month: 1997/1 to 2020/12
+INFO:root:[M2R_configM2R]==> The following variables will be interpolated: ['temperature', 'salinity', 'uvel', 'vvel']
+INFO:root:[M2R_configM2R] => All horisontal interpolations will be done using ESMF
+INFO:root:[M2R_configM2R] => Output files are written in format: NETCDF4
+INFO:root:[M2R_configM2R] => Output grid file is: Grids/ROHO800_grid_fix5.nc
+INFO:root:[M2R_configRunM2R]==> Starting logfile for ESMF
+INFO:root:[M2R_grd] => Creating init for grid object ROHO800
+INFO:root:[M2R_grd] => Initialized GRD object for grid type ROMS
+
+INFO:root:[M2R_grd] => Creating init for grid object ROHO800
+INFO:root:[M2R_grd] => Initialized GRD object for grid type FORCINGDATA
+
+INFO:root:[M2R_grd] ---> Assuming regular grid type for FORCINGDATA
+INFO:root:[M2R_grd] ---> Using dimension names longitude and latitude and depth
+INFO:root:[M2R_interp2D] ==> Creating the interpolation weights and indexes using ESMF (this may take some time....):
+INFO:root:[M2R_interp2D] ==> Source field src at RHO points
+INFO:root:[M2R_interp2D] ==> Destination field src at RHO, u, and v points
+INFO:root:[M2R_interp2D] ==> regridSrc2Dst from RHO to U, V and RHO points
+INFO:root:[M2R_model2roms] ==> Initializing done
+INFO:root:[M2R_model2roms] --------------------------
+INFO:root:[M2R_model2roms] ==> Starting loop over time
+INFO:root:-------------------------------
+INFO:root:Current time of GLORYS file : 1997-01-16 12:00:00
+INFO:root:-------------------------------
+INFO:root:[M2R_model2roms] => NOTE! Make sure that these two arrays are in sequential order:
+INFO:root:[M2R_model2roms] ==> myvars:     ['thetao', 'so', 'uo', 'vo']
+INFO:root:[M2R_model2roms] ==> varNames    ['temperature', 'salinity', 'uvel', 'vvel']
+INFO:root:[M2R_configRunM2R] 
+--------------------------
+INFO:root:[M2R_configRunM2R] ==> Area output files  : (longitude=2.77,latitude=58.40) to (longitude=7.68,latitude=61.18)
+INFO:root:[M2R_configRunM2R] ==>---> Area forcing files : (longitude=0.00,latitude=40.00) to (longitude=40.00,latitude=70.00)

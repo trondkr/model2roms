@@ -1,20 +1,11 @@
-"""
-This class creates an object based on the input file structure. Currently the class takes
-two types of structures as input: SODA or ROMS
-"""
 import logging
 from datetime import datetime
-
 import numpy as np
 import xarray as xr
-
+from zarr.convenience import consolidate_metadata
 import IOverticalGrid
-
-try:
-    import ESMF
-except ImportError:
-    print("Could not find module ESMF")
-    pass
+import xesmf as xe
+import ESMF
 
 __author__ = 'Trond Kristiansen'
 __email__ = 'me@trondkristiansen.com'
@@ -23,6 +14,10 @@ __modified__ = datetime(2021, 3, 23)
 __version__ = "1.5"
 __status__ = "Development"
 
+"""
+This class creates an object based on the input file structure. Currently the class takes
+two types of structures as input: SODA or ROMS
+"""
 
 class Grd:
 
@@ -37,8 +32,8 @@ class Grd:
         self.grdName = confM2R.outgrid_name
         self.realm = confM2R.realm
 
-        logging.info("[M2R_grd] Creating init for grid object {}".format(confM2R.outgrid_name))
-        logging.info("[M2R_grd]---> Initialized GRD object for grid type {}\n".format(self.type))
+        logging.info(f"[M2R_grd] => Creating init for grid object {confM2R.outgrid_name}")
+        logging.info(f"[M2R_grd] => Initialized GRD object for grid type {self.type}\n")
 
     def create_object(self, confM2R, grd_filename):
         """
@@ -52,15 +47,18 @@ class Grd:
 
         Trond Kristiansen, 18.11.2009, edited 03.01.2017, 23.03.2021
         """
-        ds = xr.open_dataset(grd_filename)
-
+        if self.type == 'FORCINGDATA' and confM2R.use_zarr:
+            mapper = confM2R.fs.get_mapper(grd_filename)
+            consolidate_metadata(mapper)
+            ds = xr.open_zarr(mapper, chunks={"time": 100}, consolidated=False).isel(time=0)
+            if confM2R.subset_indata:
+                ds = ds.sel(longitude=slice(confM2R.subset[2], confM2R.subset[3]),
+                            latitude=slice(confM2R.subset[0], confM2R.subset[1]))
+        else:
+            ds = xr.open_dataset(grd_filename)
         if self.type == 'FORCINGDATA':
-
-            logging.info("[M2R_grd] ---> Assuming {} grid type for {}".format(confM2R.grd_type, self.type))
-            logging.info("[M2R_grd] ---> Using dimension names {} and {} and {}".format(confM2R.lon_name,
-                                                                                        confM2R.lat_name,
-                                                                                        confM2R.depth_name))
-
+            logging.info(f"[M2R_grd] ---> Assuming {confM2R.grd_type} grid type for {self.type}")
+            logging.info(f"[M2R_grd] ---> Using dimension names {confM2R.lon_name} and {confM2R.lat_name} and {confM2R.depth_name}")
             self.lon = ds[str(confM2R.lon_name)][:]
             self.lat = ds[str(confM2R.lat_name)][:]
             self.h = ds[str(confM2R.depth_name)][:]
@@ -72,17 +70,11 @@ class Grd:
                 self.lon, self.lat = np.meshgrid(self.lon, self.lat)
 
             # Create grid for ESMF interpolation
-
-            self.esmfgrid = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
-                                      is_sphere=True, coord_names=[str(confM2R.lon_name), str(confM2R.lat_name)],
-                                      add_mask=False)
-            self.esmfgrid_u = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
-                                        is_sphere=True,
-                                        coord_names=[str(confM2R.lon_name_u), str(confM2R.lat_name_u)],
-                                        add_mask=False)
-            self.esmfgrid_v = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
-                                        is_sphere=True,
-                                        coord_names=[str(confM2R.lon_name_v), str(confM2R.lat_name_v)],
+            if confM2R.use_zarr:
+                self.esmfgrid,lon_shape, dim_names = xe.frontend.ds_to_ESMFgrid(ds, need_bounds=True, periodic=False, append=None)
+            else:
+                self.esmfgrid = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
+                                        is_sphere=True, coord_names=[str(confM2R.lon_name), str(confM2R.lat_name)],
                                         add_mask=False)
 
             if confM2R.ocean_indata_type == 'SODA3':
@@ -116,7 +108,6 @@ class Grd:
             self.fillval = -9.99e+33
 
         if self.type in ['ROMS']:
-
             self.write_clim = True
             self.write_bry = True
             self.write_init = True

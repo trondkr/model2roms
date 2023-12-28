@@ -1,12 +1,11 @@
-import logging
 import time
 from datetime import datetime
-
 import IOstation
 import clim2bry
 import configM2R
 import decimateGrid
 import model2roms
+import logging
 
 __author__ = 'Trond Kristiansen'
 __email__ = 'trond.kristiansen@niva.no'
@@ -21,6 +20,7 @@ __status__ = "Development"
 """
 
 def run():
+    print("test")
     logging.basicConfig(level=logging.INFO)
     logging.info("[M2R_run] Initialized logging")
 

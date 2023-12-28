@@ -1,12 +1,13 @@
 import numpy as np
 from datetime import datetime
+import logging
 
 __author__ = 'Trond Kristiansen'
 __email__ = 'me@trondkristiansen.com'
 __created__ = datetime(2010, 1, 7)
-__modified__ = datetime(2013, 7, 1)
-__version__ = "0.1"
-__status__ = "Development, modified on 07.01.2010, 01.07.2013, 11.03.2014"
+__modified__ = datetime(2023, 12, 20)
+__version__ = "0.5"
+__status__ = "Development, modified on 07.01.2010, 01.07.2013, 11.03.2014, 20.12.2023"
 
 
 def find_subset_indices(grdMODEL, min_lat, max_lat, min_lon, max_lon):
@@ -113,11 +114,11 @@ def checkDomain(grdMODEL, grdROMS):
     if (grdMODEL.lat.min() <= grdROMS.lat_rho.min() and grdMODEL.lat.max() >= grdROMS.lat_rho.max()):
         latCHECK = True
 
-    print("\n--------------------------")
-    print(("---> Area output files  : (longitude=%3.2f,latitude=%3.2f) to (longitude=%3.2f,latitude=%3.2f)" % (
-    grdROMS.lon_rho.min(), grdROMS.lat_rho.min(), grdROMS.lon_rho.max(), grdROMS.lat_rho.max())))
-    print(("---> Area forcing files : (longitude=%3.2f,latitude=%3.2f) to (longitude=%3.2f,latitude=%3.2f)" % (
-    grdMODEL.lon.min(), grdMODEL.lat.min(), grdMODEL.lon.max(), grdMODEL.lat.max())))
+    logging.info("[M2R_configRunM2R] \n--------------------------")
+    logging.info("[M2R_configRunM2R] ==> Area output files  : (longitude=%3.2f,latitude=%3.2f) to (longitude=%3.2f,latitude=%3.2f)" % (
+    grdROMS.lon_rho.min(), grdROMS.lat_rho.min(), grdROMS.lon_rho.max(), grdROMS.lat_rho.max()))
+    logging.info("[M2R_configRunM2R] ==>---> Area forcing files : (longitude=%3.2f,latitude=%3.2f) to (longitude=%3.2f,latitude=%3.2f)" % (
+    grdMODEL.lon.min(), grdMODEL.lat.min(), grdMODEL.lon.max(), grdMODEL.lat.max()))
 
     if latCHECK is True and lonCHECK is True:
         print("Domain check passed: Input domain data covers output domain")

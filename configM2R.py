@@ -3,15 +3,20 @@ import logging
 import os
 import time
 from datetime import datetime
-
 import numpy as np
-
 import grd
+
+# If you are using reading from zarr (use_zarr=True) then you 
+# need these libraries.
+import xarray as xr
+from zarr.convenience import consolidate_metadata
+from google.cloud import storage
+import gcsfs
 
 __author__ = 'Trond Kristiansen'
 __email__ = 'trond.kristiansen@niva.no'
 __created__ = datetime(2009, 1, 30)
-__modified__ = datetime(2021, 11, 13)
+__modified__ = datetime(2023, 12, 18)
 __version__ = "1.6"
 __status__ = "Development"
 
@@ -19,6 +24,7 @@ __status__ = "Development"
 # Changelog:
 # 27.07.2021 - Added option for running Hardangerfjord 160 m model
 # 13.11.2021 - Added option for using SODA 3.4.2 as input
+# 18.12.2023 - Added option for reading from ZARR
 
 class Model2romsConfig(object):
 
@@ -28,10 +34,13 @@ class Model2romsConfig(object):
         subset = np.zeros(4)
 
         if self.outgrid_name == "NS8KM":
-            return subset[40, 70, -30, 40]
+            return [40, 70, -30, 40]
+        
+        elif self.outgrid_name == "ROHO800":
+            return [40, 70, -30, 40]
 
         elif self.outgrid_name == "A20":
-            return subset[30, 90, -179, 360]
+            return [30, 90, -179, 360]
         else:
             raise Exception("Unable to subset {}".format(self.outgrid_name))
 
@@ -43,7 +52,7 @@ class Model2romsConfig(object):
                 self.start_year, self.start_month, self.end_year, self.end_month))
         logging.info('[M2R_configM2R]==> The following variables will be interpolated: {}'.format(self.global_varnames))
 
-        logging.info('[M2R_configM2R]=>All horisontal interpolations will be done using ESMF')
+        logging.info('[M2R_configM2R] => All horisontal interpolations will be done using ESMF')
         logging.info('[M2R_configM2R] => Output files are written in format: {}'.format(self.output_format))
         logging.info('[M2R_configM2R] => Output grid file is: {}'.format(self.roms_grid_path))
 
@@ -78,7 +87,7 @@ class Model2romsConfig(object):
         return {'SODA': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel'],
                 'SODA3': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel'],
                 'SODA3_5DAY': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel'],
-                'GLORYS': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel', 'uice', 'vice', 'aice', 'hice'],
+                'GLORYS':  ['temperature', 'salinity', 'ssh', 'uvel', 'vvel'], #['temperature', 'salinity', 'ssh', 'uvel', 'vvel', 'uice', 'vice', 'aice', 'hice'],
                 'WOAMONTHLY': ['temperature', 'salinity'],
                 'NORESM': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel', 'ageice', 'uice', 'vice', 'aice', 'hice',
                            'hs',
@@ -90,8 +99,7 @@ class Model2romsConfig(object):
     def define_input_data_varnames(self):
         return {'SODA3': ['temp', 'salt', 'ssh', 'u', 'v'],
                 'SODA3_5DAY': ['temp', 'salt', 'ssh', 'u', 'v'],
-                'GLORYS': ['thetao', 'so', 'zos', 'uo', 'vo', 'usi', 'vsi',
-                           'siconc', 'sithick'],
+                'GLORYS': ['thetao', 'so', 'zos', 'uo', 'vo'], # ['thetao', 'so', 'zos', 'uo', 'vo', 'usi', 'vsi','siconc', 'sithick'],
                 'NORESM': ['templvl', 'salnlvl', 'sealv', 'uvellvl', 'vvellvl', 'iage', 'uvel', 'vvel', 'aice', 'hi',
                            'hs', 'dissic', 'talk', 'po4', 'no3', 'si', 'o2']}[self.ocean_indata_type]
 
@@ -100,7 +108,7 @@ class Model2romsConfig(object):
         try:
             return {'A20': '../oceanography/A20/Grid/A20niva_grd_v1.nc',
                     'ROHO160': '../oceanography/NAUTILOS/Grid/norfjords_160m_grid.nc_A04.nc',
-                    'ROHO800': '../oceanography/ROHO800/Grid/ROHO800_grid_fix3.nc'}[self.outgrid_name]
+                    'ROHO800': 'Grids/ROHO800_grid_fix5.nc'}[self.outgrid_name]
         except KeyError:
             return KeyError
 
@@ -112,20 +120,26 @@ class Model2romsConfig(object):
                 "ROHO800": "roho800"}[self.outgrid_name]
 
     def define_ocean_forcing_data_path(self):
-        try:
-            return {'SODA3': "../oceanography/copernicus-marine-data/SODA3.4.2/",
-                    'SODA3_5DAY': "/Volumes/DATASETS/SODA2002/",  # "/cluster/projects/nn9297k/SODA3.3.2/",
-                    'NORESM': "/cluster/projects/nn9412k/A20/FORCING/RCP85_ocean/",
-                    'GLORYS': "../oceanography/copernicus-marine-data/Global/"}[self.ocean_indata_type]
-        except KeyError:
-            return KeyError
+        if self.use_zarr:
+            try:
+                return {'GLORYS': f"gs://{self.bucket_name}/zarr/"}[self.ocean_indata_type]
+            except KeyError:
+                return KeyError
+        else:
+            try:
+                return {'SODA3': "../oceanography/copernicus-marine-data/SODA3.4.2/",
+                        'SODA3_5DAY': "/Volumes/DATASETS/SODA2002/",  # "/cluster/projects/nn9297k/SODA3.3.2/",
+                        'NORESM': "/cluster/projects/nn9412k/A20/FORCING/RCP85_ocean/",
+                        'GLORYS': "../oceanography/copernicus-marine-data/Global/"}[self.ocean_indata_type]
+            except KeyError:
+                return KeyError
 
     def define_atmospheric_forcing_path(self):
         return {'ERA5': "/Volumes/DATASETS/ERA5/"}[self.atmos_indata_type]
 
     def __init__(self):
-        logging.info('\n--------------------------\n')
-        logging.info('Started ' + time.ctime(time.time()))
+        logging.info('[M2R_run] --------------------------\n')
+        logging.info('[M2R_run]==> Started ' + time.ctime(time.time()))
         os.environ['WRAP_STDERR'] = 'true'
 
         # EDIT ===================================================================
@@ -187,7 +201,7 @@ class Model2romsConfig(object):
         # Define what grid type you want to interpolate from (input MODEL data)
         # Currently supported options:
         # 1. NORESM, 2. GLORYS, 3. SODA3, 4. SODA3_5DAY
-        self.ocean_indata_type = 'SODA3'
+        self.ocean_indata_type = 'GLORYS'
         self.atmos_indata_type = 'ERA5'
         
         if self.ocean_indata_type == "SODA3":
@@ -195,7 +209,7 @@ class Model2romsConfig(object):
             
         # Define contact info for final NetCDF files
         self.author_name = "Trond Kristiansen"
-        self.author_email = "trond.kristiansen (at) niva.no"
+        self.author_email = "trondkr (at) faralloninstitute.org"
 
         # Define what grid type you wnat to interpolate from: Can be Z for SIGMA for ROMS
         # vertical coordinate system or ZLEVEL. also define the name of the dimensions in the input files.
@@ -233,7 +247,7 @@ class Model2romsConfig(object):
         # OUT GRIDTYPES ------------------------------------------------------------------------------
         # Define what grid type you want to interpolate to
         # Options: This is just the name of your grid used to identify your selection later
-        self.outgrid_name = 'A20'  # "ROHO800", "A20", "ROHO160"
+        self.outgrid_name = 'ROHO800'  # "ROHO800", "A20", "ROHO160"
         self.outgrid_type = "ROMS"
         
         # Path to where results files should be stored defined by grid name
@@ -243,12 +257,12 @@ class Model2romsConfig(object):
             
         # Subset input data. If you have global data you may want to seubset these to speed up reading. Make
         # sure that your input data are cartesian (0-360 or -180:180, -90:90)
-        self.subset_indata = False
+        self.subset_indata = True
         if self.subset_indata:
             self.subset = self.define_subset_for_indata()
 
         # Define number of output depth levels
-        self.nlevels = 40
+        self.nlevels = 25
         # Define the grid stretching properties (leave default if uncertain what to pick)
         self.vstretching = 4
         self.vtransform = 2
@@ -256,9 +270,13 @@ class Model2romsConfig(object):
         self.theta_b = 0.1
         self.tcline = 250.0
         self.hc = 250
-
+        
         # PATH TO FORCING DATA --------------------------------------------------------------------
         # Define the path to the input data
+        self.use_zarr = True
+        if self.use_zarr:
+            self.setup_actea_google_storage()
+
         self.ocean_forcing_path = self.define_ocean_forcing_data_path()
         self.atmospheric_forcing_path = self.define_atmospheric_forcing_path()
 
@@ -271,7 +289,7 @@ class Model2romsConfig(object):
 
         # DATE AND TIME DETAILS ---------------------------------------------------------
         # Define the period to create forcing for
-        self.start_year = 1980
+        self.start_year = 1997
         self.end_year = 2020
         self.start_month = 1
         self.end_month = 12
@@ -305,7 +323,59 @@ class Model2romsConfig(object):
         if self.isclimatology is True:
             self.clim_name = self.abbreviation + '_' + str(self.ocean_indata_type) + '_climatology.nc'
         self.showinfo()
+        if self.use_zarr:
+            self.all_ds = {}
 
+    def setup_actea_google_storage(self):
+        # Google Cloud client
+        self.bucket_name = "actea-shared"
+        self.fs = gcsfs.GCSFileSystem(project="downscale")
+        self.storage_client = storage.Client()
+        self.bucket = self.storage_client.bucket(self.bucket_name)
+
+    def get_dataset_url(self, parameter):
+        """
+        Return the URL for the dataset.
+        """
+
+        try:
+            return {
+                "o2": f"gs://{self.bucket_name}/zarr/o2/",
+                "mlotst": f"gs://{self.bucket_name}/zarr/mlotst/",
+                "no3": f"gs://{self.bucket_name}/zarr/no3/",
+                "po4": f"gs://{self.bucket_name}/zarr/po4/",
+                "phyc": f"gs://{self.bucket_name}/zarr/phyc/",
+                "si": f"gs://{self.bucket_name}/zarr/si/",
+                "so": f"gs://{self.bucket_name}/zarr/so/",
+                "thetao": f"gs://{self.bucket_name}/zarr/thetao/",
+                "chl": f"gs://{self.bucket_name}/zarr/chl/",
+                "intpp": f"gs://{self.bucket_name}/zarr/nppv/",
+                "zos": f"gs://{self.bucket_name}/zarr/zos/",
+                "uo": f"gs://{self.bucket_name}/zarr/uo/",
+                "vo": f"gs://{self.bucket_name}/zarr/vo/",
+                "ph": f"gs://{self.bucket_name}/zarr/ph/",
+                "spco2": f"gs://{self.bucket_name}/zarr/spco2/",
+                "siconc": f"gs://{self.bucket_name}/zarr/siconc/",
+                "sithick": f"gs://{self.bucket_name}/zarr/sithick/",
+            }[parameter]
+        except Exception as e:
+            return e
+        
+    def open_zarr(self, var_name: str):
+        mapper = self.fs.get_mapper(
+            self.get_dataset_url(parameter=var_name)
+        )
+        consolidate_metadata(mapper)
+        return xr.open_zarr(mapper, chunks={"time": 100}, consolidated=False)
+        
+    def open_dataset_on_gs(self, file_name: str) -> xr.Dataset:
+        if storage.Blob(bucket=self.bucket, name=str(file_name)).exists(self.storage_client):
+
+            file_name = f"{self.bucket_name}/{file_name}"
+            self.logger.info(f"[model2roms] Opening file {file_name}")
+            fileObj = self.fs.open(file_name)
+            return xr.open_dataset(fileObj, engine="h5netcdf")
+        
     def create_grd_objects(self):
         # NO EDIT BELOW ==============================================================================================
         if self.compile_all is True:
@@ -318,7 +388,7 @@ class Model2romsConfig(object):
                 import ESMF
             except ImportError:
                 raise ImportError("Unable to import ESMF")
-            logging.info('[M2R_configRunM2R] Starting logfile for ESMF')
+            logging.info('[M2R_configRunM2R]==> Starting logfile for ESMF')
             ESMF.Manager(debug=True)
 
             # Create the grid object for the output grid

@@ -82,7 +82,7 @@ def create_list_of_days(confM2R, year, month, first_run):
 
             if dd_date.year==year and dd_date.month==month:
                 days.append(dd_date.day)
-                print(dd_date)
+     
         if first_run:
             days_tmp=days.copy()
             for day in days:
