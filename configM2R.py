@@ -218,16 +218,16 @@ class Model2romsConfig(object):
         # IN GRIDTYPES ------------------------------------------------------------------------------
         # Define what grid type you want to interpolate from (input MODEL data)
         # Currently supported options:
-        # 1. NORESM, 2. GLORYS, 3. SODA3, 4. SODA3_5DAY
-        self.ocean_indata_type = 'GLORYS'
-        self.atmos_indata_type = 'ERA5'
+        # 1. NORESM, 2. GLORYS, 3. SODA3, 4. SODA3_5DAY 5. IPSL 6. ACCESS
+        self.ocean_indata_type = 'ACCESS'
+        self.atmos_indata_type = 'ACCESS'
         
         if self.ocean_indata_type == "SODA3":
             self.soda_version="3.4.2"
             
         # Define contact info for final NetCDF files
-        self.author_name = "Trond Kristiansen"
-        self.author_email = "trondkr (at) faralloninstitute.org"
+        self.author_name = "Jeemijn Scheen"
+        self.author_email = "jeemijn.scheen (at) nioz.nl"
 
         # Define what grid type you wnat to interpolate from: Can be Z for SIGMA for ROMS
         # vertical coordinate system or ZLEVEL. also define the name of the dimensions in the input files.
@@ -280,7 +280,7 @@ class Model2romsConfig(object):
         self.outgrid_type = "ROMS"
         
         # Path to where results files should be stored (must end with '/')
-        self.outdir = "../oceanography/{}/".format(self.outgrid_name)
+        self.outdir = "/export/lv6/user/jscheen/roms/forcing/cmip6_forcings/"
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir, exist_ok=True)
             
@@ -302,7 +302,7 @@ class Model2romsConfig(object):
         
         # PATH TO FORCING DATA --------------------------------------------------------------------
         # Define the path to the input data
-        self.use_zarr = True
+        self.use_zarr = False
         if self.use_zarr:
             self.setup_actea_google_storage()
 
@@ -318,13 +318,13 @@ class Model2romsConfig(object):
 
         # DATE AND TIME DETAILS ---------------------------------------------------------
         # Define the period to create forcing for
-        self.start_year = 1997
-        self.end_year = 2020
+        self.start_year = 2015
+        self.end_year = 2100
         self.start_month = 1
         self.end_month = 12
-        self.start_day = 15
-        self.end_day = 31
-
+        self.start_day = 16
+        self.end_day = 16
+        
         if int(calendar.monthrange(self.start_year, self.start_month)[1]) < self.start_day:
             self.start_day = int(calendar.monthrange(self.start_year, self.start_month)[1])
 
