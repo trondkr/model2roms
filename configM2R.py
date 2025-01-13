@@ -91,8 +91,10 @@ class Model2romsConfig(object):
                 'WOAMONTHLY': ['temperature', 'salinity'],
                 'NORESM': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel', 'ageice', 'uice', 'vice', 'aice', 'hice',
                            'hs',
-                           'O3_c', 'O3_TA', 'N1_p', 'N3_n', 'N5_s', 'O2_o']}[
-            self.ocean_indata_type]
+                           'O3_c', 'O3_TA', 'N1_p', 'N3_n', 'N5_s', 'O2_o'],
+                'IPSL':   ['ssh', 'uvel', 'vvel', 'temperature', 'salinity'], # (as named in model2roms)
+                'ACCESS': ['ssh', 'uvel', 'vvel', 'temperature', 'salinity'],
+                }[self.ocean_indata_type]
 
     # Define the corresponding name of the variables in the input dataset files. This list needs to correspond
     # exactly with the list given in the function define_global_varnames:
@@ -101,7 +103,10 @@ class Model2romsConfig(object):
                 'SODA3_5DAY': ['temp', 'salt', 'ssh', 'u', 'v'],
                 'GLORYS': ['thetao', 'so', 'zos', 'uo', 'vo'], # ['thetao', 'so', 'zos', 'uo', 'vo', 'usi', 'vsi','siconc', 'sithick'],
                 'NORESM': ['templvl', 'salnlvl', 'sealv', 'uvellvl', 'vvellvl', 'iage', 'uvel', 'vvel', 'aice', 'hi',
-                           'hs', 'dissic', 'talk', 'po4', 'no3', 'si', 'o2']}[self.ocean_indata_type]
+                           'hs', 'dissic', 'talk', 'po4', 'no3', 'si', 'o2'],
+                'IPSL':   ['zos', 'uo', 'vo', 'thetao', 'so'], # (as named in this CMIP6 model)
+                'ACCESS': ['zos', 'uo', 'vo', 'thetao', 'so'],
+                           }[self.ocean_indata_type]
 
     # Define the path to where the  ROMS grid can be found
     def define_roms_grid_path(self):
@@ -231,6 +236,16 @@ class Model2romsConfig(object):
         self.lat_name_u = "latitude"
         self.lon_name_v = "longitude"
         self.lat_name_v = "latitude"
+
+        if self.ocean_indata_type == 'IPSL':
+            # overwrite
+            self.lon_name = "nav_lon"
+            self.lat_name = "nav_lat"
+            self.depth_name = "olevel"
+            self.lon_name_u = "bounds_nav_lon"
+            self.lat_name_u = "bounds_nav_lat"
+            self.lon_name_v = "bounds_nav_lon"
+            self.lat_name_v = "bounds_nav_lat"
 
         if self.ocean_indata_type in ['SODA3_5DAY','SODA3']:
             self.lon_name = "xt_ocean"

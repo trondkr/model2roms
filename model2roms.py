@@ -256,7 +256,10 @@ def get_3d_data(confM2R, varname, year, month, day, timecounter):
     # The variable splitExtract is defined in IOsubset.py and depends on the orientation
     # and ocean_indata_type of grid (-180-180 or 0-360). Assumes regular grid.
     
-    filename = fc.get_filename(confM2R, year, month, day, confM2R.input_varnames[varN])
+    if confM2R.ocean_indata_type in ["ACCESS", "IPSL"]:
+        (filename, file_start_year) = fc.get_filename_and_yr(confM2R, year, month, day, confM2R.input_varnames[varN])
+    else:
+        filename = fc.get_filename(confM2R, year, month, day, confM2R.input_varnames[varN])
     
     logging.info(f"[M2R_model2roms]  filename in get_3d_data() is {filename}")
 
@@ -290,6 +293,25 @@ def get_3d_data(confM2R, varname, year, month, day, timecounter):
         # For NorESM data - all data is in one big file so we need the timecounter to access correct data
         myunits = cdf.variables[str(confM2R.input_varnames[varN])].units
         data = np.squeeze(cdf.variables[str(confM2R.input_varnames[varN])][timecounter, :, :, :])
+        data = np.where(data.mask, confM2R.fillvaluein, data)
+
+    if confM2R.ocean_indata_type in ["ACCESS", "IPSL"]:
+        # For these GCMs - data files contain a couple of years (e.g. 5, 10 or 50)
+        # so we need file_start_year to access correct data
+        myunits = cdf.variables[str(confM2R.input_varnames[varN])].units
+
+        logging.info("[3D DATA] variable {}".format(confM2R.input_varnames[varN]))
+        logging.info("[3D DATA] var has dimensions {}".format(cdf.variables[str(confM2R.input_varnames[varN])].shape))
+#        logging.info("[3D DATA] with first time step at {}".format(cdf.variables[str(confM2R.input_varnames[varN])][0,:,:,:]))
+#        logging.info("[3D DATA] with last time step at {}".format(cdf.variables[str(confM2R.input_varnames[varN])][-1,:,:,:]))
+#        logging.info("[3D DATA] timecounter at {}".format(timecounter))
+
+        this_time_index = month - 1 + (year-file_start_year) * 12
+
+        logging.info("[3D DATA] this_time_index at {}".format(this_time_index))
+
+        data = np.squeeze(cdf.variables[str(confM2R.input_varnames[varN])][this_time_index, :, :, :])
+        # as in get_2d_data() but now keeping 3 dimensions totally: lat,lon,z
         data = np.where(data.mask, confM2R.fillvaluein, data)
 
     if confM2R.ocean_indata_type == "GLORYS":
@@ -370,6 +392,15 @@ def get_2d_data(confM2R, myvar, year, month, day, timecounter):
             # For NORESM data are 12 months of data stored in ice files. Use ID as month indicator to get data.
             data = np.squeeze(cdf.variables[str(confM2R.input_varnames[varN])][timecounter, :, :])
             data = np.where(data.mask, confM2R.grdROMS.fillval, data)
+
+        elif confM2R.ocean_indata_type in ["ACCESS", "IPSL"]:
+            # similar to NORESM because these are also GCMs:
+            # myunits = cdf.variables[str(grdROMS.varNames[varN])].units
+            # take desired time step, all lat, all lon:
+            data = np.squeeze(cdf.variables[str(confM2R.input_varnames[varN])][timecounter, :, :]) 
+            # squeeze removes dimensions of length 1, so it's like .values in xarray (maybe not needed but doesn't hurt)
+            # the above becomes a masked array, with some data allowed to be missing or invalid
+            data = np.where(data.mask, confM2R.grdROMS.fillval, data) # fills incomplete data (mask=True) with fillval
 
         elif confM2R.ocean_indata_type == "GLORYS":
             if confM2R.use_zarr:
