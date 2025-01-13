@@ -216,33 +216,34 @@ def get_time(confM2R, year, month, day, ntime):
                 logging.error("[M2R_model2roms] Unable to open input file {}".format(filename))
     else:
         cdf = Dataset(filename)
-
     jdref = date2num(datetime(1948, 1, 1),
                      units="days since 1948-01-01 00:00:00",
                      calendar="standard")
 
     if confM2R.ocean_indata_type == 'SODA3_5DAY':
         currentdate = datetime(year, month, day)
+        # get units, calendar from netcdf attributes of time variable (saved in time_object for SODA3)
         units = confM2R.time_object.units
-        jd = date2num(currentdate, units=confM2R.time_object.units, calendar=confM2R.time_object.calendar)
+        calendar = confM2R.time_object.calendar
 
     elif confM2R.ocean_indata_type == 'GLORYS':
         currentdate = pd.to_datetime(str(cdf["time"].values))
         units = "days since 1948-01-01 00:00:00"
-        jd = date2num(currentdate, units=units, calendar="standard")
-        confM2R.grdMODEL.timeunits = units
+        calendar="standard"
+
     else:
-        # Find the day and month that the GLORYS file represents based on the year and ID number.
-        # Each file represents a 1 month average.
-        # calendar = cdf.variables["time"].calendar
-        units = cdf.variables["time"].units
         currentdate = datetime(year, month, day)
-        jd = date2num(currentdate, units="days since 1948-01-01 00:00:00", calendar="standard")
+        units = "days since 1948-01-01 00:00:00"
+        calendar = "standard"
+
+    confM2R.grdMODEL.timeunits = units
+    jd = date2num(currentdate, units=units, calendar=calendar)
 
     confM2R.grdROMS.time = (jd - jdref)
     confM2R.grdROMS.reftime = jdref
     confM2R.grdROMS.timeunits = "days since 1948-01-01 00:00:00"
-    print("confM2R.grdROMS.timeunits ",confM2R.grdROMS.timeunits )
+    if ntime == 0:
+        print(f"INFO:root:[M2R_model2roms] ==> confM2R.grdROMS.timeunits: {confM2R.grdROMS.timeunits}")
     cdf.close()
     logging.info("-------------------------------")
     logging.info(f'Current time of {confM2R.ocean_indata_type} file : {currentdate}')
