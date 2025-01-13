@@ -41,6 +41,11 @@ class Model2romsConfig(object):
 
         elif self.outgrid_name == "A20":
             return [30, 90, -179, 360]
+
+        elif self.outgrid_name == "NWES":
+            # rectangle for taking subset of input data
+            return [35, 62, -20, 11] # must be larger than the actual desired grid (incl extra space for v coords?)
+
         else:
             raise Exception("Unable to subset {}".format(self.outgrid_name))
 
@@ -113,7 +118,9 @@ class Model2romsConfig(object):
         try:
             return {'A20': '../oceanography/A20/Grid/A20niva_grd_v1.nc',
                     'ROHO160': '../oceanography/NAUTILOS/Grid/norfjords_160m_grid.nc_A04.nc',
-                    'ROHO800': 'Grids/ROHO800_grid_fix5.nc'}[self.outgrid_name]
+                    'ROHO800': 'Grids/ROHO800_grid_fix5.nc',
+                    'NWES': '/export/lv6/user/jscheen/roms/projects/nwes/NorthSea8_smooth013_sponge_nudg_wo_IJsselmeer.nc'
+                    }[self.outgrid_name]
         except KeyError:
             return KeyError
 
@@ -122,7 +129,8 @@ class Model2romsConfig(object):
         return {"A20": "a20",
                 "Antarctic": "Antarctic",
                 "ROHO160": "roho160",
-                "ROHO800": "roho800"}[self.outgrid_name]
+                "ROHO800": "roho800",
+                "NWES": "nwes"}[self.outgrid_name]
 
     def define_ocean_forcing_data_path(self):
         if self.use_zarr:
@@ -234,7 +242,8 @@ class Model2romsConfig(object):
         self.grd_type = 'regular'
         self.lon_name = "longitude"
         self.lat_name = "latitude"
-        self.depth_name = "depth"
+#        self.depth_name = "depth"
+        self.depth_name = "lev"
         self.lon_name_u = "longitude"
         self.lat_name_u = "latitude"
         self.lon_name_v = "longitude"
@@ -267,7 +276,7 @@ class Model2romsConfig(object):
         # OUT GRIDTYPES ------------------------------------------------------------------------------
         # Define what grid type you want to interpolate to
         # Options: This is just the name of your grid used to identify your selection later
-        self.outgrid_name = 'ROHO800'  # "ROHO800", "A20", "ROHO160"
+        self.outgrid_name = 'NWES'  # "ROHO800", "A20", "ROHO160", "NWES"
         self.outgrid_type = "ROMS"
         
         # Path to where results files should be stored (must end with '/')
@@ -282,14 +291,14 @@ class Model2romsConfig(object):
             self.subset = self.define_subset_for_indata()
 
         # Define number of output depth levels
-        self.nlevels = 25
+        self.nlevels = 30
         # Define the grid stretching properties (leave default if uncertain what to pick)
         self.vstretching = 4
         self.vtransform = 2
         self.theta_s = 7.0
-        self.theta_b = 0.1
-        self.tcline = 250.0
-        self.hc = 250
+        self.theta_b = 2.0
+        self.tcline = 50.0
+        self.hc = 50
         
         # PATH TO FORCING DATA --------------------------------------------------------------------
         # Define the path to the input data
