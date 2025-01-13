@@ -243,13 +243,15 @@ class Model2romsConfig(object):
         self.grd_type = 'regular'
         self.lon_name = "longitude"
         self.lat_name = "latitude"
-#        self.depth_name = "depth"  # default; for a.o. GLORYS
-        self.depth_name = "lev"  # for ACCESS, IPSL
+        self.depth_name = "depth"
         self.lon_name_u = "longitude"
         self.lat_name_u = "latitude"
         self.lon_name_v = "longitude"
         self.lat_name_v = "latitude"
 
+        if self.ocean_indata_type == 'ACCESS':
+            # overwrite
+            self.depth_name = "lev"
         if self.ocean_indata_type == 'IPSL':
             # overwrite
             self.lon_name = "nav_lon"
