@@ -135,7 +135,10 @@ class Model2romsConfig(object):
                 return {'SODA3': "../oceanography/copernicus-marine-data/SODA3.4.2/",
                         'SODA3_5DAY': "/Volumes/DATASETS/SODA2002/",  # "/cluster/projects/nn9297k/SODA3.3.2/",
                         'NORESM': "/cluster/projects/nn9412k/A20/FORCING/RCP85_ocean/",
-                        'GLORYS': "../oceanography/copernicus-marine-data/Global/"}[self.ocean_indata_type]
+                        'GLORYS': "../oceanography/copernicus-marine-data/Global/",
+                        'IPSL': "/export/lv6/user/jscheen/data/cmip6/IPSL-CM6A-LR/data/",
+                        'ACCESS': "/export/lv6/user/jscheen/data/cmip6/ACCESS-CM2/data/",
+                        }[self.ocean_indata_type]
             except KeyError:
                 return KeyError
 
