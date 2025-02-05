@@ -169,7 +169,12 @@ def fn_10_year_str_atm(year, time_str_start, time_str_end):
     if year%10 < 5:  # year ends in 0,1,2,3 or 4
         file_start_year = year - year%5 - 5        # down to nnn0 and go back 5 more
     file_end_year = min(file_start_year + 9, 2100) # up to nn(n+1)4 or 2100
-    yr_string = str(file_start_year)+'0101'+time_str_start + '-' + str(file_end_year)+'1231'+time_str_end
+    if time_str_end == "0000":
+        # file includes New Year's Eve 00:00 so last day of file shifts from e.g. 2034-12-31 to 2035-01-01
+        yr_string = str(file_start_year)+'0101'+time_str_start + '-' + str(file_end_year + 1)+'0101'+time_str_end
+    else:
+        # normal situation; end day of last year is 31 Dec
+        yr_string = str(file_start_year)+'0101'+time_str_start + '-' + str(file_end_year)+'1231'+time_str_end
     return (yr_string, file_start_year)
 
 # working but not used/needed:
