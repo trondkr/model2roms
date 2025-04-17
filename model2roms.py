@@ -140,8 +140,8 @@ def vertical_interpolation(myvar, array1, array2, grdROMS, grdMODEL):
 
 def rotate(grdROMS, grdMODEL, data, u, v):
     """
-    First rotate the values of U, V at rho points with the angle, and then interpolate
-    the rho point values to U and V points and save the result
+    First rotate the values of U, V at rho points with the angle between xi axis and east, 
+    and then interpolate the rho point values to U and V points and save the result
     """
 
     urot = np.zeros((int(grdMODEL.nlevels), int(grdROMS.eta_rho), int(grdROMS.xi_rho)), float)

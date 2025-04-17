@@ -111,8 +111,14 @@ def checkDomain(grdMODEL, grdROMS):
     latCHECK = False
     if (grdMODEL.lon.min() <= grdROMS.lon_rho.min() and grdMODEL.lon.max() >= grdROMS.lon_rho.max()):
         lonCHECK = True
+#    else:
+#        print("lonCHECK failed. grdMODEL.lon.min()=%3.2f, grdROMS.lon_rho.min()=%3.2f, grdMODEL.lon.max()=%3.2f, grdROMS.lon_rho.max()=%3.2f" % (
+#            grdMODEL.lon.min(), grdROMS.lon_rho.min(), grdMODEL.lon.max(), grdROMS.lon_rho.max())
     if (grdMODEL.lat.min() <= grdROMS.lat_rho.min() and grdMODEL.lat.max() >= grdROMS.lat_rho.max()):
         latCHECK = True
+#    else:
+#        print("latCHECK failed. grdMODEL.lat.min()=%3.2f, grdROMS.lat_rho.min()=%3.2f, grdMODEL.lat.max()=%3.2f, grdROMS.lat_rho.max()=%3.2f" % (
+#            grdMODEL.lat.min(), grdROMS.lat_rho.min(), grdMODEL.lat.max(), grdROMS.lat_rho.max())
 
     logging.info("[M2R_configRunM2R] \n--------------------------")
     logging.info("[M2R_configRunM2R] ==> Area output files  : (longitude=%3.2f,latitude=%3.2f) to (longitude=%3.2f,latitude=%3.2f)" % (
