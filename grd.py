@@ -56,6 +56,14 @@ class Grd:
 
         Trond Kristiansen, 18.11.2009, edited 03.01.2017, 23.03.2021
         """
+
+        # define manual exceptions for types where input data is regional, not a global sphere
+        if confM2R.ocean_indata_type == ['IPSL']:
+            # for IPSL we sliced global data in advance because of cell collapse error around IPSL's periodical grid boundary (Kazachstan)
+            is_sphere = False
+        else:
+            is_sphere = True
+
         if self.type == 'FORCINGDATA' and confM2R.use_zarr:
             mapper = confM2R.fs.get_mapper(grd_filename)
             consolidate_metadata(mapper)
@@ -83,7 +91,7 @@ class Grd:
                 self.esmfgrid,lon_shape, dim_names = xe.frontend.ds_to_ESMFgrid(ds, need_bounds=True, periodic=False, append=None)
             else:
                 self.esmfgrid = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
-                                        is_sphere=True, coord_names=[str(confM2R.lon_name), str(confM2R.lat_name)],
+                                        is_sphere=is_sphere, coord_names=[str(confM2R.lon_name), str(confM2R.lat_name)],
                                         add_mask=False)
 
             if confM2R.ocean_indata_type == 'SODA3':
@@ -288,14 +296,14 @@ class Grd:
 
             self.esmfgrid_u = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
                                         coord_names=['lon_u', 'lat_u'],
-                                        is_sphere=True,
+                                        is_sphere=is_sphere,
                                         add_mask=False)
             self.esmfgrid_v = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
-                                        is_sphere=True,
+                                        is_sphere=is_sphere,
                                         coord_names=['lon_v', 'lat_v'],
                                         add_mask=False)
             self.esmfgrid = ESMF.Grid(filename=grd_filename, filetype=ESMF.FileFormat.GRIDSPEC,
-                                      is_sphere=True,
+                                      is_sphere=is_sphere,
                                       coord_names=[self.lonname, self.latname],
                                       add_mask=False)
 
