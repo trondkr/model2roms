@@ -227,7 +227,8 @@ def get_time(confM2R, year, month, day, ntime):
         calendar = confM2R.time_object.calendar
 
     elif confM2R.ocean_indata_type == 'GLORYS':
-        currentdate = pd.to_datetime(str(cdf["time"].values))
+#        currentdate = pd.to_datetime(str(cdf["time"][:]))
+        currentdate = datetime(year, month, day)
         units = "days since 1948-01-01 00:00:00"
         calendar="standard"
 

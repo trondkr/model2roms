@@ -153,6 +153,10 @@ class Model2romsConfig(object):
 
     def define_atmospheric_forcing_path(self):
         return {'ERA5': "/Volumes/DATASETS/ERA5/",
+                'GLORYS': "/export/lv6/user/jscheen/data/era5/era5/",
+                # TODO not needed; dont use atmos part at the moment
+                'IPSL': "/export/lv6/user/jscheen/data/cmip6/IPSL-CM6A-LR/data/",
+                'ACCESS': "/export/lv6/user/jscheen/data/cmip6/ACCESS-CM2/data/",
                 'NORESM': "/Users/trondkr/Projects/RegScen/model2roms/TESTFILES/",
                 }[self.atmos_indata_type]
 
@@ -220,8 +224,8 @@ class Model2romsConfig(object):
         # Define what grid type you want to interpolate from (input MODEL data)
         # Currently supported options:
         # 1. NORESM, 2. GLORYS, 3. SODA3, 4. SODA3_5DAY 5. IPSL 6. ACCESS
-        self.ocean_indata_type = 'ACCESS'
-        self.atmos_indata_type = 'ACCESS'
+        self.ocean_indata_type = 'GLORYS'
+        self.atmos_indata_type = 'GLORYS'
         
         if self.ocean_indata_type == "SODA3":
             self.soda_version="3.4.2"
@@ -321,12 +325,20 @@ class Model2romsConfig(object):
 
         # DATE AND TIME DETAILS ---------------------------------------------------------
         # Define the period to create forcing for
-        self.start_year = 2015
-        self.end_year = 2100
+        ## for CMIP6 models:
+#        self.start_year = 2015
+#        self.end_year = 2100
+#        self.start_month = 1
+#        self.end_month = 12
+#        self.start_day = 16
+#        self.end_day = 16
+        ## for GLORYS:
+        self.start_year = 1993
+        self.end_year = 2024
         self.start_month = 1
-        self.end_month = 12
-        self.start_day = 16
-        self.end_day = 16
+        self.end_month = 9
+        self.start_day = 1
+        self.end_day = 1
         
         if int(calendar.monthrange(self.start_year, self.start_month)[1]) < self.start_day:
             self.start_day = int(calendar.monthrange(self.start_year, self.start_month)[1])
