@@ -14,6 +14,7 @@ import IOwrite
 import datetimeFunctions
 import forcingFilenames as fc
 import interp2D
+from pathlib import Path
 
 try:
     import ESMF
@@ -426,6 +427,100 @@ def get_2d_data(confM2R, myvar, year, month, day, timecounter):
     return data
 
 
+def write_datavar_to_netcdf(mydata, filepath_out, model_name):
+    """This function writes out a netCDF Dataset object to a new netCDF file.
+    - mydata input data variable (must be loaded via netCDF Dataset() and then variable taken; can be editted)
+    - filepath_out Path object with output file path where resulting .nc is stored
+    - model_name must be equal to confM2R.ocean_indata_type
+    Note that we cannot simply do mydata.to_netcdf(filepath_out) because data was not loaded via xarray."""
+
+    import os
+    from netCDF4 import Dataset
+    from pathlib import Path
+
+    assert model_name in ['ACCESS', 'GLORYS'], "model_name must be either 'ACCESS' or 'GLORYS'"
+
+    # Remove the file if it already exists
+    if filepath_out.exists():
+        os.remove(filepath_out)
+
+    # Now create the new NetCDF file
+    dst = Dataset(filepath_out, 'w')
+
+    # no information on dimension names, attributes etc. available in mydata
+    # e.g. when using mydata = ds.variables[myvar][0,0,:,:]
+    # Copy dimensions
+    mydata_dimensions = []
+    for dim_length in mydata.shape:
+        # ROMS grid dimensions: 
+        if dim_length == 30:
+            dim_name = 's_rho'
+        elif dim_length == 31:
+            dim_name = 's_w'
+        elif dim_length == 218:
+            dim_name = 'eta_rho'
+        elif dim_length == 242:
+            dim_name = 'xi_rho'
+        elif dim_length == 218:
+            dim_name = 'eta_u'
+        elif dim_length == 241:
+            dim_name = 'xi_u'
+        elif dim_length == 217:
+            dim_name = 'eta_v'
+        elif dim_length == 242:
+            dim_name = 'xi_v'
+        elif dim_length == 217:
+            dim_name = 'eta_psi'
+        elif dim_length == 241: 
+            dim_name = 'xi_psi'
+        elif dim_length == 219:
+            dim_name = 'eta_vert'
+        elif dim_length == 243:
+            dim_name = 'xi_vert' 
+        else:
+            # model-specific dimensions:
+            if model_name == 'ACCESS':
+                # dimensions in ACCESS input files:
+                if dim_length == 300:
+                    dim_name = 'j'
+                elif dim_length == 360:
+                    dim_name = 'i'
+                elif dim_length == 50:
+                    dim_name = 'lev'
+                elif dim_length in [144,145]:
+                    dim_name = 'lat'
+                elif dim_length in [192]:
+                    dim_name = 'lon'
+                elif dim_length in [120,1032,14612,18263,29224]:
+                    dim_name = 'time'
+                else:
+                    dim_name = 'this_dim_name'
+            elif model_name == 'GLORYS':
+                if dim_length == 317:
+                    dim_name = 'latitude'
+                elif dim_length == 363:
+                    dim_name = 'longitude'
+                elif dim_length == 50:
+                    dim_name = 'depth'
+                elif dim_length == 381:
+                    dim_name = 'time'
+                else:
+                    dim_name = 'this_dim_name'
+        mydata_dimensions.append(dim_name)
+
+        print('creating dimension', dim_name, dim_length)
+
+        dst.createDimension(dim_name, (dim_length))
+    # Copy variable
+
+    print('creating variable this_var', mydata_dimensions)
+
+    x = dst.createVariable('this_var', 'float32', mydata_dimensions)
+    dst['this_var'][:] = mydata[:]
+
+    dst.close()
+
+
 def convert_MODEL2ROMS(confM2R):
     # First opening of input file is just for initialization of grid
     filenamein = fc.get_filename(confM2R, confM2R.start_year, confM2R.start_month, confM2R.start_day, None)
@@ -484,22 +579,48 @@ def convert_MODEL2ROMS(confM2R):
 
                     if myvar in ['ssh', 'ageice', 'uice', 'vice', 'aice', 'hice', 'snow_thick']:
                         data = get_2d_data(confM2R, myvar, year, month, day, time_counter)
-                    
+
+                    if time_counter == confM2R.grdROMS.inittime:
+
+                        print('myvar for printing step 0', myvar)
+
+                        write_datavar_to_netcdf(data, Path('../model2roms_logs/0_data_'+myvar+'.nc'), 
+                                                confM2R.ocean_indata_type) # call this step 0 in filename
+
                     # Take the input data and horizontally interpolate to your grid
                     array1 = interp2D.do_hor_interpolation_regular_grid(confM2R, data, myvar)
+
+                    if time_counter == confM2R.grdROMS.inittime:
+                        write_datavar_to_netcdf(array1, Path('../model2roms_logs/1_'+myvar+'_array1.nc'), 
+                                                confM2R.ocean_indata_type) # step 1
 
                     if myvar in ['temperature', 'salinity', 'O3_c', 'O3_TA', 'N1_p', 'N3_n', 'N5_s', 'O2_o']:
                         STdata = vertical_interpolation(myvar, array1, array1, confM2R.grdROMS, confM2R.grdMODEL)
 
+                        if time_counter == confM2R.grdROMS.inittime:
+                            write_datavar_to_netcdf(STdata, Path('../model2roms_logs/2_'+myvar+'_STdata.nc'),
+                                                    confM2R.ocean_indata_type) # step 2
+
                         for dd in range(len(STdata[:, 0, 0])):
                             STdata[dd, :, :] = np.where(confM2R.grdROMS.mask_rho == 0, confM2R.grdROMS.fillval,
                                                         STdata[dd, :, :])
+                            
+                        if time_counter == confM2R.grdROMS.inittime:
+                            write_datavar_to_netcdf(STdata, Path('../model2roms_logs/3_'+myvar+'_STdata.nc'),
+                                                    confM2R.ocean_indata_type) # step 3
 
                         STdata = np.where(abs(STdata) > 1000, confM2R.grdROMS.fillval, STdata)
+
+                        if time_counter == confM2R.grdROMS.inittime:
+                            write_datavar_to_netcdf(STdata, Path('../model2roms_logs/4_'+myvar+'_STdata.nc'),
+                                                    confM2R.ocean_indata_type) # step 4
 
                         IOwrite.write_clim_file(confM2R, time_counter, myvar, STdata)
                         if time_counter == confM2R.grdROMS.inittime and confM2R.grdROMS.write_init is True:
                             IOinitial.create_init_file(confM2R, time_counter, myvar, STdata)
+                            write_datavar_to_netcdf(STdata, Path('../model2roms_logs/5_'+myvar+'_STdata.nc'),
+                                                    confM2R.ocean_indata_type) # step 5
+                            
 
                     if myvar in ['ssh', 'ageice', 'aice', 'hice', 'snow_thick']:
                         SSHdata = array1[0, :, :]
@@ -541,10 +662,32 @@ def convert_MODEL2ROMS(confM2R):
 
                     if myvar == 'vvel':
                         urot, vrot = rotate(confM2R.grdROMS, confM2R.grdMODEL, data, array2, array1)
+
+                        if time_counter == confM2R.grdROMS.inittime:
+                            write_datavar_to_netcdf(urot, Path('../model2roms_logs/2_'+myvar+'_urot.nc'),
+                                                    confM2R.ocean_indata_type) # step 2
+                            write_datavar_to_netcdf(vrot, Path('../model2roms_logs/2_'+myvar+'_vrot.nc'),
+                                                    confM2R.ocean_indata_type) # step 2
+
                         u, v = interpolate2uv(confM2R.grdROMS, confM2R.grdMODEL, urot, vrot)
+
+                        if time_counter == confM2R.grdROMS.inittime:
+                            write_datavar_to_netcdf(u, Path('../model2roms_logs/3_'+myvar+'_u.nc'),
+                                                    confM2R.ocean_indata_type) # step 3
+                            write_datavar_to_netcdf(v, Path('../model2roms_logs/3_'+myvar+'_v.nc'),
+                                                    confM2R.ocean_indata_type) # step 3
 
                         Udata, Vdata, UBARdata, VBARdata = vertical_interpolation(myvar, u, v, confM2R.grdROMS,
                                                                                   confM2R.grdMODEL)
+                        if time_counter == confM2R.grdROMS.inittime:
+                            write_datavar_to_netcdf(Udata, Path('../model2roms_logs/4_'+myvar+'_Udata.nc'),
+                                                    confM2R.ocean_indata_type) # step 4
+                            write_datavar_to_netcdf(Vdata, Path('../model2roms_logs/4_'+myvar+'_Vdata.nc'),
+                                                    confM2R.ocean_indata_type) # step 4
+                            write_datavar_to_netcdf(UBARdata, Path('../model2roms_logs/4_'+myvar+'_UBARdata.nc'),
+                                                    confM2R.ocean_indata_type) # step 4
+                            write_datavar_to_netcdf(VBARdata, Path('../model2roms_logs/4_'+myvar+'_VBARdata.nc'),
+                                                    confM2R.ocean_indata_type) # step 4
 
                     if myvar == 'vvel':
 
@@ -558,6 +701,16 @@ def convert_MODEL2ROMS(confM2R):
                         VBARdata = np.where(abs(VBARdata) > 1000, confM2R.grdROMS.fillval, VBARdata)
 
                         IOwrite.write_clim_file(confM2R, time_counter, myvar, Udata, Vdata, UBARdata, VBARdata)
+
+                        if time_counter == confM2R.grdROMS.inittime:
+                            write_datavar_to_netcdf(Udata, Path('../model2roms_logs/5_'+myvar+'_Udata.nc'),
+                                                    confM2R.ocean_indata_type) # step 5
+                            write_datavar_to_netcdf(Vdata, Path('../model2roms_logs/5_'+myvar+'_Vdata.nc'),
+                                                    confM2R.ocean_indata_type) # step 5
+                            write_datavar_to_netcdf(UBARdata, Path('../model2roms_logs/5_'+myvar+'_UBARdata.nc'),
+                                                    confM2R.ocean_indata_type) # step 5
+                            write_datavar_to_netcdf(VBARdata, Path('../model2roms_logs/5_'+myvar+'_VBARdata.nc'),
+                                                    confM2R.ocean_indata_type) # step 5
 
                         if time_counter == confM2R.grdROMS.inittime:
                             IOinitial.create_init_file(confM2R, time_counter, myvar, Udata, Vdata, UBARdata, VBARdata)
