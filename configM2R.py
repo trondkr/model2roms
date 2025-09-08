@@ -258,14 +258,7 @@ class Model2romsConfig(object):
             self.depth_name = "lev"
         if self.ocean_indata_type == 'IPSL':
             # overwrite
-            self.lon_name = "nav_lon"
-            self.lat_name = "nav_lat"
             self.depth_name = "olevel"
-            self.lon_name_u = "bounds_nav_lon"
-            self.lat_name_u = "bounds_nav_lat"
-            self.lon_name_v = "bounds_nav_lon"
-            self.lat_name_v = "bounds_nav_lat"
-
         if self.ocean_indata_type in ['SODA3_5DAY','SODA3']:
             self.lon_name = "xt_ocean"
             self.lat_name = "yt_ocean"
