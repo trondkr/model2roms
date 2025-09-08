@@ -165,9 +165,3 @@ def createAtmosFileUV(confM2R):
             # Rotate to ROMS grid structure
             scru[t,:,:]=(fieldE*np.cos(grdROMS.angle)) + (fieldN*np.sin(grdROMS.angle))
             scrv[t,:,:]=(fieldN*np.cos(grdROMS.angle)) - (fieldE*np.sin(grdROMS.angle))
-    else:
-        # !!!! TODO this code is not finished and not needed !!!! because atmospheric variables are interpolated by ROMS itself.
-        if confM2R.atmos_indata_type == "ACCESS": # TODO first only test with ACCESS, then generalize to other types
-            year=2050; month=1; day=1             # TODO temporary fix; need this inside a time loop (not existing yet)
-            filename = fc.get_filename(confM2R, year, month, day, "uo")
-            # TODO not finished; should be like interp2D.py and loop over time
