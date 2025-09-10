@@ -137,7 +137,7 @@ def organize_split(grdMODEL, grdROMS):
         print("Need to split the extraction of data into Western and")
         print("Eastern region. The two regions will be concatenated again.\n")
 
-        """Save longitude and latitude values so that only variables are needed to be extracted after first loop"""
+        """Save longitude and latitude values so that only data variables need to be extracted in later steps"""
         lon1 = grdMODEL.lon[int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
                int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])]
         lat1 = grdMODEL.lat[int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),

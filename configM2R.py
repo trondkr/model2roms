@@ -31,6 +31,8 @@ class Model2romsConfig(object):
     def define_subset_for_indata(self):
         # Subset the input data. The more you subset the less memory is needed for calculations
         # and the faster the process is performed. The subset is initially performed in IOsubset.py
+        # Subsets must be slightly larger (depending on resolution) than desired grid because 
+        # closest grid points found on input grid are used
         subset = np.zeros(4)
 
         if self.outgrid_name == "NS8KM":
@@ -43,9 +45,7 @@ class Model2romsConfig(object):
             return [30, 90, -179, 360]
 
         elif self.outgrid_name == "NWES":
-            # rectangle for taking subset of input data
-            return [35, 62, -20, 11] # must be larger than the actual desired grid (incl extra space for v coords?)
-
+            return [35, 62, -20, 11]
         else:
             raise Exception("Unable to subset {}".format(self.outgrid_name))
 
@@ -57,7 +57,7 @@ class Model2romsConfig(object):
                 self.start_year, self.start_month, self.end_year, self.end_month))
         logging.info('[M2R_configM2R]==> The following variables will be interpolated: {}'.format(self.global_varnames))
 
-        logging.info('[M2R_configM2R] => All horisontal interpolations will be done using ESMF')
+        logging.info('[M2R_configM2R] => All horizontal interpolations will be done using ESMF')
         logging.info('[M2R_configM2R] => Output files are written in format: {}'.format(self.output_format))
         logging.info('[M2R_configM2R] => Output grid file is: {}'.format(self.roms_grid_path))
 

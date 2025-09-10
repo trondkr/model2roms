@@ -189,7 +189,7 @@ Module interpolation
 !f2py intent(hide) ic,jc,kc, fill
 
             fill=10000
-            print*,'---> Started horisontal rho2u interpolation'
+            print*,'---> Started horizontal rho2u interpolation'
             do kc=1,KK
                 do jc=1,JJ
                     do ic=2,II-1
@@ -213,7 +213,7 @@ Module interpolation
                     end do
                 end do
             end do
-            print*,'-----> Ended horisontal rho2u interpolation'
+            print*,'-----> Ended horizontal rho2u interpolation'
         end subroutine rho2u
             
       subroutine rho2v(vdata,rhodata,II,JJ,KK)
@@ -237,7 +237,7 @@ Module interpolation
 !f2py intent(hide) ic,jc,kc, fill
             
             fill=10000
-            print*,'---> Started horisontal rho2v interpolation'
+            print*,'---> Started horizontal rho2v interpolation'
             do kc=1,KK
                 do jc=2,JJ-1
                     do ic=1,II
@@ -257,7 +257,7 @@ Module interpolation
                     end do
                 end do
             end do
-            print*,'-----> Ended horisontal rho2v interpolation'
+            print*,'-----> Ended horizontal rho2v interpolation'
         end subroutine rho2v
             
    
