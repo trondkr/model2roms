@@ -1,6 +1,7 @@
 import numpy as np
 from datetime import datetime
 import logging
+import sys
 
 __author__ = 'Trond Kristiansen'
 __email__ = 'me@trondkristiansen.com'
@@ -125,7 +126,7 @@ def checkDomain(grdMODEL, grdROMS):
     else:
         print("WARNING: Your input domain is smaller or not overlaying your output domain")
         print("IOsubset.py: EXIT")
-        # sys.exit()
+        sys.exit()
     print("\n--------------------------")
 
 
