@@ -51,8 +51,9 @@ def find_subset_indices(grdMODEL, min_lat, max_lat, min_lon, max_lon):
         if k == 0 and splitExtract == True:
             minLon = min_lon;
             maxLon = 0
-            minLon = minLon + 360
-            maxLon = maxLon + 360
+            if grdMODEL.lon.max() > 180:  # for case of 0-360 input grid
+                minLon = minLon + 360
+                maxLon = maxLon + 360
         elif k == 1 and splitExtract == True:
             minLon = 0;
             maxLon = max_lon
