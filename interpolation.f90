@@ -154,11 +154,10 @@ Module interpolation
                                        !print*,'case5A:Need to find better value for depth ',kT,kT+1,'which has &
                                    !    values ',dat(kT,jc,ic),dat(kT+1,jc,ic)
                                         DO kkT=1,Nsoda
-                                            if (dat(kT-kkT,jc,ic) .GT. fillneg .and. dat(kT-kkT+1,jc,ic) .GT. fillneg  ) then
-                                                 !print*,'CASE 5A: Found good value at depth',kT-kkT,kt-kkT+1
-                                                 !print*,'with values',dat(kT-kkT,jc,ic), dat(kt-kkT+1,jc,ic)
-                                                 outdat(kc,jc,ic) = (rz1*dat(kT+1-kkT,jc,ic) &
-                                                 + rz2*dat(kT-kkT,jc,ic))
+                                            if (dat(kT-kkT,jc,ic) .GT. fillneg) then
+                                                 !print*,'CASE 5A: Found good value at depth',kT-kkT
+                                                 !print*,'with value',dat(kT-kkT,jc,ic)
+                                                 outdat(kc,jc,ic) = dat(kT+1-kkT,jc,ic)
                                                 exit
                                             end if
                                         END DO
@@ -169,11 +168,10 @@ Module interpolation
                                        !print*,'case5B:Need to find better value for depth ',kT,kT+1,'which has &
                                    !    values ',dat(kT,jc,ic),dat(kT+1,jc,ic)
                                         DO kkT=1,Nsoda
-                                            if (dat(kT-kkT,jc,ic) .LT. fillpos .and. dat(kT-kkT+1,jc,ic) .LT. fillpos  ) then
-                                                 !print*,'CASE 5B: Found good value at depth',kT-kkT,kt-kkT+1
-                                                 !print*,'with values',dat(kT-kkT,jc,ic), dat(kt-kkT+1,jc,ic)
-                                                 outdat(kc,jc,ic) = (rz1*dat(kT+1-kkT,jc,ic) &
-                                                 + rz2*dat(kT-kkT,jc,ic))
+                                            if (dat(kT-kkT,jc,ic) .LT. fillpos) then
+                                                 !print*,'CASE 5B: Found good value at depth',kT-kkT
+                                                 !print*,'with value',dat(kT-kkT,jc,ic)
+                                                 outdat(kc,jc,ic) = dat(kT+1-kkT,jc,ic)
                                                 exit
                                             end if
                                         END DO
