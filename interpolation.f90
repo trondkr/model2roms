@@ -90,7 +90,7 @@ Module interpolation
                       ! CASE 2: ROMS shallower than SODA
                       ELSE IF (zr(kc,jc,ic) .GT. zs(1)) THEN
                           outdat(kc,jc,ic)=dat(1,jc,ic)
-                     
+
                       ELSE
                           ! DO LOOP BETWEEN SURFACE AND BOTTOM
                           DO kT=1,Nsoda
@@ -103,13 +103,23 @@ Module interpolation
                                 ! We do not want to give the deepest depth a fill_value, so we find
                                 ! the closest value to deepest depth.
                                 if (MAXVAL(dat(:,jc,ic)) .GT. fillneg) then
-                               
+
+                                    ! case 3A: negative fill values like in SODA
                                     if (dat(kT,jc,ic) .LE. fillneg) then
-                                       !print*,'case3:Need to find better value for depth ',kT,'which has value ',dat(kT,jc,ic)
+                                       !print*,'case3A:Need to find better value for depth ',kT,'which has value ',dat(kT,jc,ic)
                                         DO kkT=1,Nsoda
                                             if (dat(kT-kkT,jc,ic) .GT. fillneg) then
                                                  outdat(kc,jc,ic)=dat(kT-kkT,jc,ic)
-                            
+                                                exit
+                                            end if
+                                        end do
+                                    end if
+                                    ! case 3B: positive fill values like in ACCESS
+                                    if (dat(kT,jc,ic) .GE. fillpos) then
+                                       !print*,'case3B:Need to find better value for depth ',kT,'which has value ',dat(kT,jc,ic)
+                                        DO kkT=1,Nsoda
+                                            if (dat(kT-kkT,jc,ic) .LT. fillpos) then
+                                                 outdat(kc,jc,ic)=dat(kT-kkT,jc,ic)                            
                                                 exit
                                             end if
                                         end do
@@ -139,16 +149,31 @@ Module interpolation
 
                                 if (MAXVAL(dat(:,jc,ic)) .GT. fillneg) then
                                
+                                    ! case 5A: negative fill values like in SODA
                                     if (dat(kT,jc,ic) .LE. fillneg .OR. dat(kT+1,jc,ic) .LE. fillneg) then
-                                       !print*,'case5:Need to find better value for depth ',kT,kT+1,'which has &
+                                       !print*,'case5A:Need to find better value for depth ',kT,kT+1,'which has &
                                    !    values ',dat(kT,jc,ic),dat(kT+1,jc,ic)
                                         DO kkT=1,Nsoda
                                             if (dat(kT-kkT,jc,ic) .GT. fillneg .and. dat(kT-kkT+1,jc,ic) .GT. fillneg  ) then
-                                                 !print*,'CASE 5: Found good value at depth',kT-kkT,kt-kkT+1
+                                                 !print*,'CASE 5A: Found good value at depth',kT-kkT,kt-kkT+1
                                                  !print*,'with values',dat(kT-kkT,jc,ic), dat(kt-kkT+1,jc,ic)
                                                  outdat(kc,jc,ic) = (rz1*dat(kT+1-kkT,jc,ic) &
                                                  + rz2*dat(kT-kkT,jc,ic))
-                            
+                                                exit
+                                            end if
+                                        END DO
+                                    end if
+
+                                    ! case 5B: positive fill values like in ACCESS
+                                    if (dat(kT,jc,ic) .GE. fillpos .OR. dat(kT+1,jc,ic) .GE. fillpos) then
+                                       !print*,'case5B:Need to find better value for depth ',kT,kT+1,'which has &
+                                   !    values ',dat(kT,jc,ic),dat(kT+1,jc,ic)
+                                        DO kkT=1,Nsoda
+                                            if (dat(kT-kkT,jc,ic) .LT. fillpos .and. dat(kT-kkT+1,jc,ic) .LT. fillpos  ) then
+                                                 !print*,'CASE 5B: Found good value at depth',kT-kkT,kt-kkT+1
+                                                 !print*,'with values',dat(kT-kkT,jc,ic), dat(kt-kkT+1,jc,ic)
+                                                 outdat(kc,jc,ic) = (rz1*dat(kT+1-kkT,jc,ic) &
+                                                 + rz2*dat(kT-kkT,jc,ic))
                                                 exit
                                             end if
                                         END DO
