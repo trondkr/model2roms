@@ -6,9 +6,13 @@ import numpy as np
 
 try:
     import ESMF
-except ImportError:
-    logging.error("[M2R_interp2D] Could not find module ESMF")
-    pass
+except:
+    try:
+        # The module name for ESMPy was changed in v8.4.0 from “ESMF” to “esmpy”
+        import esmpy as ESMF
+    except ImportError:
+        logging.error("[M2R_interp2D] Could not find module ESMF/esmpy")
+        pass
 
 __author__ = "Trond Kristiansen"
 __email__ = "me@trondkristiansen.com"
@@ -62,7 +66,7 @@ def do_hor_interpolation_regular_grid(confM2R, mydata, myvar):
         pass
 
     index_roms, toxi, toeta, mymask = setup_indexes(confM2R, myvar)
-    array1 = np.zeros(index_roms, dtype=np.float)
+    array1 = np.zeros(index_roms, dtype=float)
 
     # 2D or 3D interpolation
     depth_levels = confM2R.grdMODEL.nlevels

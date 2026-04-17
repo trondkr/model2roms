@@ -5,6 +5,7 @@ import clim2bry
 import configM2R
 import decimateGrid
 import model2roms
+import atmosForcing
 import logging
 
 __author__ = 'Trond Kristiansen'
@@ -31,12 +32,12 @@ def run():
     if confM2R.create_atmos_forcing or confM2R.create_ocean_forcing:
 
         if confM2R.create_ocean_forcing:
-            model2roms.convert_MODEL2ROMS(confM2R)
+            model2roms.convert_MODEL2ROMS(confM2R)  # init & clim file
 
-            clim2bry.writebry(confM2R)
+            clim2bry.writebry(confM2R)              # bry file
 
-      #  if confM2R.createAtmosForcing:
-      #      atmosForcing.createAtmosFileUV(confM2R)
+        if confM2R.create_atmos_forcing:
+            atmosForcing.createAtmosFileUV(confM2R) # atmos U,V file
 
     if confM2R.decimate_gridfile:
         decimateGrid.createGrid(confM2R.grdROMS, "/Users/trondkr/Projects/KINO/GRID/kino_1600m_18072015.nc",

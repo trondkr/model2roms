@@ -2,6 +2,7 @@
 This is CLM2BRY
 """
 from datetime import datetime
+import logging
 
 import numpy as np
 from netCDF4 import Dataset, num2date
@@ -59,10 +60,12 @@ def writebry(confM2R):
     IOBry.createBryFile(confM2R)
     # Now open the file we created
     f = Dataset(confM2R.bry_name, mode='a', format=confM2R.output_format, zlib=confM2R.use_zlib)
+    logging.info("[M2R_clim2bry] =>  file name of bry file:     {}".format(confM2R.bry_name))
 
     # Get the time from the clim file
     climtime = np.array(clim.variables["ocean_time"][:])
     ntimes = len(climtime)
+    logging.info("[M2R_clim2bry] =>  nr time steps of finished clim file:   {}".format(ntimes))
 
     # For each time in CLIM file, save clips of boundary data to BRY file
     for itime in range(ntimes):

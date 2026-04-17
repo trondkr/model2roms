@@ -5,7 +5,15 @@ import xarray as xr
 from zarr.convenience import consolidate_metadata
 import IOverticalGrid
 import xesmf as xe
-import ESMF
+
+try:
+    import ESMF
+except:
+    try:
+        # The module name for ESMPy was changed in v8.4.0 from “ESMF” to “esmpy”
+        import esmpy as ESMF
+    except ImportError:
+        raise ImportError("[grd]: Could not find module ESMF/esmpy")
 
 __author__ = 'Trond Kristiansen'
 __email__ = 'me@trondkristiansen.com'
@@ -26,7 +34,8 @@ class Grd:
         The object is initialised and created through the __init__ method
         As an example of how to use, these lines return a grid object called grdTEST:
         => import grd
-        => grdTEST = grd.grdClass("grdfilename","ROMS")
+        => grdTEST = grd.Grd("FORCINGDATA", confM2R)
+        The variable grdtype can be "FORCINGDATA", "STATION" or "ROMS"
         """
         self.type = grdtype
         self.grdName = confM2R.outgrid_name

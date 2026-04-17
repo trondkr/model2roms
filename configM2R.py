@@ -135,7 +135,9 @@ class Model2romsConfig(object):
                 return KeyError
 
     def define_atmospheric_forcing_path(self):
-        return {'ERA5': "/Volumes/DATASETS/ERA5/"}[self.atmos_indata_type]
+        return {'ERA5': "/Volumes/DATASETS/ERA5/",
+                'NORESM': "/Users/trondkr/Projects/RegScen/model2roms/TESTFILES/",
+                }[self.atmos_indata_type]
 
     def __init__(self):
         logging.info('[M2R_run] --------------------------\n')
@@ -250,7 +252,7 @@ class Model2romsConfig(object):
         self.outgrid_name = 'ROHO800'  # "ROHO800", "A20", "ROHO160"
         self.outgrid_type = "ROMS"
         
-        # Path to where results files should be stored defined by grid name
+        # Path to where results files should be stored (must end with '/')
         self.outdir = "../oceanography/{}/".format(self.outgrid_name)
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir, exist_ok=True)
@@ -383,11 +385,14 @@ class Model2romsConfig(object):
             compile.compileallgfortran()
 
         if self.create_atmos_forcing or self.create_ocean_forcing:
-
             try:
                 import ESMF
-            except ImportError:
-                raise ImportError("Unable to import ESMF")
+            except:
+                try:
+                    # The module name for ESMPy was changed in v8.4.0 from “ESMF” to “esmpy”
+                    import esmpy as ESMF
+                except ImportError:
+                    raise ImportError("[M2R_configRunM2R]: Unable to import ESMF/esmpy")
             logging.info('[M2R_configRunM2R]==> Starting logfile for ESMF')
             ESMF.Manager(debug=True)
 

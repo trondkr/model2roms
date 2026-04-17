@@ -40,10 +40,10 @@ different depth levels, takes 3 seconds on a Mac Laptop Pro. For most people, in
 best option to install the required packages to run <b>model2roms</b>. The minimum installation of required packages:
 
 ```bash
-conda create -n model2roms`
+conda create -n model2roms
 conda config --add channels conda-forge
 conda activate model2roms
-conda install esmf xarray netcdf4 progressbar2 
+conda install esmf xarray netcdf4 progressbar2 meson zarr xesmf google-api-python-client google-cloud-storage gcsfs
 ```
 
 ![Sea-ice concentration Antarctica](https://github.com/trondkr/model2roms/blob/master/Examples/Figures/temp_Antarctic.png)
@@ -67,13 +67,14 @@ To get started, compile the Fortran functions into modules callable by Python. F
 your Fortran compiler (currently gfortran and Intel Fortran compiler supported):
 
 ```python
-python
-compile.py
+python compile.py
 ```
 
 Make sure that this successfully creates modules (.so files) that Python can import. Some users have reported that they
-have to run each compile command individually to compile (this may depend on your machine and OS). The use of Fortran
-modules as part of the calculations significantly speeds up the calculations.
+have to run each compile command individually to compile (this may depend on your machine and OS). Currently, compilation 
+does not work for OS X laptops with the M1 apple chip, which can give errors such as "gfortran: warning: this compiler 
+does not support x86 (‘-arch’ option ignored)". Switching to a linux machine (on an HPC cluster if you don't have one 
+yourself) resolves the issue. The use of Fortran modules as part of the calculations significantly speeds up the calculations.
 
 <h4>Running model2roms</h4>
 Before you run model2roms you have to edit the configuration file `configM2R.py` to correctly point to the path of your
@@ -81,8 +82,7 @@ gridfile, the type of forcing you want and the variables to use.
 
 Once everything is correctly setup you can run model2roms with the command:
 ```python
-python
-runM2R.py
+python runM2R.py
 ```
 
 <h4>Options for interpolation</h4>
