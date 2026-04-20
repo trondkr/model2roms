@@ -31,6 +31,8 @@ class Model2romsConfig(object):
     def define_subset_for_indata(self):
         # Subset the input data. The more you subset the less memory is needed for calculations
         # and the faster the process is performed. The subset is initially performed in IOsubset.py
+        # Subsets must be slightly larger (depending on resolution) than desired grid because 
+        # closest grid points found on input grid are used
         subset = np.zeros(4)
 
         if self.outgrid_name == "NS8KM":
@@ -41,6 +43,9 @@ class Model2romsConfig(object):
 
         elif self.outgrid_name == "A20":
             return [30, 90, -179, 360]
+
+        elif self.outgrid_name == "NWES":
+            return [35, 62, -20, 11]
         else:
             raise Exception("Unable to subset {}".format(self.outgrid_name))
 
@@ -52,7 +57,7 @@ class Model2romsConfig(object):
                 self.start_year, self.start_month, self.end_year, self.end_month))
         logging.info('[M2R_configM2R]==> The following variables will be interpolated: {}'.format(self.global_varnames))
 
-        logging.info('[M2R_configM2R] => All horisontal interpolations will be done using ESMF')
+        logging.info('[M2R_configM2R] => All horizontal interpolations will be done using ESMF')
         logging.info('[M2R_configM2R] => Output files are written in format: {}'.format(self.output_format))
         logging.info('[M2R_configM2R] => Output grid file is: {}'.format(self.roms_grid_path))
 
@@ -91,8 +96,10 @@ class Model2romsConfig(object):
                 'WOAMONTHLY': ['temperature', 'salinity'],
                 'NORESM': ['temperature', 'salinity', 'ssh', 'uvel', 'vvel', 'ageice', 'uice', 'vice', 'aice', 'hice',
                            'hs',
-                           'O3_c', 'O3_TA', 'N1_p', 'N3_n', 'N5_s', 'O2_o']}[
-            self.ocean_indata_type]
+                           'O3_c', 'O3_TA', 'N1_p', 'N3_n', 'N5_s', 'O2_o'],
+                'IPSL':   ['ssh', 'uvel', 'vvel', 'temperature', 'salinity'], # (as named in model2roms)
+                'ACCESS': ['ssh', 'uvel', 'vvel', 'temperature', 'salinity'],
+                }[self.ocean_indata_type]
 
     # Define the corresponding name of the variables in the input dataset files. This list needs to correspond
     # exactly with the list given in the function define_global_varnames:
@@ -101,14 +108,19 @@ class Model2romsConfig(object):
                 'SODA3_5DAY': ['temp', 'salt', 'ssh', 'u', 'v'],
                 'GLORYS': ['thetao', 'so', 'zos', 'uo', 'vo'], # ['thetao', 'so', 'zos', 'uo', 'vo', 'usi', 'vsi','siconc', 'sithick'],
                 'NORESM': ['templvl', 'salnlvl', 'sealv', 'uvellvl', 'vvellvl', 'iage', 'uvel', 'vvel', 'aice', 'hi',
-                           'hs', 'dissic', 'talk', 'po4', 'no3', 'si', 'o2']}[self.ocean_indata_type]
+                           'hs', 'dissic', 'talk', 'po4', 'no3', 'si', 'o2'],
+                'IPSL':   ['zos', 'uo', 'vo', 'thetao', 'so'], # (as named in this CMIP6 model)
+                'ACCESS': ['zos', 'uo', 'vo', 'thetao', 'so'],
+                           }[self.ocean_indata_type]
 
     # Define the path to where the  ROMS grid can be found
     def define_roms_grid_path(self):
         try:
             return {'A20': '../oceanography/A20/Grid/A20niva_grd_v1.nc',
                     'ROHO160': '../oceanography/NAUTILOS/Grid/norfjords_160m_grid.nc_A04.nc',
-                    'ROHO800': 'Grids/ROHO800_grid_fix5.nc'}[self.outgrid_name]
+                    'ROHO800': 'Grids/ROHO800_grid_fix5.nc',
+                    'NWES': '/export/lv6/user/jscheen/roms/projects/nwes/NorthSea8_smooth013_sponge_nudg_wo_IJsselmeer.nc'
+                    }[self.outgrid_name]
         except KeyError:
             return KeyError
 
@@ -117,7 +129,8 @@ class Model2romsConfig(object):
         return {"A20": "a20",
                 "Antarctic": "Antarctic",
                 "ROHO160": "roho160",
-                "ROHO800": "roho800"}[self.outgrid_name]
+                "ROHO800": "roho800",
+                "NWES": "nwes"}[self.outgrid_name]
 
     def define_ocean_forcing_data_path(self):
         if self.use_zarr:
@@ -130,12 +143,18 @@ class Model2romsConfig(object):
                 return {'SODA3': "../oceanography/copernicus-marine-data/SODA3.4.2/",
                         'SODA3_5DAY': "/Volumes/DATASETS/SODA2002/",  # "/cluster/projects/nn9297k/SODA3.3.2/",
                         'NORESM': "/cluster/projects/nn9412k/A20/FORCING/RCP85_ocean/",
-                        'GLORYS': "../oceanography/copernicus-marine-data/Global/"}[self.ocean_indata_type]
+                        'GLORYS': "../oceanography/copernicus-marine-data/Global/",
+                        'IPSL': "/export/lv6/user/jscheen/data/cmip6/IPSL-CM6A-LR/data/",
+                        'ACCESS': "/export/lv6/user/jscheen/data/cmip6/ACCESS-CM2/data/",
+                        }[self.ocean_indata_type]
             except KeyError:
                 return KeyError
 
     def define_atmospheric_forcing_path(self):
         return {'ERA5': "/Volumes/DATASETS/ERA5/",
+                # not needed; don't use atmospheric part (not working)
+                'IPSL': "/export/lv6/user/jscheen/data/cmip6/IPSL-CM6A-LR/data/",
+                'ACCESS': "/export/lv6/user/jscheen/data/cmip6/ACCESS-CM2/data/",
                 'NORESM': "/Users/trondkr/Projects/RegScen/model2roms/TESTFILES/",
                 }[self.atmos_indata_type]
 
@@ -202,7 +221,7 @@ class Model2romsConfig(object):
         # IN GRIDTYPES ------------------------------------------------------------------------------
         # Define what grid type you want to interpolate from (input MODEL data)
         # Currently supported options:
-        # 1. NORESM, 2. GLORYS, 3. SODA3, 4. SODA3_5DAY
+        # 1. NORESM, 2. GLORYS, 3. SODA3, 4. SODA3_5DAY 5. IPSL 6. ACCESS
         self.ocean_indata_type = 'GLORYS'
         self.atmos_indata_type = 'ERA5'
         
@@ -232,6 +251,12 @@ class Model2romsConfig(object):
         self.lon_name_v = "longitude"
         self.lat_name_v = "latitude"
 
+        if self.ocean_indata_type == 'ACCESS':
+            # overwrite
+            self.depth_name = "lev"
+        if self.ocean_indata_type == 'IPSL':
+            # overwrite
+            self.depth_name = "olevel"
         if self.ocean_indata_type in ['SODA3_5DAY','SODA3']:
             self.lon_name = "xt_ocean"
             self.lat_name = "yt_ocean"
@@ -249,7 +274,7 @@ class Model2romsConfig(object):
         # OUT GRIDTYPES ------------------------------------------------------------------------------
         # Define what grid type you want to interpolate to
         # Options: This is just the name of your grid used to identify your selection later
-        self.outgrid_name = 'ROHO800'  # "ROHO800", "A20", "ROHO160"
+        self.outgrid_name = 'NWES'  # "ROHO800", "A20", "ROHO160", "NWES"
         self.outgrid_type = "ROMS"
         
         # Path to where results files should be stored (must end with '/')
@@ -297,7 +322,7 @@ class Model2romsConfig(object):
         self.end_month = 12
         self.start_day = 15
         self.end_day = 31
-
+        
         if int(calendar.monthrange(self.start_year, self.start_month)[1]) < self.start_day:
             self.start_day = int(calendar.monthrange(self.start_year, self.start_month)[1])
 
