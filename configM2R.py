@@ -143,8 +143,7 @@ class Model2romsConfig(object):
                 return {'SODA3': "../oceanography/copernicus-marine-data/SODA3.4.2/",
                         'SODA3_5DAY': "/Volumes/DATASETS/SODA2002/",  # "/cluster/projects/nn9297k/SODA3.3.2/",
                         'NORESM': "/cluster/projects/nn9412k/A20/FORCING/RCP85_ocean/",
-#                        'GLORYS': "../oceanography/copernicus-marine-data/Global/",
-                        'GLORYS': "/export/lv6/user/jscheen/data/glorys/glorys12v1/",
+                        'GLORYS': "../oceanography/copernicus-marine-data/Global/",
                         'IPSL': "/export/lv6/user/jscheen/data/cmip6/IPSL-CM6A-LR/data/",
                         'ACCESS': "/export/lv6/user/jscheen/data/cmip6/ACCESS-CM2/data/",
                         }[self.ocean_indata_type]
@@ -153,8 +152,7 @@ class Model2romsConfig(object):
 
     def define_atmospheric_forcing_path(self):
         return {'ERA5': "/Volumes/DATASETS/ERA5/",
-                'GLORYS': "/export/lv6/user/jscheen/data/era5/era5/",
-                # TODO not needed; dont use atmos part at the moment
+                # not needed; don't use atmospheric part (not working)
                 'IPSL': "/export/lv6/user/jscheen/data/cmip6/IPSL-CM6A-LR/data/",
                 'ACCESS': "/export/lv6/user/jscheen/data/cmip6/ACCESS-CM2/data/",
                 'NORESM': "/Users/trondkr/Projects/RegScen/model2roms/TESTFILES/",
@@ -225,14 +223,14 @@ class Model2romsConfig(object):
         # Currently supported options:
         # 1. NORESM, 2. GLORYS, 3. SODA3, 4. SODA3_5DAY 5. IPSL 6. ACCESS
         self.ocean_indata_type = 'GLORYS'
-        self.atmos_indata_type = 'GLORYS'
+        self.atmos_indata_type = 'ERA5'
         
         if self.ocean_indata_type == "SODA3":
             self.soda_version="3.4.2"
             
         # Define contact info for final NetCDF files
-        self.author_name = "Jeemijn Scheen"
-        self.author_email = "jeemijn.scheen (at) nioz.nl"
+        self.author_name = "Trond Kristiansen"
+        self.author_email = "trondkr (at) faralloninstitute.org"
 
         # Define what grid type you wnat to interpolate from: Can be Z for SIGMA for ROMS
         # vertical coordinate system or ZLEVEL. also define the name of the dimensions in the input files.
@@ -280,7 +278,7 @@ class Model2romsConfig(object):
         self.outgrid_type = "ROMS"
         
         # Path to where results files should be stored (must end with '/')
-        self.outdir = "/export/lv6/user/jscheen/roms/forcing/cmip6_forcings/"
+        self.outdir = "../oceanography/{}/".format(self.outgrid_name)
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir, exist_ok=True)
             
@@ -291,18 +289,18 @@ class Model2romsConfig(object):
             self.subset = self.define_subset_for_indata()
 
         # Define number of output depth levels
-        self.nlevels = 30
+        self.nlevels = 25
         # Define the grid stretching properties (leave default if uncertain what to pick)
         self.vstretching = 4
         self.vtransform = 2
         self.theta_s = 7.0
-        self.theta_b = 2.0
-        self.tcline = 50.0
-        self.hc = 50
+        self.theta_b = 0.1
+        self.tcline = 250.0
+        self.hc = 250
         
         # PATH TO FORCING DATA --------------------------------------------------------------------
         # Define the path to the input data
-        self.use_zarr = False
+        self.use_zarr = True
         if self.use_zarr:
             self.setup_actea_google_storage()
 
@@ -318,20 +316,12 @@ class Model2romsConfig(object):
 
         # DATE AND TIME DETAILS ---------------------------------------------------------
         # Define the period to create forcing for
-        ## for CMIP6 models:
-#        self.start_year = 2015
-#        self.end_year = 2100
-#        self.start_month = 1
-#        self.end_month = 12
-#        self.start_day = 16
-#        self.end_day = 16
-        ## for GLORYS:
-        self.start_year = 1993
-        self.end_year = 2024
+        self.start_year = 1997
+        self.end_year = 2020
         self.start_month = 1
-        self.end_month = 9
-        self.start_day = 1
-        self.end_day = 1
+        self.end_month = 12
+        self.start_day = 15
+        self.end_day = 31
         
         if int(calendar.monthrange(self.start_year, self.start_month)[1]) < self.start_day:
             self.start_day = int(calendar.monthrange(self.start_year, self.start_month)[1])

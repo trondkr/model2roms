@@ -56,14 +56,13 @@ def get_filename_and_yr(confM2R, year, month, day, defaultvar):
 def get_GLORYS_filename(confM2R, year, month, varname):
     if confM2R.use_zarr:
         return f"{confM2R.ocean_forcing_path}{varname.lower()}"
-    return f"{confM2R.ocean_forcing_path}glorys_total.nc"
-#    return "{}{}/CMEMS_{}_monthly_MERCATOR_{}-{}.nc".format(
-#        confM2R.ocean_forcing_path,
-#        varname.lower(),
-#        varname.capitalize(),
-#        year,
-#        str(month).zfill(2),
-#    )
+    return "{}{}/CMEMS_{}_monthly_MERCATOR_{}-{}.nc".format(
+        confM2R.ocean_forcing_path,
+        varname.lower(),
+        varname.capitalize(),
+        year,
+        str(month).zfill(2),
+    )
 
 def get_IPSL_filename(confM2R, year, myvar):
     if myvar in ['clt', 'pr', 'rsds', 'rsus']: # 'uas', 'vas'
