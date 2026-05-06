@@ -65,18 +65,18 @@ def get_GLORYS_filename(confM2R, year, month, varname):
     )
 
 def get_IPSL_filename(confM2R, year, myvar):
-    if myvar in ['clt', 'pr', 'rsds', 'rsus']: # 'uas', 'vas'
+    if myvar in ['clt', 'pr', 'rsds', 'rsus']:
         freq_str = '3hr'
         grid_yr_str = 'gr_201501010130-210012312230'
-        file_start_year = 2015
     elif myvar in ['hurs', 'tas']:
         freq_str = 'day'
         grid_yr_str = 'gr_20150101-21001231'
-        file_start_year = 2015
     elif myvar in ['psl']:
         freq_str = '6hrPlev'
         grid_yr_str = 'gr_201501010300-210012312100'
-        file_start_year = 2015
+    elif myvar in ['uas', 'vas']:
+        freq_str = '3hr'
+        grid_yr_str = 'gr_201501010300-210101010000'
     elif myvar in ['so', 'thetao', 'uo', 'vo', 'zos']:
         freq_str = 'Omon'
         grid_yr_str = 'gn_201501-210012'
