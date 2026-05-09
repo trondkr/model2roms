@@ -65,6 +65,10 @@ def get_GLORYS_filename(confM2R, year, month, varname):
     )
 
 def get_IPSL_filename(confM2R, year, myvar):
+    if year < 2015:
+        scenario_str = 'historical'
+    else:
+        scenario_str = 'ssp245'
     if myvar in ['clt', 'pr', 'rsds', 'rsus']:
         freq_str = '3hr'
         grid_yr_str = 'gr_201501010130-210012312230'
@@ -89,13 +93,18 @@ def get_IPSL_filename(confM2R, year, myvar):
                 + myvar
                 + "_" + freq_str
                 + "_IPSL-CM6A-LR"
-                + "_ssp245_r14i1p1f1"
+                + "_" + scenario_str 
+                + "_r14i1p1f1"
                 + "_" + grid_yr_str
                 + ".nc"
                 )
     return (filename, start_yr)
 
 def get_ACCESS_filename(confM2R, year, myvar):
+    if year < 2015:
+        scenario_str = 'historical'
+    else:
+        scenario_str = 'ssp245'
     if myvar in ['clt', 'pr', 'rsds', 'rsus']:
         freq_str = '3hr'
         [yr_str, start_yr] = fn_10_year_str_atm(year, time_str_start='0130', time_str_end='2230')
@@ -113,8 +122,12 @@ def get_ACCESS_filename(confM2R, year, myvar):
         [yr_str, start_yr] = fn_10_year_str_ocean(year)
     elif myvar in ['zos']:
         freq_str = 'Omon'
-        yr_str = '201501-210012'
-        start_yr = 2015
+        if year < 2015:
+            yr_str = '185001-201412'
+            start_yr = 1850            
+        else:
+            yr_str = '201501-210012'
+            start_yr = 2015
     else:
         raise Exception(f"myvar {str(myvar)} not implemented in get_ACCESS_filename()")
 
@@ -122,7 +135,8 @@ def get_ACCESS_filename(confM2R, year, myvar):
                 + myvar
                 + "_" + freq_str
                 + "_ACCESS-CM2"
-                + "_ssp245_r4i1p1f1"
+                + "_" + scenario_str 
+                + "_r4i1p1f1"
                 + "_gn"
                 + "_" + yr_str
                 + ".nc"
@@ -133,10 +147,16 @@ def fn_50_year_str(year):
     """Useful to get part of filename (fn),
     if files are split in 1 file per 50 year. Based on ACCESS model.
     Also returns start year of the file, which is needed for some vars. """
-    if year > 2014 and year < 2065:
+    if year < 2000:
+        yr_string = '19500101-19991231'
+        file_start_year = 1950
+    elif year >= 2000 and year < 2015:
+        yr_string = '20000101-20141231'
+        file_start_year = 2000
+    elif year >= 2015 and year < 2065:
         yr_string = '20150101-20641231'
         file_start_year = 2015
-    elif year < 2101:
+    elif year >= 2065 and year < 2101:
         yr_string = '20650101-21001231'
         file_start_year = 2065
     return (yr_string, file_start_year)
@@ -147,12 +167,18 @@ def fn_10_year_str_ocean(year):
     Version for ocean variables i.e. string contains year & month,
     e.g. '201501-202412'.
     Also returns start year of the file, which is needed for some vars. """
-    # round down to nnn5 for start year:
-    if year%10 >=5:  # year ends in 5,6,7,8 or 9
-        file_start_year = year - year%5            # down to nnn5
-    if year%10 < 5:  # year ends in 0,1,2,3 or 4
-        file_start_year = year - year%5 - 5        # down to nnn0 and go back 5 more
-    file_end_year = min(file_start_year + 9, 2100) # up to nn(n+1)4 or 2100
+
+    if year < 2015: # historical: files start with 1950, 1960 etc.
+        file_start_year = year - year%10               # down to nnn0
+        file_end_year = min(file_start_year + 9, 2014) # up to nnn9 or 2014
+    else:           # ssp245 scenario: files start with 2015, 2025 etc.
+        # round down to nnn5 for start year:
+        if year%10 >=5:  # year ends in 5,6,7,8 or 9
+            file_start_year = year - year%5            # down to nnn5
+        if year%10 < 5:  # year ends in 0,1,2,3 or 4
+            file_start_year = year - year%5 - 5        # down to nnn0 and go back 5 more
+        file_end_year = min(file_start_year + 9, 2100) # up to nn(n+1)4 or 2100
+    
     yr_string = str(file_start_year) + '01-' + str(file_end_year) + '12'
     return (yr_string, file_start_year)
 
@@ -162,12 +188,18 @@ def fn_10_year_str_atm(year, time_str_start, time_str_end):
     Version for atmospheric variables i.e. string contains year & month & day & time,
     e.g. '201501010300-202401010000' or '201501010130-202412312230'.
     Also returns start year of the file, which is needed for some vars."""
-    # round down to nnn5 for start year:
-    if year%10 >=5:  # year ends in 5,6,7,8 or 9
-        file_start_year = year - year%5            # down to nnn5
-    if year%10 < 5:  # year ends in 0,1,2,3 or 4
-        file_start_year = year - year%5 - 5        # down to nnn0 and go back 5 more
-    file_end_year = min(file_start_year + 9, 2100) # up to nn(n+1)4 or 2100
+
+    if year < 2015: # historical: files start with 1950, 1960 etc.
+        file_start_year = year - year%10               # down to nnn0
+        file_end_year = min(file_start_year + 9, 2014) # up to nnn9 or 2014
+    else:           # ssp245 scenario: files start with 2015, 2025 etc.
+        # round down to nnn5 for start year:
+        if year%10 >=5:  # year ends in 5,6,7,8 or 9
+            file_start_year = year - year%5            # down to nnn5
+        if year%10 < 5:  # year ends in 0,1,2,3 or 4
+            file_start_year = year - year%5 - 5        # down to nnn0 and go back 5 more
+        file_end_year = min(file_start_year + 9, 2100) # up to nn(n+1)4 or 2100
+
     if time_str_end == "0000":
         # file includes New Year's Eve 00:00 so last day of file shifts from e.g. 2034-12-31 to 2035-01-01
         yr_string = str(file_start_year)+'0101'+time_str_start + '-' + str(file_end_year + 1)+'0101'+time_str_end
