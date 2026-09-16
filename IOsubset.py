@@ -1,6 +1,7 @@
 import numpy as np
 from datetime import datetime
 import logging
+import sys
 
 __author__ = 'Trond Kristiansen'
 __email__ = 'me@trondkristiansen.com'
@@ -50,8 +51,9 @@ def find_subset_indices(grdMODEL, min_lat, max_lat, min_lon, max_lon):
         if k == 0 and splitExtract == True:
             minLon = min_lon;
             maxLon = 0
-            minLon = minLon + 360
-            maxLon = maxLon + 360
+            if grdMODEL.lon.max() > 180:  # for case of 0-360 input grid
+                minLon = minLon + 360
+                maxLon = maxLon + 360
         elif k == 1 and splitExtract == True:
             minLon = 0;
             maxLon = max_lon
@@ -125,7 +127,7 @@ def checkDomain(grdMODEL, grdROMS):
     else:
         print("WARNING: Your input domain is smaller or not overlaying your output domain")
         print("IOsubset.py: EXIT")
-        # sys.exit()
+        sys.exit()
     print("\n--------------------------")
 
 
@@ -135,7 +137,7 @@ def organize_split(grdMODEL, grdROMS):
         print("Need to split the extraction of data into Western and")
         print("Eastern region. The two regions will be concatenated again.\n")
 
-        """Save longitude and latitude values so that only variables are needed to be extracted after first loop"""
+        """Save longitude and latitude values so that only data variables need to be extracted in later steps"""
         lon1 = grdMODEL.lon[int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),
                int(grdMODEL.indices[0, 0]):int(grdMODEL.indices[0, 1])]
         lat1 = grdMODEL.lat[int(grdMODEL.indices[0, 2]):int(grdMODEL.indices[0, 3]),

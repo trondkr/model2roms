@@ -49,7 +49,7 @@ Module interpolation
             !        II is the total grid points in xi direction
             ! -------------------------------------------------------------------------------------------------------
             
-            REAL(4) rz2, rz1, fill
+            REAL(4) rz2, rz1, fillneg, fillpos
             integer eta_rho, xi_rho, II, JJ, ic, jc, kc, kT, kkT, Nsoda, Nroms
             REAL(4), dimension(Nsoda,JJ,II) :: dat
             REAL(4), dimension(eta_rho,xi_rho) :: bathymetry
@@ -57,11 +57,13 @@ Module interpolation
             REAL(4), dimension(Nsoda) ::  zs
             REAL(4), dimension(Nroms,eta_rho,xi_rho) :: zr
 
+
 !f2py intent(in,out,overwrite) outdat       
 !f2py intent(in,overwrite) dat, bathymetry, zr, zs
 !f2py intent(in,overwrite) Nroms, Nsoda, JJ, II, xi_rho, eta_rho
 !f2py intent(hide) ic,jc,kc,kT,rz1,rz2, kkT
-            fill=-10000
+            fillneg=-10000  ! cut off for negative fill/nan values like in SODA
+            fillpos=10000   ! cut off for positive fill/nan values like in ACCESS
             do jc=1,JJ
               do ic=1,II
                   do kc=1,Nroms
@@ -70,11 +72,11 @@ Module interpolation
                       ! deepest, the closest value from SODA is found by looping upward in the water column.
                       IF (zr(kc,jc,ic) .LT. zs(Nsoda)) THEN
                           outdat(kc,jc,ic)=dat(Nsoda,jc,ic)
-                          if (MAXVAL(dat(:,jc,ic)) .GT. fill) then
-                            if (dat(Nsoda,jc,ic) .LT. fill) then
+                          if (MAXVAL(dat(:,jc,ic)) .GT. fillneg) then
+                            if (dat(Nsoda,jc,ic) .LE. fillneg) then
                               !print*,'Inside dovert and finding deepest depth with good values. current',dat(Nsoda,jc,ic)
                               DO kT=1,Nsoda
-                                if (dat(Nsoda-kT,jc,ic) .GT. fill) then
+                                if (dat(Nsoda-kT,jc,ic) .GT. fillneg) then
                                     print*,'working on depth',kT,'with value',dat(kT,jc,ic)
                                     outdat(kc,jc,ic)=dat(Nsoda-kT,jc,ic)
                                     print*,'Able to find good value at depth ', Nsoda-kT
@@ -88,7 +90,7 @@ Module interpolation
                       ! CASE 2: ROMS shallower than SODA
                       ELSE IF (zr(kc,jc,ic) .GT. zs(1)) THEN
                           outdat(kc,jc,ic)=dat(1,jc,ic)
-                     
+
                       ELSE
                           ! DO LOOP BETWEEN SURFACE AND BOTTOM
                           DO kT=1,Nsoda
@@ -97,28 +99,38 @@ Module interpolation
                               IF (zr(kc,jc,ic) .LE. zs(kT) .AND.               &
                                 -(bathymetry(jc,ic)) .GT. zs(kT+1)) THEN
                                 outdat(kc,jc,ic)=dat(kT,jc,ic)
-                                
+
                                 ! We do not want to give the deepest depth a fill_value, so we find
                                 ! the closest value to deepest depth.
-                                if (MAXVAL(dat(:,jc,ic)) .GT. fill) then
-                               
-                                    if (dat(kT,jc,ic) .LE. fill) then
-                                       !print*,'case3:Need to find better value for depth ',kT,'which has value ',dat(kT,jc,ic)
+                                if (MAXVAL(dat(:,jc,ic)) .GT. fillneg) then
+
+                                    ! case 3A: negative fill values like in SODA
+                                    if (dat(kT,jc,ic) .LE. fillneg) then
+                                       !print*,'case3A:Need to find better value for depth ',kT,'which has value ',dat(kT,jc,ic)
                                         DO kkT=1,Nsoda
-                                            if (dat(kT-kkT,jc,ic) .GT. fill) then
+                                            if (dat(kT-kkT,jc,ic) .GT. fillneg) then
                                                  outdat(kc,jc,ic)=dat(kT-kkT,jc,ic)
-                            
+                                                exit
+                                            end if
+                                        end do
+                                    end if
+                                    ! case 3B: positive fill values like in ACCESS
+                                    if (dat(kT,jc,ic) .GE. fillpos) then
+                                       !print*,'case3B:Need to find better value for depth ',kT,'which has value ',dat(kT,jc,ic)
+                                        DO kkT=1,Nsoda
+                                            if (dat(kT-kkT,jc,ic) .LT. fillpos) then
+                                                 outdat(kc,jc,ic)=dat(kT-kkT,jc,ic)                            
                                                 exit
                                             end if
                                         end do
                                     end if
                                 end if
+
                                 
                                 ! CASE 4: Special case where ROMS layers are much deeper than in SODA
-                                ELSE IF (zr(kc,jc,ic) .LE. zs(kT) .AND. dat(kT,jc,ic) .GT. fill &
-                                .AND. dat(kT+1,jc,ic) .LE. fill) THEN
+                                ELSE IF (zr(kc,jc,ic) .LE. zs(kT) .AND. dat(kT,jc,ic) .GT. fillneg &
+                                .AND. dat(kT+1,jc,ic) .LE. fillneg) THEN
                                 outdat(kc,jc,ic)=dat(kT,jc,ic)
-                              
                               
                               ! CASE 5: ROMS layer in between two SODA layers
                               ! This is the typical case for most layers
@@ -134,26 +146,40 @@ Module interpolation
                                  outdat(kc,jc,ic) = (rz1*dat(kT+1,jc,ic) &
                                  + rz2*dat(kT,jc,ic))
                                 
-                                if (MAXVAL(dat(:,jc,ic)) .GT. fill) then
+
+                                if (MAXVAL(dat(:,jc,ic)) .GT. fillneg) then
                                
-                                    if (dat(kT,jc,ic) .LE. fill .OR. dat(kT+1,jc,ic) .LE. fill) then
-                                       !print*,'case4:Need to find better value for depth ',kT,kT+1,'which has &
+                                    ! case 5A: negative fill values like in SODA
+                                    if (dat(kT,jc,ic) .LE. fillneg .OR. dat(kT+1,jc,ic) .LE. fillneg) then
+                                       !print*,'case5A:Need to find better value for depth ',kT,kT+1,'which has &
                                    !    values ',dat(kT,jc,ic),dat(kT+1,jc,ic)
                                         DO kkT=1,Nsoda
-                                            if (dat(kT-kkT,jc,ic) .GT. fill .and. dat(kT-kkT+1,jc,ic) .GT. fill  ) then
-                                                 !print*,'CASE 4: Found good value at depth',kT-kkT,kt-kkT+1
-                                                 !print*,'with values',dat(kT-kkT,jc,ic), dat(kt-kkT+1,jc,ic)
-                                                 outdat(kc,jc,ic) = (rz1*dat(kT+1-kkT,jc,ic) &
-                                                 + rz2*dat(kT-kkT,jc,ic))
-                            
+                                            if (dat(kT-kkT,jc,ic) .GT. fillneg) then
+                                                 !print*,'CASE 5A: Found good value at depth',kT-kkT
+                                                 !print*,'with value',dat(kT-kkT,jc,ic)
+                                                 outdat(kc,jc,ic) = dat(kT+1-kkT,jc,ic)
+                                                exit
+                                            end if
+                                        END DO
+                                    end if
+
+                                    ! case 5B: positive fill values like in ACCESS
+                                    if (dat(kT,jc,ic) .GE. fillpos .OR. dat(kT+1,jc,ic) .GE. fillpos) then
+                                       !print*,'case5B:Need to find better value for depth ',kT,kT+1,'which has &
+                                   !    values ',dat(kT,jc,ic),dat(kT+1,jc,ic)
+                                        DO kkT=1,Nsoda
+                                            if (dat(kT-kkT,jc,ic) .LT. fillpos) then
+                                                 !print*,'CASE 5B: Found good value at depth',kT-kkT
+                                                 !print*,'with value',dat(kT-kkT,jc,ic)
+                                                 outdat(kc,jc,ic) = dat(kT+1-kkT,jc,ic)
                                                 exit
                                             end if
                                         END DO
                                     end if
                                  end if
-                                
+
                                  exit
-                                 
+
                               END IF
                           ! DO LOOP BETWEEN SURFACE AND BOTTOM: CASE 3,4,5
                           END DO
@@ -189,7 +215,7 @@ Module interpolation
 !f2py intent(hide) ic,jc,kc, fill
 
             fill=10000
-            print*,'---> Started horisontal rho2u interpolation'
+            print*,'---> Started horizontal rho2u interpolation'
             do kc=1,KK
                 do jc=1,JJ
                     do ic=2,II-1
@@ -213,7 +239,7 @@ Module interpolation
                     end do
                 end do
             end do
-            print*,'-----> Ended horisontal rho2u interpolation'
+            print*,'-----> Ended horizontal rho2u interpolation'
         end subroutine rho2u
             
       subroutine rho2v(vdata,rhodata,II,JJ,KK)
@@ -237,7 +263,7 @@ Module interpolation
 !f2py intent(hide) ic,jc,kc, fill
             
             fill=10000
-            print*,'---> Started horisontal rho2v interpolation'
+            print*,'---> Started horizontal rho2v interpolation'
             do kc=1,KK
                 do jc=2,JJ-1
                     do ic=1,II
@@ -257,7 +283,7 @@ Module interpolation
                     end do
                 end do
             end do
-            print*,'-----> Ended horisontal rho2v interpolation'
+            print*,'-----> Ended horizontal rho2v interpolation'
         end subroutine rho2v
             
    
